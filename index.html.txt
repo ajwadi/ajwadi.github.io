@@ -1,5 +1,0 @@
-<html>
-<body>
-YO
-</body>
-</html>
