@@ -1899,7 +1899,7 @@ textarea.form-input::-webkit-resizer { display: none; }
 
   body::-webkit-scrollbar-thumb:hover { background: hsla(0, 0%, 100%, 0.15); }
 
-  body::-webkit-scrollbar-button { height: 60px; }
+  /* body::-webkit-scrollbar-button { height: px; } */
 
 
 
