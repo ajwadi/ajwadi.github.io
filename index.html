@@ -23,6 +23,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
 </head>
 
 <body>
@@ -1397,17 +1398,17 @@
 
           <h3 class="h3 form-title">Contact Form</h3>
 
-          <form action="https://formsubmit.co/ajwad25@gmail.com" method="POST">
-            <input type="hidden" name="_subject" value="New submission!">
+          <form action="https://fabform.io/f/GdfxOMi" method="POST">
 
-              
-             <input type="text" name="fullname" class="form-input" placeholder="Full name" required >
+            <div class="input-wrapper">
+              <input type="text" name="fullname" class="form-input" placeholder="Full name" required data-form-input>
 
-              <input type="email" name="email" class="form-input" placeholder="Email address" required>
-            <textarea name="message" class="form-input" row = "10" placeholder="Your Message" required ></textarea>
-            
+              <input type="email" name="email" class="form-input" placeholder="Email address" required data-form-input>
+            </div>
 
-            <button class="form-btn" type="submit" >
+            <textarea name="message" class="form-input" placeholder="Your Message" required data-form-input></textarea>
+
+            <button class="form-btn" type="submit">
               <ion-icon name="paper-plane"></ion-icon>
               <span>Send Message</span>
             </button>
