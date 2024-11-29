@@ -1,68 +1,119 @@
 <!DOCTYPE html>
 <html lang="en">
 
-<head>
-  <meta charset="UTF-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Ajwad Ishaque - Engineer. Developer. Freelancer. </title>
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ajwad Ishaque - Engineer. Developer. Freelancer. </title>
 
-  <!--
+    <!--
     - favicon
   -->
-  <link rel="shortcut icon" href="./assets/images/plug.svg" type="image/x-icon">
+    <link rel="shortcut icon" href="./assets/images/plug.svg"
+      type="image/x-icon">
 
-  <!--
+    <!--
     - custom css link
   -->
-  <link rel="stylesheet" href="./assets/css/style.css">
+    <link rel="stylesheet" href="./assets/css/style.css">
 
-  <!--
+    <!--
     - google font link
   -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
-</head>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap"
+      rel="stylesheet">
+    <link rel="stylesheet"
+      href="https://fonts.googleapis.com/icon?family=Material+Icons">
+  </head>
 
-<body>
+  <body>
 
-  <!--
+    <!--
     - #MAIN
   -->
 
-  <main>
+    <main>
 
-    <!--
+      <!--
       - #SIDEBAR
     -->
 
-    <aside class="sidebar" data-sidebar>
+      <aside class="sidebar" data-sidebar>
 
-      <div class="sidebar-info">
+        <div class="sidebar-info">
 
-        <figure class="avatar-box">
-          <img src="./assets/images/displaypic.png" alt="Ajwad Ishaque" width="80">
-        </figure>
+          <figure class="avatar-box">
+            <img src="./assets/images/displaypic.png" alt="Ajwad Ishaque"
+              width="80">
+          </figure>
 
-        <div class="info-content">
-          <h1 class="name" title="Ajwad Ishaque">Ajwad Ishaque</h1>
+          <div class="info-content">
+            <h1 class="name" title="Ajwad Ishaque">Ajwad Ishaque</h1>
 
-          <p class="title">Engineer. Developer. Freelancer.</p>
+            <p class="title">Engineer. Developer. Freelancer.</p>
+          </div>
+
+          <button class="info_more-btn" data-sidebar-btn>
+            <span>Show Contacts</span>
+
+            <ion-icon name="chevron-down"></ion-icon>
+          </button>
+
         </div>
 
-        
+        <div class="sidebar-info_more">
 
+          <div class="separator"></div>
 
+          <div class="info-content">
+            <h6 class="h6">Designing Products and Experiences that inform and
+              inspire with purpose.</h6>
 
-        <button class="info_more-btn" data-sidebar-btn>
-          <span>Show Contacts</span>
+          </div>
 
-          <ion-icon name="chevron-down"></ion-icon>
-        </button>
+          <div class="separator"></div>
 
+          <ul class="social-list">
 
+<<<<<<< HEAD
+            <li class="social-item">
+              <a href="https://github.com/ajwadi" class="social-link">
+                <ion-icon name="logo-github"></ion-icon>
+              </a>
+            </li>
+
+            <li class="social-item">
+              <a href="https://www.linkedin.com/in/ajwad-ishaque-96659584/"
+                class="social-link">
+                <ion-icon name="logo-linkedin"></ion-icon>
+              </a>
+            </li>
+
+            <li class="social-item">
+              <a href="https://sketchfab.com/ajwadi" class="social-link">
+                <ion-icon name="diamond-outline"></ion-icon>
+              </a>
+            </li>
+
+            <li class="social-item">
+              <a href="https://play.google.com/store/apps/developer?id=ajwadi"
+                class="social-link">
+                <ion-icon name="logo-android"></ion-icon>
+              </a>
+            </li>
+
+            <li class="social-item">
+              <a
+                href="https://apps.apple.com/ca/developer/ajwad-ishaque/id1465689845"
+                class="social-link">
+                <i class="material-icons" style="font-size:20px;">apple</i>
+              </a>
+            </li>
+=======
       </div>
 
       
@@ -257,13 +308,167 @@
             </li>
 
 
+>>>>>>> 22d3a93d448afabd456a3d9769181277aa7207bf
 
           </ul>
 
-        </section>
+        </div>
 
+      </aside>
+
+      <!--
+      - #main-content
+    -->
+
+      <div class="main-content">
 
         <!--
+        - #NAVBAR
+      -->
+
+        <nav class="navbar">
+
+          <ul class="navbar-list">
+
+            <li class="navbar-item">
+              <button class="navbar-link  active" data-nav-link>About</button>
+            </li>
+            <li class="navbar-item">
+              <button class="navbar-link" data-nav-link>Blog</button>
+            </li>
+            <li class="navbar-item">
+              <button class="navbar-link" data-nav-link>Portfolio</button>
+            </li>
+            <li class="navbar-item">
+              <button class="navbar-link" data-nav-link>Resume</button>
+            </li>
+            <li class="navbar-item">
+              <button class="navbar-link" data-nav-link>SAE</button>
+            </li>
+            <li class="navbar-item">
+              <button class="navbar-link" data-nav-link>Contact</button>
+            </li>
+
+          </ul>
+
+        </nav>
+
+        <!--
+        - #ABOUT
+      -->
+
+        <article class="about  active" data-page="about">
+
+          <header>
+            <h2 class="h2 article-title">About me</h2>
+          </header>
+
+          <section class="about-text">
+            <p>
+              Growing up I was super fascinated about how things worked and how
+              they were made. It was this desire of mine that would often get me
+              into trouble. Rather than finding a kid playing with toys, you
+              would come back to having the toys completely disassembled. I just
+              had to know how things worked, were put together and what the
+              right tools were to find out. It was this desire of mine that led
+              me to doing my Bachelors in Mechanical Engineering. I then
+              followed this by completing my Masters in Mechanical Engineering
+              with a focus on Advanced Materials and Manufacturing.
+            </p>
+            <p>
+              It has often been said that it is easier to design a product than
+              to manufacture it. This is where I want to help discover ways to
+              speed up the process. Check out what I'm up to below and explore
+              my portfolio!
+            </p>
+
+          </section>
+
+          <!--
+          - service
+        -->
+
+          <section class="service">
+
+            <h3 class="h3 service-title">What i'm doing</h3>
+
+            <ul class="service-list">
+
+              <li class="service-item">
+
+                <div class="service-icon-box">
+                  <img src="./assets/images/future.svg" alt="camera icon"
+                    width="40">
+                </div>
+
+                <div class="service-content-box">
+                  <h4 class="h4 service-item-title">PhD Prep</h4>
+
+                  <p class="service-item-text">
+                    Gaining essential skills to integrate advanced
+                    manufacturing, computer vision and batteries in engineering!
+                  </p>
+                </div>
+
+              </li>
+
+              <li class="service-item">
+
+                <div class="service-icon-box">
+                  <img src="./assets/images/icon-design.svg
+                " alt="design icon" width="40">
+                </div>
+
+                <div class="service-content-box">
+                  <h4 class="h4 service-item-title">Research</h4>
+
+                  <p class="service-item-text">
+                    Understanding ways to make manufacturing quicker and
+                    efficient
+                  </p>
+                </div>
+
+              </li>
+
+              <li class="service-item">
+
+                <div class="service-icon-box">
+                  <img src="./assets/images/icon-app.svg" alt="mobile app icon"
+                    width="40">
+                </div>
+
+                <div class="service-content-box">
+                  <h4 class="h4 service-item-title">Mobile apps</h4>
+
+                  <p class="service-item-text">
+                    To make everyday design and engineering tasks easier.
+                  </p>
+                </div>
+
+              </li>
+
+              <li class="service-item">
+
+                <div class="service-icon-box">
+                  <img src="./assets/images/icon-photo.svg" alt="camera icon"
+                    width="40">
+                </div>
+
+                <div class="service-content-box">
+                  <h4 class="h4 service-item-title">Content Creation</h4>
+
+                  <p class="service-item-text">
+                    Making content to make engineering a not-so-hard literature
+                  </p>
+                </div>
+
+              </li>
+
+            </ul>
+
+          </section>
+
+          <!--
           - testimonials
         
 
@@ -377,52 +582,55 @@
         </section>
 -->
 
-        <!--
+          <!--
           - testimonials modal
         -->
 
-        <div class="modal-container" data-modal-container>
+          <div class="modal-container" data-modal-container>
 
-          <div class="overlay" data-overlay></div>
+            <div class="overlay" data-overlay></div>
 
-          <section class="testimonials-modal">
+            <section class="testimonials-modal">
 
-            <button class="modal-close-btn" data-modal-close-btn>
-              <ion-icon name="close-outline"></ion-icon>
-            </button>
+              <button class="modal-close-btn" data-modal-close-btn>
+                <ion-icon name="close-outline"></ion-icon>
+              </button>
 
-            <div class="modal-img-wrapper">
-              <figure class="modal-avatar-box">
-                <img src="./assets/images/avatar-1.png" alt="Daniel lewis" width="80" data-modal-img>
-              </figure>
+              <div class="modal-img-wrapper">
+                <figure class="modal-avatar-box">
+                  <img src="./assets/images/avatar-1.png" alt="Daniel lewis"
+                    width="80" data-modal-img>
+                </figure>
 
-              <img src="./assets/images/icon-quote.svg" alt="quote icon">
-            </div>
-
-            <div class="modal-content">
-
-              <h4 class="h3 modal-title" data-modal-title>Daniel lewis</h4>
-
-              <time datetime="2021-06-14">14 June, 2021</time>
-
-              <div data-modal-text>
-                <p>
-                  Richard was hired to create a corporate identity. We were very pleased with the work done. She has a
-                  lot of experience
-                  and is very concerned about the needs of client. Lorem ipsum dolor sit amet, ullamcous cididt
-                  consectetur adipiscing
-                  elit, seds do et eiusmod tempor incididunt ut laborels dolore magnarels alia.
-                </p>
+                <img src="./assets/images/icon-quote.svg" alt="quote icon">
               </div>
 
-            </div>
+              <div class="modal-content">
 
-          </section>
+                <h4 class="h3 modal-title" data-modal-title>Daniel lewis</h4>
 
-        </div>
+                <time datetime="2021-06-14">14 June, 2021</time>
 
+                <div data-modal-text>
+                  <p>
+                    Richard was hired to create a corporate identity. We were
+                    very pleased with the work done. She has a
+                    lot of experience
+                    and is very concerned about the needs of client. Lorem ipsum
+                    dolor sit amet, ullamcous cididt
+                    consectetur adipiscing
+                    elit, seds do et eiusmod tempor incididunt ut laborels
+                    dolore magnarels alia.
+                  </p>
+                </div>
 
-        <!--
+              </div>
+
+            </section>
+
+          </div>
+
+          <!--
           - clients
 
 
@@ -472,773 +680,954 @@
 
         </section>
       -->
-      </article>
+        </article>
 
-      <!--
+        <!--
         - #BLOG
       -->
 
-      <article class="blog" data-page="blog">
+        <article class="blog" data-page="blog">
 
-        <header>
-          <h2 class="h2 article-title">Blog</h2>
-        </header>
+          <header>
+            <h2 class="h2 article-title">Blog</h2>
+          </header>
 
-        <section class="blog-posts">
+          <section class="blog-posts">
 
-          <ul class="blog-posts-list">
+            <ul class="blog-posts-list">
+              <li class="blog-post-item">
 
-            <li class="blog-post-item">
-              <a href="./assets/pages/pe-chassis.html">
+                <a href="./assets/pages/bsw-software.html">
 
-                <figure class="blog-banner-box">
-                  <img src="./assets/images/pe-chassis.jpg" alt="My Role as a Product Engineer for Chassis Structures" loading="lazy">
-                </figure>
+                  <figure class="blog-banner-box">
+                    <img src="./assets/images/thumbnails/programming-thumb.png"
+                      alt="My Role as a Product Engineer for Chassis Structures"
+                      loading="lazy">
+                  </figure>
 
-                <div class="blog-content">
+                  <div class="blog-content">
 
-                  <div class="blog-meta">
-                    <p class="blog-category">Mechanical Engineering</p>
+                    <div class="blog-meta">
+                      <p class="blog-category">Software</p>
 
-                    <span class="dot"></span>
+                      <span class="dot"></span>
 
-                    <time datetime="2023-01-09">July 29, 2023</time>
+                      <time datetime="2024-06-01">June 1, 2024</time>
+                    </div>
+
+                    <h4 class="h4 blog-item-title">BSW Software Verification
+                      Engineer</h4>
+
+                    <p class="blog-text">
+                      What I learned in my role.
+                    </p>
+
                   </div>
 
-                  <h4 class="h4 blog-item-title">Product Engineer - Chassis Structures</h4>
+                </a>
+              </li>
 
-                  <p class="blog-text">
-                    What I learned in my Role
-                  </p>
+              <li class="blog-post-item">
+                <a href="./assets/pages/mentor-sss.html">
 
-                </div>
+                  <figure class="blog-banner-box">
+                    <img src="./assets/images/thumbnails/mentor-sss.jpeg"
+                      alt="My Role as a Product Engineer for Chassis Structures"
+                      loading="lazy">
+                  </figure>
 
-              </a>
-            </li>
+                  <div class="blog-content">
 
-            <li class="blog-post-item">
-              <a href="./assets/pages/motorcycle-sales.html">
+                    <div class="blog-meta">
+                      <p class="blog-category">Engineering and Software</p>
 
-                <figure class="blog-banner-box">
-                  <img src="./assets/images/motorcycle-sales.jpg" alt="Motorcycle Sales - Canada" loading="lazy">
-                </figure>
+                      <span class="dot"></span>
 
-                <div class="blog-content">
+                      <time datetime="2024-02-21">Feb 21, 2024</time>
+                    </div>
 
-                  <div class="blog-meta">
-                    <p class="blog-category">Mechanical Engineering</p>
+                    <h4 class="h4 blog-item-title">Mentor - SmartSightStick</h4>
 
-                    <span class="dot"></span>
+                    <p class="blog-text">
+                      Helping a student pursue his idea for the visually
+                      impared.
+                    </p>
 
-                    <time datetime="2023-01-09">March 3, 2023</time>
                   </div>
 
-                  <h3 class="h3 blog-item-title">Motorcycle Sales - Canada</h3>
+                </a>
+              </li>
 
-                  <p class="blog-text">
-                    Is there actually a demand?
-                  </p>
+              <li class="blog-post-item">
+                <a href="./assets/pages/phd-motivation.html">
 
-                </div>
+                  <figure class="blog-banner-box">
+                    <img src="./assets/images/thumbnails/phd-thumb.jpg"
+                      alt="My Role as a Product Engineer for Chassis Structures"
+                      loading>
+                  </figure>
 
-              </a>
-            </li>
+                  <div class="blog-content">
 
-            <li class="blog-post-item">
-              <a href="./assets/pages/ender3v2pro.html">
+                    <div class="blog-meta">
+                      <p class="blog-category">Mechanical Engineering</p>
 
-                <figure class="blog-banner-box">
-                  <img src="./assets/images/ender3v2pro.jpg" alt="Autonomy and Motorcycles" loading="lazy">
-                </figure>
+                      <span class="dot"></span>
 
-                <div class="blog-content">
+                      <time datetime="2023-12-02">December 2, 2023</time>
+                    </div>
 
-                  <div class="blog-meta">
-                    <p class="blog-category">Mechanical Engineering</p>
+                    <h4 class="h4 blog-item-title">Phd Motivation</h4>
 
-                    <span class="dot"></span>
+                    <p class="blog-text">
+                      Why I want to pursue higher Education.
+                    </p>
 
-                    <time datetime="2023-01-09">January 9, 2023</time>
                   </div>
 
-                  <h3 class="h3 blog-item-title">Ender-3 V2</h3>
+                </a>
+              </li>
 
-                  <p class="blog-text">
-                    My first ever 3D Printers!
-                  </p>
+              <li class="blog-post-item">
+                <a href="./assets/pages/pe-chassis.html">
 
-                </div>
+                  <figure class="blog-banner-box">
+                    <img src="./assets/images/pe-chassis.jpg"
+                      alt="My Role as a Product Engineer for Chassis Structures"
+                      loading="lazy">
+                  </figure>
 
-              </a>
-            </li>
+                  <div class="blog-content">
 
+                    <div class="blog-meta">
+                      <p class="blog-category">Mechanical Engineering</p>
 
-            <li class="blog-post-item">
-              <a href="./assets/pages/blog-engsoftware.html">
+                      <span class="dot"></span>
 
-                <figure class="blog-banner-box">
-                  <img src="./assets/images/eng-software.jpg" alt="Softwares for Mehcanical Engineering Students" loading="lazy">
-                </figure>
+                      <time datetime="2023-01-09">July 29, 2023</time>
+                    </div>
 
-                <div class="blog-content">
+                    <h4 class="h4 blog-item-title">Product Engineer - Chassis
+                      Structures</h4>
 
-                  <div class="blog-meta">
-                    <p class="blog-category">Mechanical Engineering</p>
+                    <p class="blog-text">
+                      What I learned in my Role
+                    </p>
 
-                    <span class="dot"></span>
-
-                    <time datetime="2023-01-08">January 8, 2023</time>
                   </div>
 
-                  <h3 class="h3 blog-item-title">Softwares for Mechanical Engineering Students</h3>
+                </a>
+              </li>
 
-                  <p class="blog-text">
-                    A look into every software that a mechanical engineer could ever interface with.
-                  </p>
+              <li class="blog-post-item">
+                <a href="./assets/pages/motorcycle-sales.html">
 
-                </div>
+                  <figure class="blog-banner-box">
+                    <img src="./assets/images/motorcycle-sales.jpg"
+                      alt="Motorcycle Sales - Canada" loading="lazy">
+                  </figure>
 
-              </a>
-            </li>
+                  <div class="blog-content">
 
-            
+                    <div class="blog-meta">
+                      <p class="blog-category">Mechanical Engineering</p>
 
-            <li class="blog-post-item">
-              <a href="./assets/pages/autonomous-motorcycles.html">
+                      <span class="dot"></span>
 
-                <figure class="blog-banner-box">
-                  <img src="./assets/images/autonomous-motorcycle.jpg" alt="Autonomy and Motorcycles" loading="lazy">
-                </figure>
+                      <time datetime="2023-01-09">March 3, 2023</time>
+                    </div>
 
-                <div class="blog-content">
+                    <h3 class="h3 blog-item-title">Motorcycle Sales -
+                      Canada</h3>
 
-                  <div class="blog-meta">
-                    <p class="blog-category">Mechanical Engineering</p>
+                    <p class="blog-text">
+                      Is there actually a demand?
+                    </p>
 
-                    <span class="dot"></span>
-
-                    <time datetime="2023-01-08">January 8, 2023</time>
                   </div>
 
-                  <h3 class="h3 blog-item-title">Autonomy and Motorcycles</h3>
+                </a>
+              </li>
 
-                  <p class="blog-text">
-                    How can we reduce human error while riding?
-                  </p>
+              <li class="blog-post-item">
+                <a href="./assets/pages/ender3v2pro.html">
 
-                </div>
+                  <figure class="blog-banner-box">
+                    <img src="./assets/images/ender3v2pro.jpg"
+                      alt="Autonomy and Motorcycles" loading="lazy">
+                  </figure>
 
-              </a>
-            </li>
+                  <div class="blog-content">
 
+                    <div class="blog-meta">
+                      <p class="blog-category">Mechanical Engineering</p>
 
+                      <span class="dot"></span>
 
-          
+                      <time datetime="2023-01-09">January 9, 2023</time>
+                    </div>
 
-          </ul>
+                    <h3 class="h3 blog-item-title">Ender-3 V2</h3>
 
-        </section>
+                    <p class="blog-text">
+                      My first ever 3D Printers!
+                    </p>
 
-      </article>
+                  </div>
 
+                </a>
+              </li>
+
+              <li class="blog-post-item">
+                <a href="./assets/pages/blog-engsoftware.html">
+
+                  <figure class="blog-banner-box">
+                    <img src="./assets/images/eng-software.jpg"
+                      alt="Softwares for Mehcanical Engineering Students"
+                      loading="lazy">
+                  </figure>
+
+                  <div class="blog-content">
+
+                    <div class="blog-meta">
+                      <p class="blog-category">Mechanical Engineering</p>
+
+                      <span class="dot"></span>
+
+                      <time datetime="2023-01-08">January 8, 2023</time>
+                    </div>
+
+                    <h3 class="h3 blog-item-title">Softwares for Mechanical
+                      Engineering Students</h3>
+
+                    <p class="blog-text">
+                      A look into every software that a mechanical engineer
+                      could ever interface with.
+                    </p>
+
+                  </div>
+
+                </a>
+              </li>
+
+              <li class="blog-post-item">
+                <a href="./assets/pages/autonomous-motorcycles.html">
+
+                  <figure class="blog-banner-box">
+                    <img src="./assets/images/autonomous-motorcycle.jpg"
+                      alt="Autonomy and Motorcycles" loading="lazy">
+                  </figure>
+
+                  <div class="blog-content">
+
+                    <div class="blog-meta">
+                      <p class="blog-category">Mechanical Engineering</p>
+
+                      <span class="dot"></span>
+
+                      <time datetime="2023-01-08">January 8, 2023</time>
+                    </div>
+
+                    <h3 class="h3 blog-item-title">Autonomy and Motorcycles</h3>
+
+                    <p class="blog-text">
+                      How can we reduce human error while riding?
+                    </p>
+
+                  </div>
+
+                </a>
+              </li>
+
+            </ul>
+
+          </section>
+
+        </article>
 
         <!--
         - #PORTFOLIO
       -->
 
-      <article class="portfolio" data-page="portfolio">
+        <article class="portfolio" data-page="portfolio">
 
-        <header>
-          <h2 class="h2 article-title">Portfolio</h2>
-        </header>
+          <header>
+            <h2 class="h2 article-title">Portfolio</h2>
+          </header>
 
-        <section class="projects">
+          <section class="projects">
 
-          <ul class="filter-list">
+            <ul class="filter-list">
 
-            <li class="filter-item">
-              <button class="active" data-filter-btn>All</button>
-            </li>
-
-            <li class="filter-item">
-              <button data-filter-btn>Undergraduate</button>
-            </li>
-
-            <li class="filter-item">
-              <button data-filter-btn>Graduate</button>
-            </li>
-
-            <li class="filter-item">
-              <button data-filter-btn>Freelance/Fun</button>
-            </li>
-
-            <li class="filter-item">
-              <button data-filter-btn>Software</button>
-            </li>
-
-            <li class="filter-item">
-              <button data-filter-btn>Certifications</button>
-            </li>
-          </ul>
-
-          <div class="filter-select-box">
-
-            <button class="filter-select" data-select>
-
-              <div class="select-value" data-selecct-value>Select category</div>
-
-              <div class="select-icon">
-                <ion-icon name="chevron-down"></ion-icon>
-              </div>
-
-            </button>
-
-            <ul class="select-list">
+              <li class="filter-item">
+                <button class="active" data-filter-btn>All</button>
+              </li>
 
               <li class="filter-item">
                 <button data-filter-btn>Undergraduate</button>
               </li>
-  
+
               <li class="filter-item">
                 <button data-filter-btn>Graduate</button>
               </li>
-  
+
               <li class="filter-item">
                 <button data-filter-btn>Freelance/Fun</button>
               </li>
-  
+
               <li class="filter-item">
                 <button data-filter-btn>Software</button>
               </li>
+
               <li class="filter-item">
                 <button data-filter-btn>Certifications</button>
               </li>
             </ul>
 
-          </div>
+            <div class="filter-select-box">
 
-          <ul class="project-list">
+              <button class="filter-select" data-select>
 
-            <li class="project-item  active" data-filter-item data-category="undergraduate">
-              <a href="/assets/pages/campusmodel.html">
+                <div class="select-value" data-selecct-value>Select
+                  category</div>
 
-                <figure class="project-img">
-                  <div class="project-item-icon-box">
-                    <ion-icon name="eye-outline"></ion-icon>
-                  </div>
+                <div class="select-icon">
+                  <ion-icon name="chevron-down"></ion-icon>
+                </div>
 
-                  <img src="./assets/images/thumbnails/campusscalemodel.jpg" alt="Undergraduate" loading="lazy">
-                </figure>
+              </button>
 
-                <h3 class="project-title">3D Campus Scale Model</h3>
+              <ul class="select-list">
 
-                <p class="project-category">Undergraduate</p>
+                <li class="filter-item">
+                  <button data-filter-btn>Undergraduate</button>
+                </li>
 
-              </a>
-            </li>
+                <li class="filter-item">
+                  <button data-filter-btn>Graduate</button>
+                </li>
 
-            <li class="project-item  active" data-filter-item data-category="undergraduate">
-              <a href="/assets/pages/wheelchairlift.html">
+                <li class="filter-item">
+                  <button data-filter-btn>Freelance/Fun</button>
+                </li>
 
-                <figure class="project-img">
-                  <div class="project-item-icon-box">
-                    <ion-icon name="eye-outline"></ion-icon>
-                  </div>
+                <li class="filter-item">
+                  <button data-filter-btn>Software</button>
+                </li>
+                <li class="filter-item">
+                  <button data-filter-btn>Certifications</button>
+                </li>
+              </ul>
 
-                  <img src="./assets/images/thumbnails/wheelchairliftassembly.jpg" alt="Undergraduate" loading="lazy">
-                </figure>
+            </div>
 
-                <h3 class="project-title">Wheel Chair Lift Assembly</h3>
+            <ul class="project-list">
 
-                <p class="project-category">Undergraduate</p>
+              <li class="project-item  active" data-filter-item
+                data-category="undergraduate">
+                <a href="/assets/pages/campusmodel.html">
 
-              </a>
-            </li>
+                  <figure class="project-img">
+                    <div class="project-item-icon-box">
+                      <ion-icon name="eye-outline"></ion-icon>
+                    </div>
 
-            <li class="project-item  active" data-filter-item data-category="undergraduate">
-              <a href="/assets/pages/weightpoweredvehicle.html">
+                    <img src="./assets/images/thumbnails/campusscalemodel.jpg"
+                      alt="Undergraduate" loading="lazy">
+                  </figure>
 
-                <figure class="project-img">
-                  <div class="project-item-icon-box">
-                    <ion-icon name="eye-outline"></ion-icon>
-                  </div>
+                  <h3 class="project-title">3D Campus Scale Model</h3>
 
-                  <img src="./assets/images/thumbnails/weightpoweredvehicle.jpg" alt="Undergraduate" loading="lazy">
-                </figure>
+                  <p class="project-category">Undergraduate</p>
 
-                <h3 class="project-title">Weight Powered Vehicle</h3>
+                </a>
+              </li>
 
-                <p class="project-category">Undergraduate</p>
+              <li class="project-item  active" data-filter-item
+                data-category="undergraduate">
+                <a href="/assets/pages/wheelchairlift.html">
 
-              </a>
-            </li>
+                  <figure class="project-img">
+                    <div class="project-item-icon-box">
+                      <ion-icon name="eye-outline"></ion-icon>
+                    </div>
 
-            <li class="project-item  active" data-filter-item data-category="undergraduate">
-              <a href="/assets/pages/steeringgearassembly.html">
+                    <img
+                      src="./assets/images/thumbnails/wheelchairliftassembly.jpg"
+                      alt="Undergraduate" loading="lazy">
+                  </figure>
 
-                <figure class="project-img">
-                  <div class="project-item-icon-box">
-                    <ion-icon name="eye-outline"></ion-icon>
-                  </div>
+                  <h3 class="project-title">Wheel Chair Lift Assembly</h3>
 
-                  <img src="./assets/images/thumbnails/steeringgearassembly.jpg" alt="Undergraduate" loading="lazy">
-                </figure>
+                  <p class="project-category">Undergraduate</p>
 
-                <h3 class="project-title">Steering Gear Assembly</h3>
+                </a>
+              </li>
 
-                <p class="project-category">Undergraduate</p>
+              <li class="project-item  active" data-filter-item
+                data-category="undergraduate">
+                <a href="/assets/pages/weightpoweredvehicle.html">
 
-              </a>
-            </li>
+                  <figure class="project-img">
+                    <div class="project-item-icon-box">
+                      <ion-icon name="eye-outline"></ion-icon>
+                    </div>
 
-            <li class="project-item  active" data-filter-item data-category="undergraduate">
-              <a href="/assets/pages/cardboardpv.html">
+                    <img
+                      src="./assets/images/thumbnails/weightpoweredvehicle.jpg"
+                      alt="Undergraduate" loading="lazy">
+                  </figure>
 
-                <figure class="project-img">
-                  <div class="project-item-icon-box">
-                    <ion-icon name="eye-outline"></ion-icon>
-                  </div>
+                  <h3 class="project-title">Weight Powered Vehicle</h3>
 
-                  <img src="./assets/images/thumbnails/cardboardpv.jpg" alt="Undergraduate" loading="lazy">
-                </figure>
+                  <p class="project-category">Undergraduate</p>
 
-                <h3 class="project-title">Cardboard Pressure Vessel</h3>
+                </a>
+              </li>
 
-                <p class="project-category">Undergraduate</p>
+              <li class="project-item  active" data-filter-item
+                data-category="undergraduate">
+                <a href="/assets/pages/steeringgearassembly.html">
 
-              </a>
-            </li>
+                  <figure class="project-img">
+                    <div class="project-item-icon-box">
+                      <ion-icon name="eye-outline"></ion-icon>
+                    </div>
 
-            <li class="project-item  active" data-filter-item data-category="undergraduate">
-              <a href="/assets/pages/rgbarduinolamp.html">
+                    <img
+                      src="./assets/images/thumbnails/steeringgearassembly.jpg"
+                      alt="Undergraduate" loading="lazy">
+                  </figure>
 
-                <figure class="project-img">
-                  <div class="project-item-icon-box">
-                    <ion-icon name="eye-outline"></ion-icon>
-                  </div>
+                  <h3 class="project-title">Steering Gear Assembly</h3>
 
-                  <img src="./assets/images/thumbnails/rgblamp.jpeg" alt="Undergraduate" loading="lazy">
-                </figure>
+                  <p class="project-category">Undergraduate</p>
 
-                <h3 class="project-title">RGB Arduino Lamp</h3>
+                </a>
+              </li>
 
-                <p class="project-category">Undergraduate</p>
+              <li class="project-item  active" data-filter-item
+                data-category="undergraduate">
+                <a href="/assets/pages/cardboardpv.html">
 
-              </a>
-            </li>
+                  <figure class="project-img">
+                    <div class="project-item-icon-box">
+                      <ion-icon name="eye-outline"></ion-icon>
+                    </div>
 
+                    <img src="./assets/images/thumbnails/cardboardpv.jpg"
+                      alt="Undergraduate" loading="lazy">
+                  </figure>
 
-            <li class="project-item  active" data-filter-item data-category="graduate">
-              <a href="./assets/pages/msmdbatterymodel.html">
+                  <h3 class="project-title">Cardboard Pressure Vessel</h3>
 
-                <figure class="project-img">
-                  <div class="project-item-icon-box">
-                    <ion-icon name="eye-outline"></ion-icon>
-                  </div>
+                  <p class="project-category">Undergraduate</p>
 
-                  <img src="./assets/images/thumbnails/ansys.jpg" alt="Graduate" loading="lazy">
-                </figure>
+                </a>
+              </li>
 
-                <h3 class="project-title">MSMD Battery Model</h3>
+              <li class="project-item  active" data-filter-item
+                data-category="undergraduate">
+                <a href="/assets/pages/rgbarduinolamp.html">
 
-                <p class="project-category">Graduate</p>
+                  <figure class="project-img">
+                    <div class="project-item-icon-box">
+                      <ion-icon name="eye-outline"></ion-icon>
+                    </div>
 
-              </a>
-            </li>
+                    <img src="./assets/images/thumbnails/rgblamp.jpeg"
+                      alt="Undergraduate" loading="lazy">
+                  </figure>
 
-            <li class="project-item  active" data-filter-item data-category="graduate">
-              <a href="./assets/pages/hypermeshindividual.html">
+                  <h3 class="project-title">RGB Arduino Lamp</h3>
 
-                <figure class="project-img">
-                  <div class="project-item-icon-box">
-                    <ion-icon name="eye-outline"></ion-icon>
-                  </div>
+                  <p class="project-category">Undergraduate</p>
 
-                  <img src="./assets/images/thumbnails/altair-hyperworks.jpg" alt="Graduate" loading="lazy">
-                </figure>
+                </a>
+              </li>
 
-                <h3 class="project-title">Hyperworks: Flip-chip Simulation</h3>
+              <li class="project-item  active" data-filter-item
+                data-category="graduate">
+                <a href="./assets/pages/msmdbatterymodel.html">
 
-                <p class="project-category">Graduate</p>
+                  <figure class="project-img">
+                    <div class="project-item-icon-box">
+                      <ion-icon name="eye-outline"></ion-icon>
+                    </div>
 
-              </a>
-            </li>
+                    <img src="./assets/images/thumbnails/ansys.jpg"
+                      alt="Graduate" loading="lazy">
+                  </figure>
 
-            <li class="project-item  active" data-filter-item data-category="graduate">
-              <a href="./assets/pdf/CAE-Hypermesh-Final-Project.pdf">
+                  <h3 class="project-title">MSMD Battery Model</h3>
 
-                <figure class="project-img">
-                  <div class="project-item-icon-box">
-                    <ion-icon name="eye-outline"></ion-icon>
-                  </div>
+                  <p class="project-category">Graduate</p>
 
-                  <img src="./assets/images/thumbnails/altair-hyperworks-group.jpg" alt="Graduate" loading="lazy">
-                </figure>
+                </a>
+              </li>
 
-                <h3 class="project-title">Hyperworks: Equal Channel</h3>
+              <li class="project-item  active" data-filter-item
+                data-category="graduate">
+                <a href="./assets/pages/hypermeshindividual.html">
 
-                <p class="project-category">Graduate</p>
+                  <figure class="project-img">
+                    <div class="project-item-icon-box">
+                      <ion-icon name="eye-outline"></ion-icon>
+                    </div>
 
-              </a>
-            </li>
+                    <img src="./assets/images/thumbnails/altair-hyperworks.jpg"
+                      alt="Graduate" loading="lazy">
+                  </figure>
 
-            <li class="project-item  active" data-filter-item data-category="freelance/fun">
-              <a href="./assets/pages/retirementgift.html">
+                  <h3 class="project-title">Hyperworks: Flip-chip
+                    Simulation</h3>
 
-                <figure class="project-img">
-                  <div class="project-item-icon-box">
-                    <ion-icon name="eye-outline"></ion-icon>
-                  </div>
+                  <p class="project-category">Graduate</p>
 
-                  <img src="./assets/images/thumbnails/retirementgift.jpg" alt="Freelance/Fun" loading="lazy">
-                </figure>
+                </a>
+              </li>
 
-                <h3 class="project-title">Retirement Gift</h3>
+              <li class="project-item  active" data-filter-item
+                data-category="graduate">
+                <a href="./assets/pdf/CAE-Hypermesh-Final-Project.pdf">
 
-                <p class="project-category">Freelance/Fun</p>
+                  <figure class="project-img">
+                    <div class="project-item-icon-box">
+                      <ion-icon name="eye-outline"></ion-icon>
+                    </div>
 
-              </a>
-            </li>
+                    <img
+                      src="./assets/images/thumbnails/altair-hyperworks-group.jpg"
+                      alt="Graduate" loading="lazy">
+                  </figure>
 
-            <li class="project-item  active" data-filter-item data-category="freelance/fun">
-              <a href="./assets/pages/gokart.html">
+                  <h3 class="project-title">Hyperworks: Equal Channel</h3>
 
-                <figure class="project-img">
-                  <div class="project-item-icon-box">
-                    <ion-icon name="eye-outline"></ion-icon>
-                  </div>
+                  <p class="project-category">Graduate</p>
 
-                  <img src="./assets/images/thumbnails/go-kart.jpg" alt="Freelance/Fun" loading="lazy">
-                </figure>
+                </a>
+              </li>
 
-                <h3 class="project-title">Go-Kart</h3>
+              <li class="project-item  active" data-filter-item
+                data-category="freelance/fun">
+                <a href="./assets/pages/retirementgift.html">
 
-                <p class="project-category">Freelance/Fun</p>
+                  <figure class="project-img">
+                    <div class="project-item-icon-box">
+                      <ion-icon name="eye-outline"></ion-icon>
+                    </div>
 
-              </a>
-            </li>
+                    <img src="./assets/images/thumbnails/retirementgift.jpg"
+                      alt="Freelance/Fun" loading="lazy">
+                  </figure>
 
-            <li class="project-item  active" data-filter-item data-category="software">
-              <a href="./assets/pages/streetfighter.html">
+                  <h3 class="project-title">Retirement Gift</h3>
 
-                <figure class="project-img">
-                  <div class="project-item-icon-box">
-                    <ion-icon name="eye-outline"></ion-icon>
-                  </div>
+                  <p class="project-category">Freelance/Fun</p>
 
-                  <img src="./assets/images/thumbnails/streetfightergame.jpg" alt="Software" loading="lazy">
-                </figure>
+                </a>
+              </li>
 
-                <h3 class="project-title">Street Fighter Game</h3>
+              <li class="project-item  active" data-filter-item
+                data-category="freelance/fun">
+                <a href="./assets/pages/gokart.html">
 
-                <p class="project-category">Software</p>
+                  <figure class="project-img">
+                    <div class="project-item-icon-box">
+                      <ion-icon name="eye-outline"></ion-icon>
+                    </div>
 
-              </a>
-            </li>
+                    <img src="./assets/images/thumbnails/go-kart.jpg"
+                      alt="Freelance/Fun" loading="lazy">
+                  </figure>
 
-            <li class="project-item  active" data-filter-item data-category="certifications">
-              <a href="./assets/pdf/solidworkscert.pdf">
+                  <h3 class="project-title">Go-Kart</h3>
 
-                <figure class="project-img">
-                  <div class="project-item-icon-box">
-                    <ion-icon name="eye-outline"></ion-icon>
-                  </div>
+                  <p class="project-category">Freelance/Fun</p>
 
-                  <img src="./assets/images/thumbnails/solidworkscert.jpg" alt="Certifications" loading="lazy">
-                </figure>
+                </a>
+              </li>
 
-                <h3 class="project-title">Solidworks</h3>
+              <li class="project-item  active" data-filter-item
+                data-category="software">
+                <a href="./assets/pages/streetfighter.html">
 
-                <p class="project-category">Certifications</p>
+                  <figure class="project-img">
+                    <div class="project-item-icon-box">
+                      <ion-icon name="eye-outline"></ion-icon>
+                    </div>
 
-              </a>
-            </li>
+                    <img src="./assets/images/thumbnails/streetfightergame.jpg"
+                      alt="Software" loading="lazy">
+                  </figure>
 
-          
+                  <h3 class="project-title">Street Fighter Game</h3>
 
-          </ul>
+                  <p class="project-category">Software</p>
 
-        </section>
+                </a>
+              </li>
 
-      </article>
+              <li class="project-item  active" data-filter-item
+                data-category="certifications">
+                <a href="./assets/pdf/solidworkscert.pdf">
 
-            <!--
+                  <figure class="project-img">
+                    <div class="project-item-icon-box">
+                      <ion-icon name="eye-outline"></ion-icon>
+                    </div>
+
+                    <img src="./assets/images/thumbnails/solidworkscert.jpg"
+                      alt="Certifications" loading="lazy">
+                  </figure>
+
+                  <h3 class="project-title">Solidworks</h3>
+
+                  <p class="project-category">Certifications</p>
+
+                </a>
+              </li>
+
+            </ul>
+
+          </section>
+
+        </article>
+
+        <!--
         - #RESUME
       -->
 
-      <article class="resume" data-page="resume">
+        <article class="resume" data-page="resume">
 
-        <header>
-          <h2 class="h2 article-title">Resume</h2>
-        </header>
+          <header>
+            <h2 class="h2 article-title">Resume</h2>
+          </header>
 
-        
+          <section class="timeline">
 
-        <section class="timeline">
+            <div class="title-wrapper">
+              <div class="icon-box">
+                <ion-icon name="glasses-outline"></ion-icon>
+              </div>
 
-          <div class="title-wrapper">
-            <div class="icon-box">
-              <ion-icon name="glasses-outline"></ion-icon>
+              <h3 class="h3">Experience</h3>
             </div>
 
-            <h3 class="h3">Experience</h3>
-          </div>
+            <ol class="timeline-list">
 
-          <ol class="timeline-list">
+              <li class="timeline-item">
+                <h4 class="h4 timeline-item-title">[Ford] Senior
+                  Structures DRE</h4>
 
-            <li class="timeline-item">
-              <h4 class="h4 timeline-item-title">[Stellantis] BSW Software Verification Engineer</h4>
+                <span>Sep 2024 - Present</span>
 
+<<<<<<< HEAD
+                <p class="timeline-text">
+=======
               <span>Dec 2022 - Mar 2024</span>
+>>>>>>> 22d3a93d448afabd456a3d9769181277aa7207bf
 
-              <p class="timeline-text">
+                  • Designed and released frame, mounts, spare tire winches, and
+                  tow hitches. <br>
+                  • Applied engineering disciplines such as DFMEA, PFMEA,
+                  control plans, and perfect drawing to deliver robust designs
+                  and ensure failure mode avoidance.
+                  • Led overall design efforts to meet vehicle attributes
+                  including packaging, crash safety, durability, commercial
+                  upfitting, and thermal management.
+                  <br>
+                  • Led overall design efforts to meet vehicle attributes
+                  including packaging, crash safety, durability, commercial
+                  upfitting, and thermal management.<br>
+                  • Reviewed and approved frame structure designs, ensuring
+                  compliance with component ES and vehicle requirements.<br>
+                  • Resolved durability, assembly, and functional issues to
+                  ensure optimal performance. <br>
+                  • Coached and mentored peer engineers, providing technical
+                  guidance and fostering information exchange. <br>
+                  • Achieved material cost reduction, warranty reduction, and
+                  benchmarking for continuous improvement.<br>
 
-                • Verify SAE Level 2 and 3 automated driving features and AUTOSAR and incorporate operating
-                system and Electronic Control Unit (ECU) specific software. <br>
-                • Verify ADAS SW integration, SoC, diagnostic signal interface, and SAC integration. <br>
-                • Develop test framework and test automation, set up test benches, and execute tests. <br>
-                • Perform middleware SW verification activities related to adaptive platform foundation modules. <br>
-                • Administer the activities for test script development and test execution for middleware stack. <br>
-                • Coordinate with the automation architect, test bench lead, platform stack managers, and quality
-                assurance lead for seamless SW verification. <br>
-                • Ensure the integrated middleware stack is verified from the SW integration standpoint before the
-                SW is released to the V&V team.<br>
-                • Perform verification framework design and development, test vector development, peer reviews,
-                debugging, and issue root cause analysis.<br>
-                • Support SW verification activities (SWE.5) within the agile/scrum framework and ensure that the
-                software is developed according to the defined process and that it meets expected ASPICE levels,
-                utilizing standard tools. <br>
+                </p>
 
-              </p>
-            
-            
-            
               </li>
 
-            <li class="timeline-item">
+              <li class="timeline-item">
+                <h4 class="h4 timeline-item-title">[Stellantis] BSW Software
+                  Verification Engineer</h4>
 
-              <h4 class="h4 timeline-item-title">[Stellantis] Product Engineer - Chassis Structures</h4>
+                <span>Dec 2022 - Mar 2024</span>
 
-              <span>March 2017 - Dec 2022</span>
+                <p class="timeline-text">
 
-              <p class="timeline-text">
-                • Component and system design, development, engineering release of chassis suspension structural cradles for FCA production vehicles across all global markets. <br>
-                • Follow engineering deliverables as per Project Management KPI (Key Process Indicators). <br>
-                • Management of DVPR (Design Verification Plan & Report), component/system/vehicle level validation testing, engineering change management, engineering BOM (bill of material), prototype builds, issues resolution management, CAD model management in FCA TeamCenter system, fastener design and assembly torque development. <br>
-                • Working with tier1 cradle suppliers, component PPAP (Production Part Approval Process), and launch production support at supplier and FCA manufacturing facilities. <br>
-              </p>
+                  • Verify SAE Level 2 and 3 automated driving features and
+                  AUTOSAR and incorporate operating
+                  system and Electronic Control Unit (ECU) specific software.
+                  <br>
+                  • Verify ADAS SW integration, SoC, diagnostic signal
+                  interface, and SAC integration. <br>
+                  • Develop test framework and test automation, set up test
+                  benches, and execute tests. <br>
+                  • Perform middleware SW verification activities related to
+                  adaptive platform foundation modules. <br>
+                  • Administer the activities for test script development and
+                  test execution for middleware stack. <br>
+                  • Coordinate with the automation architect, test bench lead,
+                  platform stack managers, and quality
+                  assurance lead for seamless SW verification. <br>
+                  • Ensure the integrated middleware stack is verified from the
+                  SW integration standpoint before the
+                  SW is released to the V&V team.<br>
+                  • Perform verification framework design and development, test
+                  vector development, peer reviews,
+                  debugging, and issue root cause analysis.<br>
+                  • Support SW verification activities (SWE.5) within the
+                  agile/scrum framework and ensure that the
+                  software is developed according to the defined process and
+                  that it meets expected ASPICE levels,
+                  utilizing standard tools. <br>
 
-            </li>
+                </p>
 
-          </ol>
+              </li>
 
-        </section>
+              <li class="timeline-item">
 
-        <section class="timeline">
+                <h4 class="h4 timeline-item-title">[Stellantis] Product Engineer
+                  - Chassis Structures</h4>
 
-          <div class="title-wrapper">
-            <div class="icon-box">
-              <ion-icon name="book-outline"></ion-icon>
+                <span>March 2017 - Dec 2022</span>
+
+                <p class="timeline-text">
+                  • Component and system design, development, engineering
+                  release of chassis suspension structural cradles for FCA
+                  production vehicles across all global markets. <br>
+                  • Follow engineering deliverables as per Project Management
+                  KPI (Key Process Indicators). <br>
+                  • Management of DVPR (Design Verification Plan & Report),
+                  component/system/vehicle level validation testing, engineering
+                  change management, engineering BOM (bill of material),
+                  prototype builds, issues resolution management, CAD model
+                  management in FCA TeamCenter system, fastener design and
+                  assembly torque development. <br>
+                  • Working with tier1 cradle suppliers, component PPAP
+                  (Production Part Approval Process), and launch production
+                  support at supplier and FCA manufacturing facilities. <br>
+                </p>
+
+              </li>
+
+            </ol>
+
+          </section>
+
+          <section class="timeline">
+
+            <div class="title-wrapper">
+              <div class="icon-box">
+                <ion-icon name="book-outline"></ion-icon>
+              </div>
+
+              <h3 class="h3">Education</h3>
             </div>
 
-            <h3 class="h3">Education</h3>
-          </div>
+            <ol class="timeline-list">
 
-          <ol class="timeline-list">
+              <li class="timeline-item">
 
-            <li class="timeline-item">
+                <h4 class="h4 timeline-item-title">Masters of Science in
+                  Mechanical Engineering</h4>
 
+<<<<<<< HEAD
+                <span>2018 - 2021</span>
+
+                <p class="timeline-text">
+                  Wayne State University
+                </p>
+
+              </li>
+
+              <li class="timeline-item">
+
+                <h4 class="h4 timeline-item-title">Bachelors of Science Honors
+                  Mechanical Engineering</h4>
+
+                <span>2012 - 2016</span>
+=======
               <h4 class="h4 timeline-item-title">Masters of Science in Mechanical Engineering</h4>
+>>>>>>> 22d3a93d448afabd456a3d9769181277aa7207bf
 
-              <span>2018 - 2021</span>
+                <p class="timeline-text">
+                  University of Windsor
+                </p>
 
-              <p class="timeline-text">
-                Wayne State University
-              </p>
+              </li>
 
-            </li>
+            </ol>
 
-            <li class="timeline-item">
+          </section>
 
-              <h4 class="h4 timeline-item-title">Bachelors of Science Honors Mechanical Engineering</h4>
+          <section class="skill">
 
-              <span>2012 - 2016</span>
+            <h3 class="h3 skills-title">My skills</h3>
 
-              <p class="timeline-text">
-                University of Windsor
-              </p>
+            <ul class="skills-list content-card">
 
-            </li>
+              <h4 class="h4 timeline-item-title">CAD Software</h4>
 
-          </ol>
+              <li class="skills-item">
 
-        </section>
+                <div class="title-wrapper">
+                  <h5 class="h5">Catia</h5>
+                  <data value="80">80%</data>
+                </div>
 
-        <section class="skill">
+                <div class="skill-progress-bg">
+                  <div class="skill-progress-fill" style="width: 80%;"></div>
+                </div>
 
-          <h3 class="h3 skills-title">My skills</h3>
+              </li>
 
-          <ul class="skills-list content-card">
+              <li class="skills-item">
 
-            <h4 class="h4 timeline-item-title">CAD Software</h4>
+                <div class="title-wrapper">
+                  <h5 class="h5">Solidworks</h5>
+                  <data value="85">85%</data>
+                </div>
 
-            <li class="skills-item">
+                <div class="skill-progress-bg">
+                  <div class="skill-progress-fill" style="width: 85%;"></div>
+                </div>
 
-              <div class="title-wrapper">
-                <h5 class="h5">Catia</h5>
-                <data value="80">80%</data>
-              </div>
+              </li>
 
-              <div class="skill-progress-bg">
-                <div class="skill-progress-fill" style="width: 80%;"></div>
-              </div>
+              <li class="skills-item">
 
-            </li>
+                <div class="title-wrapper">
+                  <h5 class="h5">Siemens NX</h5>
+                  <data value="90">90%</data>
+                </div>
 
-            <li class="skills-item">
+                <div class="skill-progress-bg">
+                  <div class="skill-progress-fill" style="width: 90%;"></div>
+                </div>
 
-              <div class="title-wrapper">
-                <h5 class="h5">Solidworks</h5>
-                <data value="85">85%</data>
-              </div>
+              </li>
 
-              <div class="skill-progress-bg">
-                <div class="skill-progress-fill" style="width: 85%;"></div>
-              </div>
+              <li class="skills-item">
 
-            </li>
+                <div class="title-wrapper">
+                  <h5 class="h5">Teamcenter</h5>
+                  <data value="95">95%</data>
+                </div>
 
-            <li class="skills-item">
+                <div class="skill-progress-bg">
+                  <div class="skill-progress-fill" style="width: 95%;"></div>
+                </div>
 
-              <div class="title-wrapper">
-                <h5 class="h5">Siemens NX</h5>
-                <data value="90">90%</data>
-              </div>
+              </li>
 
-              <div class="skill-progress-bg">
-                <div class="skill-progress-fill" style="width: 90%;"></div>
-              </div>
+            </ul>
 
-            </li>
+          </section>
 
-            <li class="skills-item">
+          <div class="separator"></div>
 
-              <div class="title-wrapper">
-                <h5 class="h5">Teamcenter</h5>
-                <data value="95">95%</data>
-              </div>
+          <section class="skill">
 
-              <div class="skill-progress-bg">
-                <div class="skill-progress-fill" style="width: 95%;"></div>
-              </div>
+            <ul class="skills-list content-card">
 
-            </li>
+              <h4 class="h4 timeline-item-title">Programming</h4>
 
-          </ul>
+              <li class="skills-item">
 
-        </section>
+                <div class="title-wrapper">
+                  <h5 class="h5">Python</h5>
+                  <data value="75">75%</data>
+                </div>
 
+                <div class="skill-progress-bg">
+                  <div class="skill-progress-fill" style="width: 75%;"></div>
+                </div>
 
-        <div class="separator"></div>
+              </li>
 
-        <section class="skill">
+              <li class="skills-item">
 
+                <div class="title-wrapper">
+                  <h5 class="h5">Kotlin/Java</h5>
+                  <data value="70">70%</data>
+                </div>
 
-          <ul class="skills-list content-card">
+                <div class="skill-progress-bg">
+                  <div class="skill-progress-fill" style="width: 70%;"></div>
+                </div>
 
-            <h4 class="h4 timeline-item-title">Programming</h4>
+              </li>
 
-            <li class="skills-item">
+              <li class="skills-item">
 
-              <div class="title-wrapper">
-                <h5 class="h5">Python</h5>
-                <data value="75">75%</data>
-              </div>
+                <div class="title-wrapper">
+                  <h5 class="h5">HTML/CSS</h5>
+                  <data value="90">90%</data>
+                </div>
 
-              <div class="skill-progress-bg">
-                <div class="skill-progress-fill" style="width: 75%;"></div>
-              </div>
+                <div class="skill-progress-bg">
+                  <div class="skill-progress-fill" style="width: 90%;"></div>
+                </div>
 
-            </li>
+              </li>
 
-            <li class="skills-item">
+              <li class="skills-item">
 
-              <div class="title-wrapper">
-                <h5 class="h5">Kotlin/Java</h5>
-                <data value="70">70%</data>
-              </div>
+                <div class="title-wrapper">
+                  <h5 class="h5">Matlab</h5>
+                  <data value="95">95%</data>
+                </div>
 
-              <div class="skill-progress-bg">
-                <div class="skill-progress-fill" style="width: 70%;"></div>
-              </div>
+                <div class="skill-progress-bg">
+                  <div class="skill-progress-fill" style="width: 95%;"></div>
+                </div>
 
-            </li>
+              </li>
 
-            <li class="skills-item">
+            </ul>
 
-              <div class="title-wrapper">
-                <h5 class="h5">HTML/CSS</h5>
-                <data value="90">90%</data>
-              </div>
+          </section>
 
-              <div class="skill-progress-bg">
-                <div class="skill-progress-fill" style="width: 90%;"></div>
-              </div>
+        </article>
 
-            </li>
-
-            <li class="skills-item">
-
-              <div class="title-wrapper">
-                <h5 class="h5">Matlab</h5>
-                <data value="95">95%</data>
-              </div>
-
-              <div class="skill-progress-bg">
-                <div class="skill-progress-fill" style="width: 95%;"></div>
-              </div>
-
-            </li>
-
-          </ul>
-
-        </section>
-
-
-        
-
-      </article>
-
-      <!--
+        <!--
         - #SAE
       -->
 
+        <article class="sae" data-page="sae">
 
-      <article class="sae" data-page="sae">
+          <header>
+            <h2 class="h2 article-title">SAE</h2>
+          </header>
 
-        <header>
-          <h2 class="h2 article-title">SAE</h2>
-        </header>
-
-        <!-- Slideshow container -->
+          <!-- Slideshow container -->
           <div class="slideshow-container">
-          
+
             <!-- Full-width images with number and caption text -->
             <div class="mySlides fade">
               <img src="./assets/images/baja-1024x768-1.jpg" style="width:100%">
               <date>Baja 2014 - Louisville, KY</datev>
             </div>
-          
+
             <div class="mySlides fade">
-              <img src="./assets/images/supermileage_comp.jpg" style="width:100%">
+              <img src="./assets/images/supermileage_comp.jpg"
+                style="width:100%">
               <date>Supermileage 2016 - Marshall, MI</date>
             </div>
-          
+
             <div class="mySlides fade">
               <img src="./assets/images/baja2015.jpg" style="width:100%">
               <date>Baja 2015 - Mechanicsville, MD</date>
             </div>
-          
+
           </div>
           <br>
 
@@ -1249,102 +1638,110 @@
             <span class="dot" onclick="currentSlide(3)"></span>
           </div>
 
+          <section class="about-text">
 
-        <section class="about-text">
+            <h3 class="h3 form-title">Preface</h3>
 
-          <h3 class="h3 form-title">Preface</h3>
+            <p>
+              As a fresh student full of curiosity, ambition and a passion
+              towards cars I entered the world of engineering without knowing
+              what a “10mm” was. Sure I’d had used sockets before but never did
+              I understand the engravings on them. It was more of just trial and
+              error and eventually I’d find the right one. Needless to say, I
+              have come a long way since then.
+              <br><br>
+              While in my undergrad I got to take part in SAE (Society of
+              Automotive Engineers) teams such as Baja, Formula Hybrid and
+              Supermileage. Being part of these teams advanced not only my
+              practical knowledge but gave me hands on experience using machines
+              and hand tools. As the projects were large, my participation was
+              focused into subsystems of the vehicles. I took part in Brakes,
+              Battery Cage and Sheet Metal Fabrication just to name a few from
+              inception to physical build. I also got to attend several
+              competitive events in various parts of America with the respected
+              teams. I am very happy to have took part in these SAE teams.
+            </p>
 
-          <p>
-          As a fresh student full of curiosity, ambition and a passion towards cars I entered the world of engineering without knowing what a “10mm” was. Sure I’d had used sockets before but never did I understand the engravings on them. It was more of just trial and error and eventually I’d find the right one. Needless to say, I have come a long way since then.
-          <br><br>
-          While in my undergrad I got to take part in SAE (Society of Automotive Engineers) teams such as Baja, Formula Hybrid and Supermileage. Being part of these teams advanced not only my practical knowledge but gave me hands on experience using machines and hand tools. As the projects were large, my participation was focused into subsystems of the vehicles. I took part in Brakes, Battery Cage and Sheet Metal Fabrication just to name a few from inception to physical build. I also got to attend several competitive events in various parts of America with the respected teams. I am very happy to have took part in these SAE teams.
-          </p>
+          </section>
 
-        </section>
+          <section class="about-text">
 
-        <section class="about-text">
+            <h3 class="h3 form-title">Introduction</h3>
+            <p>
+              SAE (Society of Automotive Engineers) is an organization that
+              governs the construction of student built vehicles every year.
+              These vehicles are brought to annual events where they are
+              competed for several categories from teams around the world. Check
+              them out <a class="regular" href="https://www.sae.org/">here</a>.
 
-          <h3 class="h3 form-title">Introduction</h3>
-          <p>
-          SAE (Society of Automotive Engineers) is an organization that governs the construction of student built vehicles every year. These vehicles are brought to annual events where they are competed for several categories from teams around the world. Check them out <a class ="regular" href="https://www.sae.org/">here</a>.
-          
-        
-        </p>
-        </section>
+            </p>
+          </section>
 
-        <section class="about-text">
+          <section class="about-text">
 
-          <h3 class="h3 form-title">Supermileage (Catia V5 Designer, Brakes and Sheet Metal Coordinator)</h3>
-          <li>- Designed, built and assembled brackets for the front and rear axles</li>
-          <li>- Incorporated design techniques to stiffen body panels to reduce frontal area</li>
-          <li>- Modeled assembly and product components as well as managing CAD data from various members</li>
-          <li>- Developed a working brake by wire system with adjustment on the brake bracket</li>
-          <li>- Fabricated the floor, firewall and a chain guard with sheet metal</li>
-          <li>- Reduced weight by validating calculations and performing Finite Element Analysis using Catia V5</li>
+            <h3 class="h3 form-title">Supermileage (Catia V5 Designer, Brakes
+              and Sheet Metal Coordinator)</h3>
+            <li>- Designed, built and assembled brackets for the front and rear
+              axles</li>
+            <li>- Incorporated design techniques to stiffen body panels to
+              reduce frontal area</li>
+            <li>- Modeled assembly and product components as well as managing
+              CAD data from various members</li>
+            <li>- Developed a working brake by wire system with adjustment on
+              the brake bracket</li>
+            <li>- Fabricated the floor, firewall and a chain guard with sheet
+              metal</li>
+            <li>- Reduced weight by validating calculations and performing
+              Finite Element Analysis using Catia V5</li>
 
-          <img src="./assets/images/Supermileage-Chassis.png" style="width:100%">
-        </section>
+            <img src="./assets/images/Supermileage-Chassis.png"
+              style="width:100%">
+          </section>
 
-        <section class="about-text">
+          <section class="about-text">
 
-          <h3 class="h3 form-title">Formula Hybrid (Catia V5 Designer, Brakes and Battery Cage Coordinator)</h3>
-          <li>- Designed, built and tested a working brake and battery cage</li>
-          <li>- Incorporated adjustability of brake pedal for different drivers</li>
-          <li>- Validated the design through calculations and Finite Element Analysis of the assembly</li>
-          <li>- Modified an existing Formula chassis to be fitted with batteries and more components</li>
-          <li>- Used Catia V5 to create Miter templates to aid in fabrication of tubular members</li>
+            <h3 class="h3 form-title">Formula Hybrid (Catia V5 Designer, Brakes
+              and Battery Cage Coordinator)</h3>
+            <li>- Designed, built and tested a working brake and battery
+              cage</li>
+            <li>- Incorporated adjustability of brake pedal for different
+              drivers</li>
+            <li>- Validated the design through calculations and Finite Element
+              Analysis of the assembly</li>
+            <li>- Modified an existing Formula chassis to be fitted with
+              batteries and more components</li>
+            <li>- Used Catia V5 to create Miter templates to aid in fabrication
+              of tubular members</li>
 
-          <img src="./assets/images/FH2016.png" style="width:100%">
-        </section>
+            <img src="./assets/images/FH2016.png" style="width:100%">
+          </section>
 
-        <section class="about-text">
+          <section class="about-text">
 
-          <h3 class="h3 form-title">Baja (Catia V5 Designer, Team Member)</h3>
-          <li>- Designed (using Catia V5), built and assembled several body panels from sheet of aluminum</li>
-          <li>- Consulted with product and part suppliers for sponsorship</li>
-          <li>- Positioned and aligned fuel hoses to prevent kinks and air bubbles in the fuel system</li>
-          <li>- Assisted in fabrication of fuel tank enclosure with sheet metal</li>
-          <li>- Soldered and heat shrink wrapped the electrical circuit including kill switches and brake light</li>
-        </section>
+            <h3 class="h3 form-title">Baja (Catia V5 Designer, Team Member)</h3>
+            <li>- Designed (using Catia V5), built and assembled several body
+              panels from sheet of aluminum</li>
+            <li>- Consulted with product and part suppliers for sponsorship</li>
+            <li>- Positioned and aligned fuel hoses to prevent kinks and air
+              bubbles in the fuel system</li>
+            <li>- Assisted in fabrication of fuel tank enclosure with sheet
+              metal</li>
+            <li>- Soldered and heat shrink wrapped the electrical circuit
+              including kill switches and brake light</li>
+          </section>
 
-      </article>
+        </article>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-      <!--
+        <!--
         - #CONTACT
       -->
 
-      <article class="contact" data-page="contact">
+        <article class="contact" data-page="contact">
 
-        <header>
-          <h2 class="h2 article-title">Contact</h2>
-        </header>
-       <!--
+          <header>
+            <h2 class="h2 article-title">Contact</h2>
+          </header>
+          <!--
         <section class="mapbox" data-mapbox>
           <figure>
             <iframe
@@ -1353,51 +1750,51 @@
           </figure>
         </section>
 -->
-        <section class="contact-form">
+          <section class="contact-form">
 
-          <h3 class="h3 form-title">Contact Form</h3>
+            <h3 class="h3 form-title">Contact Form</h3>
 
-          <form action="https://fabform.io/f/GdfxOMi" method="POST">
+            <form action="https://fabform.io/f/GdfxOMi" method="POST">
 
-            <div class="input-wrapper">
-              <input type="text" name="fullname" class="form-input" placeholder="Full name" required data-form-input>
+              <div class="input-wrapper">
+                <input type="text" name="fullname" class="form-input"
+                  placeholder="Full name" required data-form-input>
 
-              <input type="email" name="email" class="form-input" placeholder="Email address" required data-form-input>
-            </div>
+                <input type="email" name="email" class="form-input"
+                  placeholder="Email address" required data-form-input>
+              </div>
 
-            <textarea name="message" class="form-input" placeholder="Your Message" required data-form-input></textarea>
+              <textarea name="message" class="form-input"
+                placeholder="Your Message" required data-form-input></textarea>
 
-            <button class="form-btn" type="submit">
-              <ion-icon name="paper-plane"></ion-icon>
-              <span>Send Message</span>
-            </button>
+              <button class="form-btn" type="submit">
+                <ion-icon name="paper-plane"></ion-icon>
+                <span>Send Message</span>
+              </button>
 
-          </form>
+            </form>
 
-        </section>
+          </section>
 
-      </article>
+        </article>
 
-    </div>
+      </div>
 
-  </main>
+    </main>
 
-
-
-
-
-
-  <!--
+    <!--
     - custom js link
   -->
-  <script src="./assets/js/script.js"></script>
+    <script src="./assets/js/script.js"></script>
 
-  <!--
+    <!--
     - ionicon link
   -->
-  <script type="module" src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"></script>
-  <script nomodule src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.js"></script>
+    <script type="module"
+      src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule
+      src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.js"></script>
 
-</body>
+  </body>
 
 </html>
