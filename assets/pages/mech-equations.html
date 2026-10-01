@@ -1,0 +1,2227 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mech Equations</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;450;500;600&display=swap">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<style>
+/* Layout: a periodic table of mechanical engineering — nine discipline blocks of
+   tiles across the full width, then section properties and reference diagrams.
+   Everything opens into one reader that sets the maths and solves it live. */
+:root{
+  --bg:#e9edf1; --bg-grid:#dde3e9;
+  --surface:#ffffff; --surface-2:#f3f6f9; --surface-3:#e7edf2;
+  --ink:#0e151b; --ink-2:#4a5a67; --ink-3:#78899a;
+  --line:#ccd6de; --line-2:#aebcca; --line-3:#8b9cab;
+  --accent:#0d7c8c; --accent-ink:#ffffff; --accent-soft:#d6ecef;
+  --c-statics:#c0484a; --c-materials:#3f8b4b; --c-machine:#3a74b8; --c-dynamics:#b46417;
+  --c-vibrations:#7a4fb5; --c-fluids:#1f7a96; --c-thermo:#a8427e; --c-heat:#157f6b; --c-fatigue:#8a6b12;
+  --ok:#16764a; --ok-soft:#dbf0e4; --warn:#95610a; --warn-soft:#faedd2; --bad:#af252c; --bad-soft:#fadfe0;
+  --shadow:0 1px 2px rgba(14,21,27,.06), 0 8px 24px -16px rgba(14,21,27,.28);
+  --r:8px; --r-sm:5px;
+  --f-display:"IBM Plex Sans Condensed","Oswald","Arial Narrow",system-ui,sans-serif;
+  --f-body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,"Cascadia Mono","Consolas",monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0c1014; --bg-grid:#151b22;
+  --surface:#141a21; --surface-2:#1a2129; --surface-3:#222b35;
+  --ink:#e7eef4; --ink-2:#9dafbd; --ink-3:#6d7f8e;
+  --line:#25303a; --line-2:#37454f; --line-3:#4d5f6c;
+  --accent:#34bfc7; --accent-ink:#04191c; --accent-soft:#12333a;
+  --c-statics:#ef8a8c; --c-materials:#6cc97d; --c-machine:#78aeeb; --c-dynamics:#e8a155;
+  --c-vibrations:#b492ec; --c-fluids:#4fc2de; --c-thermo:#ec8ac0; --c-heat:#4fcbae; --c-fatigue:#d6b14a;
+  --ok:#52cb8c; --ok-soft:#0f2e21; --warn:#e2ab46; --warn-soft:#31240c; --bad:#f0787a; --bad-soft:#3a1517;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 10px 28px -18px rgba(0,0,0,.8);
+  color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --bg:#0c1014; --bg-grid:#151b22;
+  --surface:#141a21; --surface-2:#1a2129; --surface-3:#222b35;
+  --ink:#e7eef4; --ink-2:#9dafbd; --ink-3:#6d7f8e;
+  --line:#25303a; --line-2:#37454f; --line-3:#4d5f6c;
+  --accent:#34bfc7; --accent-ink:#04191c; --accent-soft:#12333a;
+  --c-statics:#ef8a8c; --c-materials:#6cc97d; --c-machine:#78aeeb; --c-dynamics:#e8a155;
+  --c-vibrations:#b492ec; --c-fluids:#4fc2de; --c-thermo:#ec8ac0; --c-heat:#4fcbae; --c-fatigue:#d6b14a;
+  --ok:#52cb8c; --ok-soft:#0f2e21; --warn:#e2ab46; --warn-soft:#31240c; --bad:#f0787a; --bad-soft:#3a1517;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 10px 28px -18px rgba(0,0,0,.8);
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{
+  background:
+    linear-gradient(var(--bg-grid) 1px, transparent 1px) 0 0/100% 28px,
+    linear-gradient(90deg, var(--bg-grid) 1px, transparent 1px) 0 0/28px 100%,
+    var(--bg);
+  color:var(--ink); font-family:var(--f-body); font-size:14px; line-height:1.5; -webkit-text-size-adjust:100%;
+}
+.wrap{max-width:1760px; margin:0 auto; padding-inline:16px; padding-block:0 40px}
+.titleblock{
+  position:sticky; top:0; z-index:40; margin-inline:-16px; padding-inline:16px;
+  background:color-mix(in srgb, var(--surface) 90%, transparent);
+  backdrop-filter:blur(10px) saturate(1.3); border-bottom:1px solid var(--line);
+}
+.tb-row{display:flex; align-items:center; gap:16px; flex-wrap:wrap; padding-block:10px}
+.brand{display:flex; align-items:baseline; gap:10px; min-width:0}
+.brand h1{font-family:var(--f-display); font-size:clamp(17px,2.4vw,23px); font-weight:700; letter-spacing:.055em; text-transform:uppercase; margin:0; white-space:nowrap}
+.brand .std{font:500 10px/1 var(--f-mono); color:var(--ink-3); letter-spacing:.09em; white-space:nowrap}
+.suite{display:flex; gap:2px; align-items:center; border:1px solid var(--line); border-radius:var(--r-sm); padding:2px; background:var(--surface)}
+.suite a{text-decoration:none; color:var(--ink-2); font:500 11.5px/1 var(--f-mono); letter-spacing:.04em; padding:6px 9px; border-radius:3px; white-space:nowrap}
+.suite a:hover{background:var(--surface-2); color:var(--ink)}
+.suite a[aria-current="page"]{background:var(--accent); color:var(--accent-ink); font-weight:600}
+.tb-actions{display:flex; gap:6px; align-items:center; margin-left:auto}
+button,select,input{font-family:inherit; font-size:inherit; color:inherit}
+.btn{display:inline-flex; align-items:center; gap:6px; cursor:pointer; background:var(--surface); border:1px solid var(--line-2); color:var(--ink); border-radius:var(--r-sm); padding:6px 11px; font-weight:500; font-size:12.5px; transition:background .14s,border-color .14s,transform .08s}
+.btn:hover{background:var(--surface-2); border-color:var(--line-3)}
+.btn:active{transform:translateY(1px)}
+.btn.icon{padding:5px 8px; font:500 12px/1 var(--f-mono)}
+.btn.ghost{background:transparent; border-color:transparent; color:var(--ink-2)}
+.btn.ghost:hover{background:var(--surface-2); color:var(--ink)}
+.btn.primary{background:var(--accent); border-color:var(--accent); color:var(--accent-ink); font-weight:600}
+:where(button,select,input,summary,a,[tabindex]):focus-visible{outline:2px solid var(--accent); outline-offset:2px; border-radius:3px}
+
+/* ── filter rail ───────────────────────────────────────────── */
+.rail{display:flex; gap:7px; align-items:center; flex-wrap:wrap; margin-block:14px 12px}
+.fchip{
+  --ks:color-mix(in srgb, var(--k) 13%, var(--surface));
+  display:inline-flex; align-items:center; gap:6px; cursor:pointer; user-select:none;
+  border:1px solid var(--line-2); background:var(--surface); border-radius:99px; padding:5px 12px 5px 9px;
+  font:500 12px/1.35 var(--f-body); color:var(--ink-3); transition:background .14s,border-color .14s,color .14s;
+}
+.fchip .dot{width:9px; height:9px; border-radius:50%; flex:none; background:var(--k)}
+.fchip .n{font:600 9.5px/1 var(--f-mono); opacity:.75}
+.fchip[aria-pressed="true"]{background:var(--ks); border-color:var(--k); color:var(--ink)}
+.search{position:relative; flex:1 1 190px; min-width:150px; max-width:320px}
+.search input{width:100%; background:var(--surface); border:1px solid var(--line-2); border-radius:99px; padding:7px 13px 7px 32px; font:450 13px/1.3 var(--f-body)}
+.search input:focus{border-color:var(--accent); outline:none; box-shadow:0 0 0 2.5px var(--accent-soft)}
+.search svg{position:absolute; left:11px; top:50%; transform:translateY(-50%); opacity:.5; pointer-events:none}
+.spacer{margin-left:auto}
+
+.card{background:var(--surface); border:1px solid var(--line); border-radius:var(--r); box-shadow:var(--shadow); overflow:hidden; margin-bottom:14px}
+.card>header{display:flex; align-items:center; gap:9px; padding:9px 13px; border-bottom:1px solid var(--line); background:var(--surface-2); flex-wrap:wrap}
+.card>header h2{margin:0; font-family:var(--f-display); font-size:13px; font-weight:700; letter-spacing:.1em; text-transform:uppercase}
+.card>header .num{font:600 9.5px/1 var(--f-mono); color:var(--ink-3); border:1px solid var(--line-2); border-radius:3px; padding:3px 5px; letter-spacing:.06em}
+.card .body{padding:13px}
+.chip{display:inline-flex; align-items:center; gap:4px; padding:1.5px 7px; border-radius:99px; font:600 10px/1.6 var(--f-mono); letter-spacing:.05em; border:1px solid transparent; white-space:nowrap}
+.chip.neutral{background:var(--surface-3); color:var(--ink-2); border-color:var(--line)}
+.chip.ok{background:var(--ok-soft); color:var(--ok); border-color:color-mix(in srgb,var(--ok) 35%,transparent)}
+.chip.bad{background:var(--bad-soft); color:var(--bad); border-color:color-mix(in srgb,var(--bad) 35%,transparent)}
+.chip.cat{--ks:color-mix(in srgb, var(--k) 14%, var(--surface)); background:var(--ks); color:var(--k); border-color:color-mix(in srgb,var(--k) 38%,transparent)}
+.hint{font-size:11.5px; color:var(--ink-3); line-height:1.5}
+
+/* ── the table ─────────────────────────────────────────────── */
+.block{padding:12px 13px 4px}
+.block+.block{border-top:1px solid var(--line)}
+.blockhead{display:flex; align-items:baseline; gap:9px; margin-bottom:9px; flex-wrap:wrap}
+.blockhead b{font:700 11.5px/1.3 var(--f-display); letter-spacing:.12em; text-transform:uppercase; color:var(--k)}
+.blockhead .n{font:600 9.5px/1 var(--f-mono); color:var(--k); opacity:.8}
+.blockhead .rule{flex:1; height:1px; background:var(--line); align-self:center}
+.blockhead .d{font-size:11px; color:var(--ink-3)}
+.sub{font:600 8.5px/1.4 var(--f-mono); letter-spacing:.12em; text-transform:uppercase; color:var(--ink-3); margin:10px 0 6px}
+.tiles{display:grid; grid-template-columns:repeat(auto-fill,minmax(118px,1fr)); gap:6px; margin-bottom:10px}
+.tile{
+  --ks:color-mix(in srgb, var(--k) 12%, var(--surface));
+  position:relative; text-align:left; cursor:pointer; border:1px solid color-mix(in srgb,var(--k) 30%,var(--line));
+  background:var(--ks); border-radius:6px; padding:8px 8px 7px; min-height:84px;
+  display:flex; flex-direction:column; gap:4px; transition:transform .12s, box-shadow .12s, border-color .12s;
+}
+.tile:hover{transform:translateY(-2px); border-color:var(--k); box-shadow:0 6px 18px -8px color-mix(in srgb,var(--k) 65%,transparent)}
+.tile .no{position:absolute; top:6px; right:7px; font:600 8px/1 var(--f-mono); color:var(--k); opacity:.6}
+.tile .eq{font:600 12.5px/1.3 var(--f-mono); color:var(--k); letter-spacing:-.015em; padding-right:14px; word-break:break-word}
+.tile .nm{font-size:10.5px; line-height:1.3; color:var(--ink-2); margin-top:auto}
+.tile .star{position:absolute; bottom:5px; right:6px; font-size:9px; color:var(--k)}
+.empty{padding:28px 13px; text-align:center; color:var(--ink-3); font-size:13px}
+
+/* ── section + diagram cards ───────────────────────────────── */
+.shapes{display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:10px; padding:13px}
+.shape{
+  cursor:pointer; border:1px solid var(--line); background:var(--surface-2); border-radius:var(--r-sm);
+  padding:11px 9px 9px; text-align:center; transition:transform .12s, border-color .12s, box-shadow .12s;
+}
+.shape:hover{transform:translateY(-2px); border-color:var(--accent); box-shadow:0 6px 18px -9px var(--accent)}
+.shape svg{display:block; margin:0 auto 7px}
+.shape .sn{font:600 12px/1.3 var(--f-mono); color:var(--ink)}
+.shape .ss{font-size:10.5px; color:var(--ink-3); margin-top:2px}
+.diagrams{display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:12px; padding:13px}
+.dgcard{cursor:pointer; border:1px solid var(--line); background:var(--surface-2); border-radius:var(--r-sm); overflow:hidden; transition:transform .12s, border-color .12s}
+.dgcard:hover{transform:translateY(-2px); border-color:var(--accent)}
+.dgcard .dh{padding:9px 11px 7px; border-bottom:1px solid var(--line)}
+.dgcard .dt{font:600 12.5px/1.3 var(--f-mono); color:var(--ink)}
+.dgcard .ds{font-size:11px; color:var(--ink-3); margin-top:2px}
+.dgcard canvas{display:block; width:100%}
+.dgcard .df{padding:6px 11px; font:500 10.5px/1.4 var(--f-mono); color:var(--ink-3)}
+
+/* ── reader modal ──────────────────────────────────────────── */
+.backdrop{
+  position:fixed; inset:0; background:rgba(8,12,16,.72); backdrop-filter:blur(4px); z-index:200;
+  display:flex; align-items:center; justify-content:center; padding:16px;
+  opacity:0; pointer-events:none; transition:opacity .18s;
+}
+.backdrop.open{opacity:1; pointer-events:auto}
+.modal{
+  background:var(--surface); border:1px solid var(--line-2); border-radius:10px; width:min(720px,100%);
+  max-height:92vh; overflow-y:auto; position:relative; box-shadow:0 24px 60px -20px rgba(0,0,0,.6);
+  transform:translateY(10px) scale(.985); transition:transform .18s;
+}
+.backdrop.open .modal{transform:none}
+.modal>header{position:sticky; top:0; z-index:2; display:flex; align-items:center; gap:9px; padding:11px 13px; border-bottom:1px solid var(--line); background:var(--surface-2); flex-wrap:wrap}
+.modal>header h2{margin:0; font-family:var(--f-display); font-size:15px; font-weight:700; letter-spacing:.06em}
+.modal .body{padding:14px}
+.xclose{border:1px solid var(--line-2); background:var(--surface); color:var(--ink-2); width:26px; height:26px; border-radius:4px; cursor:pointer; display:grid; place-items:center; font-size:13px}
+.xclose:hover{color:var(--ink); border-color:var(--ink-3)}
+.eqslab{--ks:color-mix(in srgb, var(--k) 10%, var(--surface)); background:var(--ks); border:1px solid color-mix(in srgb,var(--k) 28%,var(--line)); border-radius:var(--r-sm); padding:16px 13px; text-align:center; overflow-x:auto; margin-bottom:12px}
+.eqslab .katex{font-size:1.4em; color:var(--ink)}
+.eqslab .fallback{font:600 16px/1.5 var(--f-mono); color:var(--ink)}
+.subhead{font:600 9.5px/1.3 var(--f-mono); letter-spacing:.11em; text-transform:uppercase; color:var(--ink-3); display:flex; align-items:center; gap:8px; margin:15px 0 8px}
+.subhead::after{content:""; flex:1; height:1px; background:var(--line)}
+.solve{display:grid; grid-template-columns:repeat(auto-fit,minmax(116px,1fr)); gap:8px}
+.sv{display:flex; flex-direction:column; gap:3px; min-width:0}
+.sv label{font:600 9.5px/1.3 var(--f-mono); letter-spacing:.05em; color:var(--ink-3); display:flex; gap:5px; align-items:baseline}
+.sv label i{font-style:normal; color:var(--k); font-weight:700; font-size:11.5px}
+.sv input{width:100%; min-width:0; background:var(--surface); border:1px solid var(--line-2); border-radius:var(--r-sm); padding:5px 7px; font:450 13px/1.35 var(--f-mono); font-variant-numeric:tabular-nums}
+.sv input:focus{border-color:var(--k); outline:none; box-shadow:0 0 0 2.5px color-mix(in srgb,var(--k) 18%,transparent)}
+.sv .u{font:500 9.5px/1 var(--f-mono); color:var(--ink-3)}
+.result{--ks:color-mix(in srgb, var(--k) 12%, var(--surface)); margin-top:11px; border:1px solid color-mix(in srgb,var(--k) 34%,transparent); background:var(--ks); border-radius:var(--r-sm); padding:10px 13px; display:flex; align-items:baseline; gap:9px; flex-wrap:wrap}
+.result .lbl{font:600 15px/1.3 var(--f-mono); color:var(--ink-3)}
+.result .v{font:600 25px/1 var(--f-mono); font-variant-numeric:tabular-nums; letter-spacing:-.02em; color:var(--k)}
+.result .u{font:500 13px/1 var(--f-mono); color:var(--ink-2)}
+table{border-collapse:collapse; width:100%; font-variant-numeric:tabular-nums}
+th,td{padding:5.5px 9px; text-align:left; border-bottom:1px solid var(--line)}
+th{font:600 9px/1.4 var(--f-mono); letter-spacing:.1em; text-transform:uppercase; color:var(--ink-3); background:var(--surface-2)}
+td{font-size:12.5px}
+td.sym{font:600 13px/1.4 var(--f-mono); color:var(--k); width:1%; white-space:nowrap}
+td.un{font:500 11.5px/1.4 var(--f-mono); color:var(--ink-3); width:1%; white-space:nowrap; text-align:right}
+td.val{font:600 13px/1.4 var(--f-mono); text-align:right; white-space:nowrap}
+tbody tr:last-child td{border-bottom:0}
+.tablewrap{overflow-x:auto}
+.prose{font-size:13px; line-height:1.62; color:var(--ink-2); max-width:62ch; margin:0}
+.note{border-left:2px solid color-mix(in srgb,var(--k) 55%,transparent); padding:2px 0 2px 11px; font-size:12.5px; line-height:1.55; color:var(--ink-2); margin:0}
+.rel{display:flex; gap:6px; flex-wrap:wrap}
+.rel button{cursor:pointer; border:1px solid var(--line-2); background:var(--surface); border-radius:99px; padding:4px 10px; font:500 11.5px/1.4 var(--f-body); color:var(--ink-2)}
+.rel button:hover{border-color:var(--k); color:var(--k)}
+.canvaswrap{background:var(--surface-2); border:1px solid var(--line); border-radius:var(--r-sm); padding:10px; margin-bottom:12px}
+.canvaswrap canvas{display:block; width:100%}
+.regions{list-style:none; margin:0; padding:0}
+.regions li{display:flex; gap:9px; align-items:flex-start; padding:7px 0; border-bottom:1px solid var(--line); font-size:12.5px}
+.regions li:last-child{border-bottom:0}
+.regions .dot{width:9px; height:9px; border-radius:50%; flex:none; margin-top:5px}
+.regions .rn{font:600 11.5px/1.5 var(--f-mono); color:var(--ink); min-width:140px; flex:none}
+.regions .rd{color:var(--ink-2); line-height:1.55}
+.flags{display:flex; flex-direction:column; gap:6px}
+.flag{display:flex; gap:9px; align-items:flex-start; padding:8px 10px; border-radius:var(--r-sm); border:1px solid var(--line); background:var(--surface-2); font-size:12.5px; line-height:1.5}
+.flag b{font:600 9.5px/1.6 var(--f-mono); letter-spacing:.08em; flex:none}
+.flag[data-s="ok"]{background:var(--ok-soft); border-color:color-mix(in srgb,var(--ok) 28%,transparent)} .flag[data-s="ok"] b{color:var(--ok)}
+.flag[data-s="bad"]{background:var(--bad-soft); border-color:color-mix(in srgb,var(--bad) 30%,transparent)} .flag[data-s="bad"] b{color:var(--bad)}
+.toast{position:fixed; left:50%; bottom:calc(20px + env(safe-area-inset-bottom,0px)); transform:translateX(-50%) translateY(8px); background:var(--ink); color:var(--bg); padding:9px 15px; border-radius:99px; font-size:12.5px; font-weight:500; box-shadow:0 10px 30px -10px rgba(0,0,0,.5); opacity:0; pointer-events:none; transition:opacity .2s,transform .2s; z-index:300}
+.toast.show{opacity:1; transform:translateX(-50%)}
+footer.credits{margin-top:4px; padding-top:12px; border-top:1px solid var(--line); display:flex; gap:10px; flex-wrap:wrap; font-size:11.5px; color:var(--ink-3)}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{transition-duration:.01ms!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="titleblock">
+  <div class="tb-row">
+    <div class="brand">
+      <h1>Mech Equations</h1>
+      <span class="std">PERIODIC TABLE OF MECHANICAL ENGINEERING</span>
+    </div>
+    <nav class="suite" aria-label="Mech Suite">
+      <a href="joint-calculator.html">Joint Bench</a>
+      <a href="mech-equations.html" aria-current="page">Equations</a>
+      <a href="mech-converter.html">Converter</a>
+    </nav>
+    <div class="tb-actions">
+      <button class="btn icon" id="theme" title="Switch light / dark" aria-label="Switch light / dark">◐</button>
+    </div>
+  </div>
+</div>
+
+<div class="rail" id="rail"></div>
+
+<section class="card">
+  <header><span class="num">01</span><h2>Core equations</h2><span class="spacer"></span>
+    <span class="chip neutral" id="count">—</span>
+  </header>
+  <div id="table"></div>
+</section>
+
+<section class="card">
+  <header><span class="num">02</span><h2>Cross-section properties</h2><span class="spacer"></span>
+    <span class="chip neutral">drawn from your dimensions</span>
+  </header>
+  <div class="shapes" id="shapes"></div>
+</section>
+
+<section class="card">
+  <header><span class="num">03</span><h2>Reference diagrams</h2><span class="spacer"></span>
+    <span class="chip neutral">click to annotate</span>
+  </header>
+  <div class="diagrams" id="diagrams"></div>
+</section>
+
+<section class="card">
+  <header><span class="num">04</span><h2>Validation</h2><span class="spacer"></span>
+    <span class="chip neutral" id="v-sum">not run</span>
+    <button class="btn primary" id="v-run">Run checks</button>
+  </header>
+  <div class="body">
+    <p class="hint" style="margin:0 0 11px">Every worked example is recomputed by the same solver that drives the live calculator,
+    and every section property is cross-checked against its own identities. These run here, in this page, on the code you are reading.</p>
+    <div class="flags" id="v-out"></div>
+  </div>
+</section>
+
+<footer class="credits">
+  <span>Mech Suite · Equations</span><span>·</span>
+  <span>First-order reference. Check anything load-bearing against the governing standard before you rely on it.</span>
+</footer>
+</div>
+
+<div class="backdrop" id="backdrop">
+  <div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="m-title">
+    <header>
+      <span class="chip cat" id="m-cat">—</span>
+      <h2 id="m-title">—</h2>
+      <span class="spacer"></span>
+      <button class="btn ghost icon" id="m-fav" title="Star this">☆</button>
+      <button class="xclose" id="m-close" aria-label="Close">✕</button>
+    </header>
+    <div class="body" id="m-body"></div>
+  </div>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script>
+"use strict";
+/* ═══════════════════════════════════════════════════════════════════════
+   EQUATION LIBRARY
+   Every entry carries a solver f(v) whose units match the variable list, so
+   the worked example, the live solver and the number quoted in the prose all
+   come from one place.  ex = the value f() returns for the default inputs.
+   ═══════════════════════════════════════════════════════════════════════ */
+const EQ = [];
+function E(cat, grp, name, tex, plain, vars, out, f, ex, story, note) {
+  EQ.push({
+    i: EQ.length + 1,
+    id: name.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
+    cat, grp, name, tex, plain,
+    vars: vars.map(v => ({s: v[0], n: v[1], u: v[2], d: v[3]})),
+    out: {s: out[0], n: out[1], u: out[2]},
+    f, ex, story, note
+  });
+}
+
+
+/* ── MECHANICS ─────────────────────────────────────────────────────── */
+E("mech", "Stress & strain", "Normal stress",
+  "\\sigma = \\frac{F}{A}", "σ = F / A",
+  [["F", "Axial force", "N", 25000], ["A", "Cross-sectional area", "mm²", 113.1]],
+  ["σ", "Normal stress", "MPa"],
+  v => v.F / v.A, 221.04,
+  "A Ø12 mm tie rod has A = 113.1 mm². Pulling 25 kN through it gives 221 MPa — roughly 60 % of the yield strength of a mild steel bar, so it holds with margin.",
+  "Uniform stress assumes the load passes through the centroid and the section is well clear of holes, fillets and the grips. Near a feature, multiply by a stress concentration factor.");
+
+E("mech", "Stress & strain", "Direct shear stress",
+  "\\tau = \\frac{V}{A_s}", "τ = V / A_s",
+  [["V", "Shear force", "N", 12000], ["A_s", "Area resisting shear", "mm²", 113.1]],
+  ["τ", "Average shear stress", "MPa"],
+  v => v.V / v.A_s, 106.10,
+  "A Ø12 mm pin in single shear carrying 12 kN averages 106 MPa across its section. In double shear the same pin sees half that, because two faces share the load.",
+  "This is the average across the section. A round bar in shear actually peaks about 33 % above average at the neutral axis.");
+
+E("mech", "Stress & strain", "Bearing stress",
+  "\\sigma_{br} = \\frac{P}{d\\,t}", "σ_br = P / (d·t)",
+  [["P", "Load on the hole", "N", 8000], ["d", "Pin or bolt diameter", "mm", 10], ["t", "Plate thickness", "mm", 6]],
+  ["σ_br", "Bearing stress", "MPa"],
+  v => v.P / (v.d * v.t), 133.33,
+  "An Ø10 mm bolt pushing 8 kN against a 6 mm plate bears at 133 MPa on the projected area. Compare with F_bru, not F_tu — bearing allowables run well above tensile ones.",
+  "Uses the projected area d·t, not the contact arc. Valid when the edge distance is at least twice the hole diameter; closer to the edge the plate tears out instead.");
+
+E("mech", "Stress & strain", "Engineering strain",
+  "\\varepsilon = \\frac{\\delta}{L_0}", "ε = δ / L₀",
+  [["δ", "Change in length", "mm", 0.45], ["L_0", "Original length", "mm", 500]],
+  ["ε", "Strain", "mm/mm"],
+  v => v.δ / v.L_0, 0.0009,
+  "A 500 mm bar that stretches 0.45 mm is at 900 microstrain — the kind of number a strain gauge reads directly.",
+  "Engineering strain uses the original length. Past a few per cent, true strain ln(L/L₀) is the honest measure.");
+
+E("mech", "Stress & strain", "Hooke's law",
+  "\\sigma = E\\,\\varepsilon", "σ = E · ε",
+  [["E", "Young's modulus", "MPa", 200000], ["ε", "Strain", "mm/mm", 0.0009]],
+  ["σ", "Stress", "MPa"],
+  v => v.E * v.ε, 180,
+  "900 microstrain in steel (E = 200 GPa) means 180 MPa. This is how a strain gauge becomes a stress reading.",
+  "Linear only below the proportional limit. Above yield the modulus is no longer the slope and this reads high.");
+
+E("mech", "Stress & strain", "Shear modulus",
+  "G = \\frac{E}{2\\,(1+\\nu)}", "G = E / (2(1+ν))",
+  [["E", "Young's modulus", "MPa", 200000], ["ν", "Poisson's ratio", "—", 0.29]],
+  ["G", "Shear modulus", "MPa"],
+  v => v.E / (2 * (1 + v.ν)), 77519.4,
+  "Steel with E = 200 GPa and ν = 0.29 has G ≈ 77.5 GPa. Two of the three elastic constants always give you the third for an isotropic material.",
+  "Isotropic materials only. Composites need the full stiffness matrix — G is independent of E there.");
+
+E("mech", "Stress & strain", "Axial deflection",
+  "\\delta = \\frac{F L}{A E}", "δ = FL / (AE)",
+  [["F", "Axial force", "N", 25000], ["L", "Length", "mm", 500], ["A", "Area", "mm²", 113.1], ["E", "Young's modulus", "MPa", 200000]],
+  ["δ", "Extension", "mm"],
+  v => v.F * v.L / (v.A * v.E), 0.5526,
+  "The Ø12 mm rod from the first entry stretches 0.55 mm over 500 mm under 25 kN. AE/L — 45.2 kN/mm here — is the rod's spring rate.",
+  "Constant section and uniform load only. A stepped bar is the sum of its segments.");
+
+E("mech", "Stress & strain", "Thermal stress",
+  "\\sigma_{th} = E\\,\\alpha\\,\\Delta T", "σ_th = E·α·ΔT",
+  [["E", "Young's modulus", "MPa", 200000], ["α", "Expansion coefficient", "1/K", 0.000012], ["ΔT", "Temperature rise", "K", 60]],
+  ["σ_th", "Thermal stress", "MPa"],
+  v => v.E * v.α * v.ΔT, 144,
+  "Fully restrain a steel bar and heat it 60 K and it pushes back at 144 MPa — no external load at all. This is why pipework gets expansion loops.",
+  "Assumes full restraint. Partial restraint scales the stress by the fraction of free growth prevented; a joint with any compliance sees less.");
+
+E("mech", "Stress & strain", "Thermal expansion",
+  "\\Delta L = \\alpha\\,L\\,\\Delta T", "ΔL = α·L·ΔT",
+  [["α", "Expansion coefficient", "1/K", 0.000012], ["L", "Length", "mm", 2000], ["ΔT", "Temperature change", "K", 80]],
+  ["ΔL", "Change in length", "mm"],
+  v => v.α * v.L * v.ΔT, 1.92,
+  "A 2 m steel beam grows 1.92 mm over an 80 K swing. Aluminium at α = 23×10⁻⁶ would move nearly twice as far — which is what opens up clearances in mixed-material assemblies.",
+  "α itself drifts with temperature; published values are means over a stated range.");
+
+E("mech", "Bending & torsion", "Bending stress",
+  "\\sigma_b = \\frac{M c}{I}", "σ_b = M·c / I",
+  [["M", "Bending moment", "N·mm", 10000000], ["c", "Distance to extreme fibre", "mm", 50], ["I", "Second moment of area", "mm⁴", 4166667]],
+  ["σ_b", "Bending stress", "MPa"],
+  v => v.M * v.c / v.I, 120,
+  "A 50 × 100 mm bar (I = 4.17×10⁶ mm⁴) under 10 kN·m reaches 120 MPa at the top and bottom faces, and zero at the neutral axis.",
+  "Euler–Bernoulli: plane sections stay plane. Good for slender beams; deep or short beams need shear deformation included.");
+
+E("mech", "Bending & torsion", "Second moment of area — rectangle",
+  "I = \\frac{b h^3}{12}", "I = b·h³ / 12",
+  [["b", "Width", "mm", 50], ["h", "Depth", "mm", 100]],
+  ["I", "Second moment of area", "mm⁴"],
+  v => v.b * Math.pow(v.h, 3) / 12, 4166666.7,
+  "50 wide × 100 deep gives 4.17×10⁶ mm⁴. Depth is cubed — turning that section on edge multiplies stiffness by four.",
+  "About the centroidal axis parallel to b. Off-axis, add A·d² for each part (parallel axis theorem).");
+
+E("mech", "Bending & torsion", "Second moment of area — circle",
+  "I = \\frac{\\pi d^4}{64}", "I = π·d⁴ / 64",
+  [["d", "Diameter", "mm", 40]],
+  ["I", "Second moment of area", "mm⁴"],
+  v => Math.PI * Math.pow(v.d, 4) / 64, 125663.7,
+  "A Ø40 mm solid shaft has I = 1.257×10⁵ mm⁴. A tube of the same weight beats it easily, because the metal sits where the lever arm is longest.",
+  "For a tube use (d_o⁴ − d_i⁴). Polar J is exactly twice this for a circular section.");
+
+E("mech", "Bending & torsion", "Polar moment of area",
+  "J = \\frac{\\pi d^4}{32}", "J = π·d⁴ / 32",
+  [["d", "Shaft diameter", "mm", 40]],
+  ["J", "Polar moment of area", "mm⁴"],
+  v => Math.PI * Math.pow(v.d, 4) / 32, 251327.4,
+  "The same Ø40 mm shaft has J = 2.51×10⁵ mm⁴ for torsion — twice its bending I.",
+  "Valid for circular sections only. Non-circular shafts warp, and need a torsion constant from tables instead.");
+
+E("mech", "Bending & torsion", "Torsional shear stress",
+  "\\tau = \\frac{T r}{J}", "τ = T·r / J",
+  [["T", "Torque", "N·mm", 500000], ["r", "Radius to the point", "mm", 20], ["J", "Polar moment of area", "mm⁴", 251327]],
+  ["τ", "Torsional shear stress", "MPa"],
+  v => v.T * v.r / v.J, 39.79,
+  "500 N·m into a Ø40 mm shaft peaks at 39.8 MPa on the surface, falling linearly to zero on the axis.",
+  "Only the outer skin does real work in torsion, which is the whole argument for hollow shafts.");
+
+E("mech", "Bending & torsion", "Angle of twist",
+  "\\phi = \\frac{T L}{J G}", "φ = TL / (JG)",
+  [["T", "Torque", "N·mm", 500000], ["L", "Length", "mm", 1000], ["J", "Polar moment", "mm⁴", 251327], ["G", "Shear modulus", "MPa", 79000]],
+  ["φ", "Angle of twist", "deg"],
+  v => v.T * v.L / (v.J * v.G) * 180 / Math.PI, 1.4428,
+  "That shaft twists 1.44° per metre under 500 N·m. A common drive-shaft rule of thumb is to stay under about 1° per metre, so this one is marginal.",
+  "Elastic range, constant section. Stepped shafts add segment by segment.");
+
+E("mech", "Bending & torsion", "Transverse shear stress",
+  "\\tau = \\frac{V Q}{I b}", "τ = VQ / (I·b)",
+  [["V", "Shear force", "N", 50000], ["Q", "First moment of area above the cut", "mm³", 62500], ["I", "Second moment of area", "mm⁴", 4166667], ["b", "Width at the cut", "mm", 50]],
+  ["τ", "Shear stress", "MPa"],
+  v => v.V * v.Q / (v.I * v.b), 15,
+  "The 50 × 100 mm beam under 50 kN of shear peaks at 15 MPa on the neutral axis — exactly 1.5× the V/A average, as it always is for a rectangle.",
+  "Peak shear sits at the neutral axis where bending stress is zero, so the two rarely combine at their worst in the same fibre.");
+
+E("mech", "Deflection", "Cantilever tip deflection",
+  "\\delta = \\frac{F L^3}{3 E I}", "δ = FL³ / (3EI)",
+  [["F", "End load", "N", 1000], ["L", "Length", "mm", 500], ["E", "Young's modulus", "MPa", 200000], ["I", "Second moment of area", "mm⁴", 125664]],
+  ["δ", "Tip deflection", "mm"],
+  v => v.F * Math.pow(v.L, 3) / (3 * v.E * v.I), 1.658,
+  "A Ø40 mm steel cantilever 500 mm long drops 1.66 mm under 1 kN at the tip. Double the length and it drops eight times as far.",
+  "Bending only — shear deflection adds a few per cent once L/h falls below about 10.");
+
+E("mech", "Deflection", "Simply supported centre deflection",
+  "\\delta = \\frac{F L^3}{48 E I}", "δ = FL³ / (48EI)",
+  [["F", "Centre load", "N", 1000], ["L", "Span", "mm", 500], ["E", "Young's modulus", "MPa", 200000], ["I", "Second moment of area", "mm⁴", 125664]],
+  ["δ", "Centre deflection", "mm"],
+  v => v.F * Math.pow(v.L, 3) / (48 * v.E * v.I), 0.1036,
+  "The same bar simply supported over the same 500 mm deflects only 0.104 mm — sixteen times stiffer than the cantilever, purely from the boundary conditions.",
+  "Point load at mid-span. A uniformly distributed load of the same total weight gives 5/8 of this.");
+
+E("mech", "Stability", "Euler buckling load",
+  "P_{cr} = \\frac{\\pi^2 E I}{(K L)^2}", "P_cr = π²EI / (KL)²",
+  [["E", "Young's modulus", "MPa", 200000], ["I", "Smallest second moment", "mm⁴", 125664], ["K", "End-fixity factor", "—", 1], ["L", "Length", "mm", 1000]],
+  ["P_cr", "Critical load", "kN"],
+  v => Math.PI * Math.PI * v.E * v.I / Math.pow(v.K * v.L, 2) / 1000, 248.05,
+  "A 1 m pin-ended Ø40 mm steel strut buckles at 248 kN. Fix both ends (K = 0.5) and it takes four times as much.",
+  "K = 1 pinned, 0.5 fixed–fixed, 0.7 fixed–pinned, 2 fixed–free. Only valid above the critical slenderness — short columns yield in compression first.");
+
+E("mech", "Stability", "Slenderness ratio",
+  "\\lambda = \\frac{K L}{r},\\quad r=\\sqrt{I/A}", "λ = KL / r",
+  [["K", "End-fixity factor", "—", 1], ["L", "Length", "mm", 1000], ["r", "Radius of gyration", "mm", 10]],
+  ["λ", "Slenderness ratio", "—"],
+  v => v.K * v.L / v.r, 100,
+  "λ = 100 for the 1 m Ø40 mm strut (r = d/4 = 10 mm). Steel columns above roughly λ = 100 are genuinely Euler; below that, use Johnson's parabola or you will over-predict the capacity.",
+  "r is taken about the weakest axis — a column buckles the easy way, not the way you drew it.");
+
+E("mech", "Combined stress", "Von Mises stress (plane stress)",
+  "\\sigma_v = \\sqrt{\\sigma_x^2 - \\sigma_x\\sigma_y + \\sigma_y^2 + 3\\tau_{xy}^2}", "σ_v = √(σx² − σx·σy + σy² + 3τ²)",
+  [["σ_x", "Direct stress, x", "MPa", 120], ["σ_y", "Direct stress, y", "MPa", 40], ["τ_xy", "Shear stress", "MPa", 50]],
+  ["σ_v", "Von Mises stress", "MPa"],
+  v => Math.sqrt(v.σ_x * v.σ_x - v.σ_x * v.σ_y + v.σ_y * v.σ_y + 3 * v.τ_xy * v.τ_xy), 136.75,
+  "σx = 120, σy = 40, τ = 50 MPa gives 137 MPa equivalent. Compare that single number with yield — this is what FEA plots as its default result.",
+  "Ductile metals only. Brittle materials fail on maximum principal stress, so von Mises will mislead you on cast iron or ceramics.");
+
+E("mech", "Combined stress", "Principal stress",
+  "\\sigma_{1,2} = \\frac{\\sigma_x+\\sigma_y}{2} \\pm \\sqrt{\\left(\\frac{\\sigma_x-\\sigma_y}{2}\\right)^2 + \\tau_{xy}^2}",
+  "σ₁ = (σx+σy)/2 + √(((σx−σy)/2)² + τ²)",
+  [["σ_x", "Direct stress, x", "MPa", 120], ["σ_y", "Direct stress, y", "MPa", 40], ["τ_xy", "Shear stress", "MPa", 50]],
+  ["σ_1", "Major principal stress", "MPa"],
+  v => (v.σ_x + v.σ_y) / 2 + Math.sqrt(Math.pow((v.σ_x - v.σ_y) / 2, 2) + v.τ_xy * v.τ_xy), 144.03,
+  "The same state has σ₁ = 144 MPa and σ₂ = 16 MPa, on a plane rotated 25.7° from x. On those planes the shear vanishes.",
+  "Swap the + for a − to get σ₂. In 3D plane stress, remember σ₃ = 0 still counts when you form von Mises.");
+
+E("mech", "Combined stress", "Maximum shear stress",
+  "\\tau_{max} = \\sqrt{\\left(\\frac{\\sigma_x-\\sigma_y}{2}\\right)^2 + \\tau_{xy}^2}", "τ_max = √(((σx−σy)/2)² + τ²)",
+  [["σ_x", "Direct stress, x", "MPa", 120], ["σ_y", "Direct stress, y", "MPa", 40], ["τ_xy", "Shear stress", "MPa", 50]],
+  ["τ_max", "Maximum shear stress", "MPa"],
+  v => Math.sqrt(Math.pow((v.σ_x - v.σ_y) / 2, 2) + v.τ_xy * v.τ_xy), 64.03,
+  "64 MPa, on planes 45° from the principal directions. Tresca compares 2·τ_max with yield, which is always a little more conservative than von Mises.",
+  "This is the radius of Mohr's circle — every plane-stress question is that circle in disguise.");
+
+E("mech", "Combined stress", "Stress concentration",
+  "\\sigma_{max} = K_t\\,\\sigma_{nom}", "σ_max = K_t · σ_nom",
+  [["K_t", "Concentration factor", "—", 2.5], ["σ_nom", "Nominal stress", "MPa", 80]],
+  ["σ_max", "Peak local stress", "MPa"],
+  v => v.K_t * v.σ_nom, 200,
+  "A hole in a wide plate runs K_t ≈ 3; a generous shoulder fillet nearer 1.5. At K_t = 2.5 a nominal 80 MPa becomes a local 200 MPa.",
+  "Matters most for fatigue and for brittle materials. Ductile metals yield locally and redistribute, so static design often uses the nominal stress.");
+
+E("mech", "Pressure vessels", "Hoop stress, thin wall",
+  "\\sigma_h = \\frac{p r}{t}", "σ_h = p·r / t",
+  [["p", "Internal pressure", "MPa", 2], ["r", "Inside radius", "mm", 500], ["t", "Wall thickness", "mm", 8]],
+  ["σ_h", "Hoop stress", "MPa"],
+  v => v.p * v.r / v.t, 125,
+  "A Ø1 m vessel at 20 bar with an 8 mm wall carries 125 MPa around the circumference — twice the longitudinal stress, which is why seam welds run along the axis.",
+  "Thin wall means r/t above about 10. Thicker than that, use Lamé's equations; the inner fibre is then significantly higher.");
+
+E("mech", "Pressure vessels", "Longitudinal stress, thin wall",
+  "\\sigma_l = \\frac{p r}{2 t}", "σ_l = p·r / (2t)",
+  [["p", "Internal pressure", "MPa", 2], ["r", "Inside radius", "mm", 500], ["t", "Wall thickness", "mm", 8]],
+  ["σ_l", "Longitudinal stress", "MPa"],
+  v => v.p * v.r / (2 * v.t), 62.5,
+  "62.5 MPa along the axis of the same vessel — exactly half the hoop value. A cylinder under pressure therefore splits lengthwise, not into rings.",
+  "Applies to a closed cylinder. An open-ended pipe carries no longitudinal pressure stress at all.");
+
+E("mech", "Design margin", "Factor of safety",
+  "n = \\frac{\\sigma_{allow}}{\\sigma_{applied}},\\quad MS = n-1", "n = σ_allow / σ_applied",
+  [["σ_allow", "Allowable stress", "MPa", 250], ["σ_applied", "Applied stress", "MPa", 180]],
+  ["n", "Factor of safety", "—"],
+  v => v.σ_allow / v.σ_applied, 1.389,
+  "250 MPa allowable against 180 MPa applied gives n = 1.39, or a margin of safety of +0.39. Aerospace reports MS because zero is the pass mark and the sign tells you everything.",
+  "State which allowable you used — yield, ultimate or endurance. A factor quoted without its basis means nothing.");
+
+/* ── DYNAMICS ──────────────────────────────────────────────────────── */
+E("dyn", "Linear kinematics", "Velocity from acceleration",
+  "v = u + a t", "v = u + a·t",
+  [["u", "Initial velocity", "m/s", 0], ["a", "Acceleration", "m/s²", 3], ["t", "Time", "s", 8]],
+  ["v", "Final velocity", "m/s"],
+  v => v.u + v.a * v.t, 24,
+  "From rest at a steady 3 m/s², a car reaches 24 m/s (86 km/h) in 8 s.",
+  "Constant acceleration only. If a varies, integrate — or use the energy methods further down this column.");
+
+E("dyn", "Linear kinematics", "Displacement under constant acceleration",
+  "s = u t + \\tfrac{1}{2} a t^2", "s = u·t + ½a·t²",
+  [["u", "Initial velocity", "m/s", 0], ["a", "Acceleration", "m/s²", 3], ["t", "Time", "s", 8]],
+  ["s", "Distance travelled", "m"],
+  v => v.u * v.t + 0.5 * v.a * v.t * v.t, 96,
+  "That same 8 s run covers 96 m.",
+  "Sign convention matters: deceleration is a negative a, and the formula will happily return a distance for a body that has already stopped.");
+
+E("dyn", "Linear kinematics", "Velocity from distance",
+  "v^2 = u^2 + 2 a s", "v = √(u² + 2as)",
+  [["u", "Initial velocity", "m/s", 0], ["a", "Acceleration", "m/s²", 3], ["s", "Distance", "m", 96]],
+  ["v", "Final velocity", "m/s"],
+  v => Math.sqrt(v.u * v.u + 2 * v.a * v.s), 24,
+  "Same answer, 24 m/s, without needing the time. This is the one to reach for in stopping-distance problems.",
+  "Constant acceleration. Braking distance scales with v², which is why speed limits bite harder than people expect.");
+
+E("dyn", "Kinetics", "Newton's second law",
+  "F = m a", "F = m·a",
+  [["m", "Mass", "kg", 1200], ["a", "Acceleration", "m/s²", 3]],
+  ["F", "Net force", "N"],
+  v => v.m * v.a, 3600,
+  "Accelerating a 1200 kg car at 3 m/s² needs 3.6 kN of net force at the tyres — on top of whatever drag and rolling resistance take.",
+  "F is the net force. Rocket and conveyor problems where mass changes need the momentum form, d(mv)/dt.");
+
+E("dyn", "Kinetics", "Weight",
+  "W = m g", "W = m·g",
+  [["m", "Mass", "kg", 1200], ["g", "Gravity", "m/s²", 9.81]],
+  ["W", "Weight", "N"],
+  v => v.m * v.g, 11772,
+  "1200 kg weighs 11.77 kN on Earth. Mass in kilograms is not a force — the number of engineering mistakes traceable to that confusion is remarkable.",
+  "g = 9.81 m/s² is a working average; it varies about 0.5 % between the poles and the equator.");
+
+E("dyn", "Kinetics", "Friction force",
+  "F_f = \\mu N", "F_f = μ·N",
+  [["μ", "Coefficient of friction", "—", 0.3], ["N", "Normal force", "N", 11772]],
+  ["F_f", "Friction force", "N"],
+  v => v.μ * v.N, 3531.6,
+  "At μ = 0.3 the 1200 kg car can push 3.53 kN through its tyres before they slip — which caps acceleration at about 2.9 m/s² regardless of engine power.",
+  "Independent of contact area, and static μ exceeds kinetic μ. Published values scatter by ±30 %, so treat any friction calculation as a range.");
+
+E("dyn", "Rotation", "Rotational Newton's law",
+  "T = I \\alpha", "T = I·α",
+  [["I", "Mass moment of inertia", "kg·m²", 0.8], ["α", "Angular acceleration", "rad/s²", 25]],
+  ["T", "Torque", "N·m"],
+  v => v.I * v.α, 20,
+  "Spinning up a 0.8 kg·m² flywheel at 25 rad/s² takes 20 N·m.",
+  "I must be taken about the actual axis of rotation — use the parallel axis theorem if the axis is not through the centre of mass.");
+
+E("dyn", "Rotation", "Angular velocity",
+  "\\omega = \\omega_0 + \\alpha t", "ω = ω₀ + α·t",
+  [["ω_0", "Initial angular velocity", "rad/s", 0], ["α", "Angular acceleration", "rad/s²", 25], ["t", "Time", "s", 8]],
+  ["ω", "Angular velocity", "rad/s"],
+  v => v.ω_0 + v.α * v.t, 200,
+  "200 rad/s after 8 s — that is 1910 rpm. Multiply rad/s by 9.5493 to get rpm.",
+  "Radians per second throughout. Mixing rpm into a dynamics formula is the classic factor-of-9.55 error.");
+
+E("dyn", "Rotation", "Tangential velocity",
+  "v = \\omega r", "v = ω·r",
+  [["ω", "Angular velocity", "rad/s", 200], ["r", "Radius", "m", 0.12]],
+  ["v", "Tangential velocity", "m/s"],
+  v => v.ω * v.r, 24,
+  "A point 120 mm out on that flywheel is moving at 24 m/s.",
+  "ω in rad/s. The same relation gives belt speed from pulley radius and gear pitch-line velocity.");
+
+E("dyn", "Rotation", "Centripetal acceleration",
+  "a_c = \\frac{v^2}{r} = \\omega^2 r", "a_c = v² / r",
+  [["v", "Tangential velocity", "m/s", 24], ["r", "Radius", "m", 80]],
+  ["a_c", "Centripetal acceleration", "m/s²"],
+  v => v.v * v.v / v.r, 7.2,
+  "A car at 24 m/s through an 80 m radius bend pulls 7.2 m/s², about 0.73 g — right at the limit of a road tyre.",
+  "Points toward the centre. The force that supplies it has to come from somewhere real: friction, banking, or a flange.");
+
+E("dyn", "Rotation", "Mass moment of inertia — solid cylinder",
+  "I = \\tfrac{1}{2} m r^2", "I = ½·m·r²",
+  [["m", "Mass", "kg", 25], ["r", "Radius", "m", 0.15]],
+  ["I", "Mass moment of inertia", "kg·m²"],
+  v => 0.5 * v.m * v.r * v.r, 0.28125,
+  "A 25 kg, Ø300 mm steel disc has I = 0.281 kg·m². A ring of the same mass and radius would have double, because all its mass sits at the rim.",
+  "About the central axis. Thin ring mr², solid sphere ⅖mr², slender rod about its end ⅓mL².");
+
+E("dyn", "Rotation", "Parallel axis theorem",
+  "I = I_{cm} + m d^2", "I = I_cm + m·d²",
+  [["I_cm", "Inertia about the centre of mass", "kg·m²", 0.28125], ["m", "Mass", "kg", 25], ["d", "Axis offset", "m", 0.2]],
+  ["I", "Inertia about the new axis", "kg·m²"],
+  v => v.I_cm + v.m * v.d * v.d, 1.28125,
+  "Move that disc's axis 200 mm off centre and its inertia jumps from 0.281 to 1.281 kg·m² — the offset term dominates completely.",
+  "The two axes must be parallel, and I_cm must genuinely be through the centre of mass.");
+
+E("dyn", "Energy & power", "Kinetic energy",
+  "KE = \\tfrac{1}{2} m v^2", "KE = ½·m·v²",
+  [["m", "Mass", "kg", 1200], ["v", "Velocity", "m/s", 24]],
+  ["KE", "Kinetic energy", "kJ"],
+  v => 0.5 * v.m * v.v * v.v / 1000, 345.6,
+  "The 1200 kg car at 24 m/s holds 346 kJ. At twice the speed it holds four times as much — the whole argument for speed limits, and for brake sizing.",
+  "Add ½Iω² for anything rotating; on a car the wheels add a few per cent of effective mass.");
+
+E("dyn", "Energy & power", "Rotational kinetic energy",
+  "KE_{rot} = \\tfrac{1}{2} I \\omega^2", "KE_rot = ½·I·ω²",
+  [["I", "Mass moment of inertia", "kg·m²", 0.8], ["ω", "Angular velocity", "rad/s", 200]],
+  ["KE_rot", "Rotational kinetic energy", "kJ"],
+  v => 0.5 * v.I * v.ω * v.ω / 1000, 16,
+  "The flywheel at 200 rad/s stores 16 kJ. Flywheel energy storage lives or dies on ω², which is why the limit is always burst speed, never size.",
+  "ω in rad/s. Energy scales with the square of speed and only linearly with inertia.");
+
+E("dyn", "Energy & power", "Potential energy",
+  "PE = m g h", "PE = m·g·h",
+  [["m", "Mass", "kg", 1200], ["g", "Gravity", "m/s²", 9.81], ["h", "Height", "m", 15]],
+  ["PE", "Potential energy", "kJ"],
+  v => v.m * v.g * v.h / 1000, 176.58,
+  "Lifting 1200 kg by 15 m stores 177 kJ — roughly half the kinetic energy that same mass has at 24 m/s.",
+  "Only height differences matter; the datum is yours to choose.");
+
+E("dyn", "Energy & power", "Work done by a force",
+  "W = F d \\cos\\theta", "W = F·d·cosθ",
+  [["F", "Force", "N", 3600], ["d", "Displacement", "m", 50], ["θ", "Angle between them", "deg", 0]],
+  ["W", "Work", "kJ"],
+  v => v.F * v.d * Math.cos(v.θ * Math.PI / 180) / 1000, 180,
+  "3.6 kN pushing through 50 m in line does 180 kJ of work. At 90° it does none at all — which is why carrying a suitcase along a corridor is, formally, free.",
+  "Only the component along the displacement counts. Normal forces and centripetal forces do no work.");
+
+E("dyn", "Energy & power", "Power from force and velocity",
+  "P = F v", "P = F·v",
+  [["F", "Force", "N", 3600], ["v", "Velocity", "m/s", 24]],
+  ["P", "Power", "kW"],
+  v => v.F * v.v / 1000, 86.4,
+  "Holding 3.6 kN at 24 m/s needs 86.4 kW — about 116 hp, which is why acceleration fades at the top of a gear.",
+  "Instantaneous power. Sizing a motor means looking at the worst point on the duty cycle, not the average.");
+
+E("dyn", "Energy & power", "Power from torque and speed",
+  "P = T \\omega", "P = T·ω",
+  [["T", "Torque", "N·m", 20], ["ω", "Angular velocity", "rad/s", 200]],
+  ["P", "Power", "kW"],
+  v => v.T * v.ω / 1000, 4,
+  "20 N·m at 200 rad/s (1910 rpm) is 4 kW. In rpm the shortcut is P(kW) = T(N·m) × N(rpm) / 9549.",
+  "ω in rad/s. This is the single most used equation in drive sizing, and the most often botched by mixing rpm with radians.");
+
+E("dyn", "Momentum", "Linear momentum",
+  "p = m v", "p = m·v",
+  [["m", "Mass", "kg", 1200], ["v", "Velocity", "m/s", 24]],
+  ["p", "Momentum", "kg·m/s"],
+  v => v.m * v.v, 28800,
+  "28 800 kg·m/s. Momentum is conserved in a collision even when energy is not — which is what makes it the right tool for impact problems.",
+  "A vector. In two dimensions, conserve each component separately.");
+
+E("dyn", "Momentum", "Impulse–momentum",
+  "F \\Delta t = m \\Delta v", "F·Δt = m·Δv",
+  [["m", "Mass", "kg", 1200], ["Δv", "Change in velocity", "m/s", 24], ["Δt", "Duration", "s", 8]],
+  ["F", "Average force", "N"],
+  v => v.m * v.Δv / v.Δt, 3600,
+  "Stopping the car from 24 m/s in 8 s needs 3.6 kN average. Do it in 0.1 s — a crash — and it becomes 288 kN. Crumple zones exist to buy Δt.",
+  "Gives the average force over the interval; the peak in a real impact can be several times higher.");
+
+E("dyn", "Momentum", "Angular momentum",
+  "L = I \\omega", "L = I·ω",
+  [["I", "Mass moment of inertia", "kg·m²", 0.8], ["ω", "Angular velocity", "rad/s", 200]],
+  ["L", "Angular momentum", "kg·m²/s"],
+  v => v.I * v.ω, 160,
+  "160 kg·m²/s. Conserved when no external torque acts — pull your arms in and I falls, so ω must rise.",
+  "Conserved about a specific axis. Gyroscopic effects on rotating machinery come straight out of this being a vector.");
+
+E("dyn", "Momentum", "Coefficient of restitution",
+  "e = \\frac{v_2 - v_1}{u_1 - u_2}", "e = (v₂ − v₁) / (u₁ − u₂)",
+  [["u_1", "Body 1 before impact", "m/s", 6], ["u_2", "Body 2 before impact", "m/s", 0], ["v_1", "Body 1 after impact", "m/s", 1.5], ["v_2", "Body 2 after impact", "m/s", 4.5]],
+  ["e", "Coefficient of restitution", "—"],
+  v => (v.v_2 - v.v_1) / (v.u_1 - v.u_2), 0.5,
+  "e = 0.5 here: half the approach speed is returned as separation speed, and three quarters of the kinetic energy is gone as heat and noise.",
+  "e = 1 is perfectly elastic, e = 0 perfectly plastic (the bodies stay together). Real materials fall in between and e drops as impact speed rises.");
+
+E("dyn", "Projectiles", "Projectile range",
+  "R = \\frac{v^2 \\sin 2\\theta}{g}", "R = v²·sin(2θ) / g",
+  [["v", "Launch speed", "m/s", 30], ["θ", "Launch angle", "deg", 35], ["g", "Gravity", "m/s²", 9.81]],
+  ["R", "Range", "m"],
+  v => v.v * v.v * Math.sin(2 * v.θ * Math.PI / 180) / v.g, 86.20,
+  "30 m/s at 35° carries 86.2 m over flat ground. 45° is the maximum for any given speed, and 35° and 55° give the same range.",
+  "No air resistance, and launch and landing at the same height. Drag shortens real trajectories substantially above about 20 m/s.");
+
+E("dyn", "Projectiles", "Maximum height",
+  "h = \\frac{v^2 \\sin^2\\theta}{2 g}", "h = v²·sin²θ / (2g)",
+  [["v", "Launch speed", "m/s", 30], ["θ", "Launch angle", "deg", 35], ["g", "Gravity", "m/s²", 9.81]],
+  ["h", "Peak height", "m"],
+  v => v.v * v.v * Math.pow(Math.sin(v.θ * Math.PI / 180), 2) / (2 * v.g), 15.09,
+  "The same shot peaks at 15.1 m, halfway along its flight.",
+  "Vacuum again. The vertical and horizontal motions are independent, which is the whole trick to projectile problems.");
+
+/* ── VIBRATION ─────────────────────────────────────────────────────── */
+E("vib", "Free vibration", "Natural frequency",
+  "\\omega_n = \\sqrt{\\frac{k}{m}}", "ω_n = √(k / m)",
+  [["k", "Stiffness", "N/m", 50000], ["m", "Mass", "kg", 20]],
+  ["ω_n", "Natural frequency", "rad/s"],
+  v => Math.sqrt(v.k / v.m), 50,
+  "A 20 kg mass on a 50 kN/m spring runs at 50 rad/s. Stiffness only helps as a square root — quadruple k to double the frequency.",
+  "Single degree of freedom, small amplitude. Real structures have many modes; this gives the first one if k and m are the modal values.");
+
+E("vib", "Free vibration", "Natural frequency in hertz",
+  "f_n = \\frac{\\omega_n}{2\\pi}", "f_n = ω_n / 2π",
+  [["ω_n", "Natural frequency", "rad/s", 50]],
+  ["f_n", "Natural frequency", "Hz"],
+  v => v.ω_n / (2 * Math.PI), 7.9577,
+  "50 rad/s is 7.96 Hz. Worth knowing because excitation is usually quoted in Hz or rpm while the maths runs in rad/s.",
+  "Divide rpm by 60 for Hz. A 1500 rpm motor excites at 25 Hz, and its unbalance shows up right there.");
+
+E("vib", "Free vibration", "Natural frequency from static deflection",
+  "f_n = \\frac{1}{2\\pi}\\sqrt{\\frac{g}{\\delta_{st}}}", "f_n = (1/2π)·√(g / δ_st)",
+  [["g", "Gravity", "m/s²", 9.81], ["δ_st", "Static deflection under self weight", "m", 0.004]],
+  ["f_n", "Natural frequency", "Hz"],
+  v => Math.sqrt(v.g / v.δ_st) / (2 * Math.PI), 7.8823,
+  "Measure how far the machine settles on its mounts — 4 mm here — and you have its bounce frequency, 7.9 Hz, without knowing k or m separately.",
+  "The fastest sanity check in machine mounting. It assumes the same stiffness acts in the direction you care about.");
+
+E("vib", "Free vibration", "Springs in parallel",
+  "k_{eq} = k_1 + k_2", "k_eq = k₁ + k₂",
+  [["k_1", "Spring 1", "N/m", 30000], ["k_2", "Spring 2", "N/m", 20000]],
+  ["k_eq", "Equivalent stiffness", "N/m"],
+  v => v.k_1 + v.k_2, 50000,
+  "Two mounts side by side under one machine add up: 30 + 20 = 50 kN/m.",
+  "Parallel means both springs see the same deflection. Four identical mounts under a skid are parallel, not series.");
+
+E("vib", "Free vibration", "Springs in series",
+  "\\frac{1}{k_{eq}} = \\frac{1}{k_1} + \\frac{1}{k_2}", "1/k_eq = 1/k₁ + 1/k₂",
+  [["k_1", "Spring 1", "N/m", 30000], ["k_2", "Spring 2", "N/m", 20000]],
+  ["k_eq", "Equivalent stiffness", "N/m"],
+  v => 1 / (1 / v.k_1 + 1 / v.k_2), 12000,
+  "Stacked end to end the same two springs give only 12 kN/m — softer than either one alone. The floppiest element in a series chain dominates.",
+  "Series means both carry the same force. A bolt and its clamped members are springs in parallel; the bolt and a soft gasket in the load path are in series.");
+
+E("vib", "Damping", "Critical damping coefficient",
+  "c_c = 2\\sqrt{k m}", "c_c = 2·√(k·m)",
+  [["k", "Stiffness", "N/m", 50000], ["m", "Mass", "kg", 20]],
+  ["c_c", "Critical damping", "N·s/m"],
+  v => 2 * Math.sqrt(v.k * v.m), 2000,
+  "2000 N·s/m for the 20 kg / 50 kN/m system. This is the dividing line: any more and the mass creeps back without overshooting.",
+  "Also equal to 2mω_n. Critical damping returns to rest fastest without oscillating — the target for instrument and door-closer design.");
+
+E("vib", "Damping", "Damping ratio",
+  "\\zeta = \\frac{c}{c_c} = \\frac{c}{2\\sqrt{km}}", "ζ = c / c_c",
+  [["c", "Damping coefficient", "N·s/m", 300], ["c_c", "Critical damping", "N·s/m", 2000]],
+  ["ζ", "Damping ratio", "—"],
+  v => v.c / v.c_c, 0.15,
+  "ζ = 0.15, a typical elastomer mount. Welded steel structures sit nearer 0.01, bolted assemblies 0.02–0.05, and a car suspension around 0.25.",
+  "ζ under 1 is underdamped and will oscillate. Nearly every real structure is underdamped, usually far more lightly than people assume.");
+
+E("vib", "Damping", "Damped natural frequency",
+  "\\omega_d = \\omega_n\\sqrt{1-\\zeta^2}", "ω_d = ω_n·√(1 − ζ²)",
+  [["ω_n", "Undamped natural frequency", "rad/s", 50], ["ζ", "Damping ratio", "—", 0.15]],
+  ["ω_d", "Damped natural frequency", "rad/s"],
+  v => v.ω_n * Math.sqrt(1 - v.ζ * v.ζ), 49.434,
+  "Damping barely shifts the frequency: 50 drops to 49.4 rad/s at ζ = 0.15, a 1.1 % change. Below ζ = 0.2 you can usually ignore the difference.",
+  "Only defined for ζ < 1. What damping really changes is amplitude at resonance, not the frequency.");
+
+E("vib", "Damping", "Logarithmic decrement",
+  "\\delta = \\frac{1}{n}\\ln\\!\\left(\\frac{x_0}{x_n}\\right)", "δ = (1/n)·ln(x₀ / x_n)",
+  [["x_0", "First peak", "mm", 10], ["x_n", "Peak n cycles later", "mm", 1.5], ["n", "Cycles between them", "—", 5]],
+  ["δ", "Logarithmic decrement", "—"],
+  v => Math.log(v.x_0 / v.x_n) / v.n, 0.37945,
+  "A ring-down from 10 mm to 1.5 mm over 5 cycles gives δ = 0.379. Hit the structure, record the decay, and you have measured its damping.",
+  "Use several cycles rather than two — it averages out noise in the peak picking.");
+
+E("vib", "Damping", "Damping ratio from decrement",
+  "\\zeta = \\frac{\\delta}{\\sqrt{4\\pi^2 + \\delta^2}}", "ζ = δ / √(4π² + δ²)",
+  [["δ", "Logarithmic decrement", "—", 0.37945]],
+  ["ζ", "Damping ratio", "—"],
+  v => v.δ / Math.sqrt(4 * Math.PI * Math.PI + v.δ * v.δ), 0.060287,
+  "That ring-down means ζ = 0.060, or 6 % of critical — plausible for a bolted steel frame.",
+  "For light damping ζ ≈ δ/2π is accurate to within a per cent, and is the version most people remember.");
+
+E("vib", "Forced response", "Magnification factor",
+  "M = \\frac{1}{\\sqrt{(1-r^2)^2 + (2\\zeta r)^2}}", "M = 1 / √((1−r²)² + (2ζr)²)",
+  [["r", "Frequency ratio ω/ω_n", "—", 0.8], ["ζ", "Damping ratio", "—", 0.15]],
+  ["M", "Dynamic magnification", "—"],
+  v => 1 / Math.sqrt(Math.pow(1 - v.r * v.r, 2) + Math.pow(2 * v.ζ * v.r, 2)), 2.3113,
+  "Driving at 80 % of the natural frequency with ζ = 0.15 amplifies the static deflection 2.31 times. At r = 1 it would be 3.33.",
+  "Multiply the static deflection F₀/k by M to get the steady-state amplitude. Below r ≈ 0.3 the response is essentially static.");
+
+E("vib", "Forced response", "Quality factor",
+  "Q = \\frac{1}{2\\zeta}", "Q = 1 / (2ζ)",
+  [["ζ", "Damping ratio", "—", 0.15]],
+  ["Q", "Amplification at resonance", "—"],
+  v => 1 / (2 * v.ζ), 3.3333,
+  "ζ = 0.15 gives Q = 3.33 at resonance. A lightly damped weldment at ζ = 0.01 has Q = 50 — a 50-fold amplification, and the reason resonance destroys things.",
+  "Q is exactly the peak of the magnification curve for light damping, and also the ratio of natural frequency to half-power bandwidth.");
+
+E("vib", "Forced response", "Half-power bandwidth",
+  "\\Delta f = \\frac{f_n}{Q} = 2\\zeta f_n", "Δf = f_n / Q",
+  [["f_n", "Natural frequency", "Hz", 7.9577], ["Q", "Quality factor", "—", 3.3333]],
+  ["Δf", "Bandwidth", "Hz"],
+  v => v.f_n / v.Q, 2.3873,
+  "The resonant peak is 2.39 Hz wide at the −3 dB points. Measuring that width on a frequency sweep is the standard way to extract damping from test data.",
+  "Only clean for well-separated modes. Closely spaced modes smear into each other and the method breaks down.");
+
+E("vib", "Isolation", "Transmissibility",
+  "TR = \\sqrt{\\frac{1+(2\\zeta r)^2}{(1-r^2)^2+(2\\zeta r)^2}}", "TR = √((1+(2ζr)²) / ((1−r²)²+(2ζr)²))",
+  [["r", "Frequency ratio ω/ω_n", "—", 2], ["ζ", "Damping ratio", "—", 0.15]],
+  ["TR", "Transmissibility", "—"],
+  v => Math.sqrt((1 + Math.pow(2 * v.ζ * v.r, 2)) / (Math.pow(1 - v.r * v.r, 2) + Math.pow(2 * v.ζ * v.r, 2))), 0.38118,
+  "Run at twice the mount's natural frequency and only 38 % of the force gets through. Isolation only begins above r = √2 — below that, mounts make things worse.",
+  "Above r = √2 more damping actually hurts isolation, even though it helps passing through resonance on run-up. That trade-off is the whole art of mount selection.");
+
+E("vib", "Isolation", "Isolation efficiency",
+  "\\eta = (1 - TR)\\times 100\\%", "η = (1 − TR)·100",
+  [["TR", "Transmissibility", "—", 0.38118]],
+  ["η", "Isolation efficiency", "%"],
+  v => (1 - v.TR) * 100, 61.882,
+  "TR = 0.38 is 62 % isolation. Specifications often ask for 90 %, which needs TR = 0.1 and a frequency ratio above about 3.3.",
+  "Meaningless below r = √2, where TR exceeds 1 and the mounts amplify rather than isolate.");
+
+E("vib", "Excitation", "Rotating unbalance force",
+  "F = m_e\\,e\\,\\omega^2", "F = m_e·e·ω²",
+  [["m_e", "Unbalanced mass", "kg", 0.05], ["e", "Eccentricity", "m", 0.02], ["ω", "Angular velocity", "rad/s", 300]],
+  ["F", "Rotating force", "N"],
+  v => v.m_e * v.e * v.ω * v.ω, 90,
+  "50 g offset 20 mm at 2865 rpm throws 90 N — and it scales with ω², so doubling speed quadruples the shaking force.",
+  "The force rotates, so it excites both horizontal and vertical directions once per revolution. This is the classic 1× line on a vibration spectrum.");
+
+E("vib", "Excitation", "Force transmitted to the base",
+  "F_T = TR \\times F_0", "F_T = TR · F₀",
+  [["TR", "Transmissibility", "—", 0.38118], ["F_0", "Exciting force", "N", 500]],
+  ["F_T", "Transmitted force", "N"],
+  v => v.TR * v.F_0, 190.59,
+  "A 500 N exciting force reaches the floor as 191 N through mounts at r = 2.",
+  "The foundation has to carry F_T, not F₀ — but check the static load path as well, since soft mounts carry the machine's weight too.");
+
+E("vib", "Continuous systems", "Cantilever fundamental frequency",
+  "f_1 = \\frac{1.875^2}{2\\pi}\\sqrt{\\frac{EI}{\\bar m L^4}}", "f₁ = (1.875²/2π)·√(EI / (m̄·L⁴))",
+  [["E", "Young's modulus", "Pa", 200000000000], ["I", "Second moment of area", "m⁴", 2.0833e-10], ["m", "Mass per unit length", "kg/m", 0.785], ["L", "Length", "m", 0.3]],
+  ["f_1", "First natural frequency", "Hz"],
+  v => (Math.pow(1.8751, 2) / (2 * Math.PI)) * Math.sqrt(v.E * v.I / (v.m * Math.pow(v.L, 4))), 45.29,
+  "A 20 × 5 mm steel bar clamped 300 mm out rings at 45 Hz. Length to the fourth power dominates — trim it to 200 mm and it jumps to 102 Hz.",
+  "1.8751 is the first root of the cantilever characteristic equation; the second mode uses 4.694 and lands 6.3× higher.");
+
+E("vib", "Continuous systems", "Torsional natural frequency",
+  "\\omega_n = \\sqrt{\\frac{k_t}{J}}", "ω_n = √(k_t / J)",
+  [["k_t", "Torsional stiffness", "N·m/rad", 2500], ["J", "Polar mass moment of inertia", "kg·m²", 0.05]],
+  ["ω_n", "Torsional natural frequency", "rad/s"],
+  v => Math.sqrt(v.k_t / v.J), 223.607,
+  "A disc of J = 0.05 kg·m² on a shaft of 2500 N·m/rad resonates at 224 rad/s, or 2135 rpm — squarely inside many machines' operating range.",
+  "k_t = JG/L for a plain shaft. Torsional resonance is what shears crankshafts and couplings, and it is invisible to a vibration probe on the bearing housing.");
+
+E("vib", "Continuous systems", "Shaft critical speed",
+  "N_c = \\frac{30}{\\pi}\\sqrt{\\frac{g}{\\delta_{st}}}", "N_c = (30/π)·√(g / δ_st)",
+  [["g", "Gravity", "m/s²", 9.81], ["δ_st", "Static deflection at the disc", "m", 0.0005]],
+  ["N_c", "Critical speed", "rpm"],
+  v => (30 / Math.PI) * Math.sqrt(v.g / v.δ_st), 1337.5,
+  "A shaft that sags 0.5 mm under its rotor whirls at 1338 rpm. Machines are designed to run either well below this or to pass through it quickly.",
+  "Rayleigh's method, first mode only. Multiple discs need Dunkerley's rule, which combines the individual critical speeds.");
+
+/* ── THERMODYNAMICS ────────────────────────────────────────────────── */
+E("thermo", "Gas laws", "Ideal gas law",
+  "pV = mRT", "m = pV / (R·T)",
+  [["p", "Absolute pressure", "Pa", 300000], ["V", "Volume", "m³", 2], ["R", "Specific gas constant", "J/kg·K", 287], ["T", "Absolute temperature", "K", 300]],
+  ["m", "Mass of gas", "kg"],
+  v => v.p * v.V / (v.R * v.T), 6.9686,
+  "A 2 m³ receiver at 3 bar absolute and 300 K holds 6.97 kg of air.",
+  "Absolute pressure and absolute temperature, always. Gauge pressure or Celsius here is the most common error in the whole subject.");
+
+E("thermo", "Gas laws", "Specific gas constant",
+  "R = \\frac{R_u}{M}", "R = R_u / M",
+  [["R_u", "Universal gas constant", "J/kmol·K", 8314], ["M", "Molar mass", "kg/kmol", 28.97]],
+  ["R", "Specific gas constant", "J/kg·K"],
+  v => v.R_u / v.M, 286.99,
+  "Air at M = 28.97 gives R = 287 J/kg·K. Helium, being eight times lighter, gives 2077.",
+  "Only for ideal-gas behaviour: low pressure, well above the critical temperature.");
+
+E("thermo", "First law", "Sensible heat",
+  "Q = m c \\Delta T", "Q = m·c·ΔT",
+  [["m", "Mass", "kg", 5], ["c", "Specific heat capacity", "J/kg·K", 4186], ["ΔT", "Temperature change", "K", 40]],
+  ["Q", "Heat added", "kJ"],
+  v => v.m * v.c * v.ΔT / 1000, 837.2,
+  "Heating 5 kg of water by 40 K takes 837 kJ. The same 40 K into 5 kg of steel takes only 92 kJ — water is the outlier among common materials.",
+  "Gases need c_p for constant pressure and c_v for constant volume; for solids and liquids the difference is negligible.");
+
+E("thermo", "First law", "Latent heat",
+  "Q = m L", "Q = m·L",
+  [["m", "Mass", "kg", 2], ["L", "Latent heat", "J/kg", 2257000]],
+  ["Q", "Heat of phase change", "kJ"],
+  v => v.m * v.L / 1000, 4514,
+  "Boiling 2 kg of water already at 100 °C takes 4514 kJ — more than five times the energy needed to heat it from 20 °C to boiling.",
+  "Happens at constant temperature, so a thermometer tells you nothing about progress through a phase change.");
+
+E("thermo", "First law", "First law for a closed system",
+  "\\Delta U = Q - W", "ΔU = Q − W",
+  [["Q", "Heat added to the system", "kJ", 500], ["W", "Work done by the system", "kJ", 180]],
+  ["ΔU", "Change in internal energy", "kJ"],
+  v => v.Q - v.W, 320,
+  "500 kJ in, 180 kJ of work out, so 320 kJ stays as internal energy and the temperature rises.",
+  "Sign convention: heat in is positive, work out is positive. Half of all thermodynamics errors are sign errors here.");
+
+E("thermo", "First law", "Isentropic temperature relation",
+  "T_2 = T_1\\left(\\frac{p_2}{p_1}\\right)^{\\frac{\\gamma-1}{\\gamma}}", "T₂ = T₁·(p₂/p₁)^((γ−1)/γ)",
+  [["T_1", "Inlet temperature", "K", 300], ["pr", "Pressure ratio p₂/p₁", "—", 8], ["γ", "Ratio of specific heats", "—", 1.4]],
+  ["T_2", "Outlet temperature", "K"],
+  v => v.T_1 * Math.pow(v.pr, (v.γ - 1) / v.γ), 543.43,
+  "Compress air 8:1 without cooling it and 300 K becomes 543 K (270 °C). This is why compressors need intercoolers, and why diesel engines ignite without a spark.",
+  "Reversible and adiabatic. A real compressor is worse — divide the ideal temperature rise by the isentropic efficiency, typically 0.75–0.85.");
+
+E("thermo", "Cycles", "Thermal efficiency",
+  "\\eta_{th} = \\frac{W_{net}}{Q_{in}}", "η_th = W_net / Q_in",
+  [["W_net", "Net work output", "kJ", 450], ["Q_in", "Heat input", "kJ", 1200]],
+  ["η_th", "Thermal efficiency", "—"],
+  v => v.W_net / v.Q_in, 0.375,
+  "450 kJ of work from 1200 kJ of fuel is 37.5 % — about right for a good diesel. The other 750 kJ leaves as exhaust and coolant heat.",
+  "Always below the Carnot limit for the same temperatures. If your calculation beats Carnot, the calculation is wrong.");
+
+E("thermo", "Cycles", "Carnot efficiency",
+  "\\eta_{Carnot} = 1 - \\frac{T_C}{T_H}", "η = 1 − T_C / T_H",
+  [["T_C", "Cold reservoir temperature", "K", 300], ["T_H", "Hot reservoir temperature", "K", 800]],
+  ["η", "Maximum efficiency", "—"],
+  v => 1 - v.T_C / v.T_H, 0.625,
+  "Between 800 K and 300 K nothing can beat 62.5 %. Real engines reach perhaps two thirds of that.",
+  "Kelvin only. The ceiling depends on temperatures alone — not the working fluid, not the cleverness of the cycle.");
+
+E("thermo", "Cycles", "Coefficient of performance — refrigerator",
+  "COP_R = \\frac{Q_L}{W_{in}}", "COP_R = Q_L / W_in",
+  [["Q_L", "Heat removed from the cold space", "kW", 3.5], ["W_in", "Work input", "kW", 1]],
+  ["COP_R", "Coefficient of performance", "—"],
+  v => v.Q_L / v.W_in, 3.5,
+  "3.5 kW of cooling for 1 kW of compressor power is a COP of 3.5. A heat pump on the same machine delivers 4.5 kW of heat — COP_HP is always COP_R + 1.",
+  "Not an efficiency and legitimately above 1, because it moves heat rather than creating it. Both COPs fall as the temperature lift rises.");
+
+E("thermo", "Heat transfer", "Conduction (Fourier's law)",
+  "\\dot Q = \\frac{k A \\Delta T}{L}", "Q̇ = k·A·ΔT / L",
+  [["k", "Thermal conductivity", "W/m·K", 45], ["A", "Area", "m²", 2], ["ΔT", "Temperature difference", "K", 100], ["L", "Thickness", "m", 0.02]],
+  ["Q̇", "Heat flow", "kW"],
+  v => v.k * v.A * v.ΔT / v.L / 1000, 450,
+  "100 K across a 20 mm steel plate of 2 m² passes 450 kW. Swap the steel for 20 mm of mineral wool (k = 0.04) and it drops to 0.4 kW.",
+  "Steady state, one dimension, constant k. Real k drifts with temperature — metals fall, most insulants rise.");
+
+E("thermo", "Heat transfer", "Conduction resistance",
+  "R_{cond} = \\frac{L}{k A}", "R = L / (k·A)",
+  [["L", "Thickness", "m", 0.02], ["k", "Thermal conductivity", "W/m·K", 45], ["A", "Area", "m²", 2]],
+  ["R", "Thermal resistance", "K/W"],
+  v => v.L / (v.k * v.A), 0.00022222,
+  "That steel plate has almost no resistance — 2.2×10⁻⁴ K/W. Treating heat paths as resistors in series and parallel turns a messy wall into a circuit problem.",
+  "Add resistances in series through a layered wall, exactly like electrical resistance. Contact resistance between layers often dominates and is easy to forget.");
+
+E("thermo", "Heat transfer", "Convection (Newton's law of cooling)",
+  "\\dot Q = h A \\Delta T", "Q̇ = h·A·ΔT",
+  [["h", "Heat transfer coefficient", "W/m²·K", 25], ["A", "Area", "m²", 2], ["ΔT", "Surface to fluid difference", "K", 60]],
+  ["Q̇", "Heat flow", "W"],
+  v => v.h * v.A * v.ΔT, 3000,
+  "3 kW off a 2 m² surface 60 K above still air. Force air over it (h ≈ 100) and it quadruples; boil water on it and h passes 5000.",
+  "Everything hard about convection hides inside h. Natural air 5–25, forced air 25–250, water 500–10 000 W/m²·K.");
+
+E("thermo", "Heat transfer", "Convection resistance",
+  "R_{conv} = \\frac{1}{h A}", "R = 1 / (h·A)",
+  [["h", "Heat transfer coefficient", "W/m²·K", 25], ["A", "Area", "m²", 2]],
+  ["R", "Thermal resistance", "K/W"],
+  v => 1 / (v.h * v.A), 0.02,
+  "0.02 K/W — nearly a hundred times the steel plate's own resistance. The surface film, not the metal, is what limits almost every heat exchanger.",
+  "Which is why fins and turbulators exist: they attack the dominant resistance instead of the negligible one.");
+
+E("thermo", "Heat transfer", "Radiation",
+  "\\dot Q = \\varepsilon \\sigma A (T_1^4 - T_2^4)", "Q̇ = ε·σ·A·(T₁⁴ − T₂⁴)",
+  [["ε", "Emissivity", "—", 0.9], ["σ", "Stefan–Boltzmann constant", "W/m²·K⁴", 5.67e-8], ["A", "Area", "m²", 1.5], ["T_1", "Surface temperature", "K", 800], ["T_2", "Surroundings", "K", 300]],
+  ["Q̇", "Radiated heat", "kW"],
+  v => v.ε * v.σ * v.A * (Math.pow(v.T_1, 4) - Math.pow(v.T_2, 4)) / 1000, 30.734,
+  "A 1.5 m² surface at 527 °C radiates 30.7 kW to a 27 °C room. Below about 150 °C radiation is usually a minor term; above 400 °C it dominates.",
+  "Absolute temperatures to the fourth power. Polished metal has ε ≈ 0.05 and oxidised or painted surfaces ε ≈ 0.9 — a factor of eighteen from surface finish alone.");
+
+E("thermo", "Heat transfer", "Overall heat transfer coefficient",
+  "\\frac{1}{U} = \\frac{1}{h_1} + \\frac{L}{k} + \\frac{1}{h_2}", "1/U = 1/h₁ + L/k + 1/h₂",
+  [["h_1", "Inside film coefficient", "W/m²·K", 25], ["L", "Wall thickness", "m", 0.02], ["k", "Wall conductivity", "W/m·K", 45], ["h_2", "Outside film coefficient", "W/m²·K", 10]],
+  ["U", "Overall coefficient", "W/m²·K"],
+  v => 1 / (1 / v.h_1 + v.L / v.k + 1 / v.h_2), 7.1204,
+  "U = 7.12 W/m²·K, and the 10 W/m²·K outside film contributes 71 % of the total resistance. Improving the wall would be wasted effort.",
+  "Always find the dominant resistance before optimising anything. Add a fouling factor for any exchanger that will see service.");
+
+E("thermo", "Heat exchangers", "Log mean temperature difference",
+  "LMTD = \\frac{\\Delta T_1 - \\Delta T_2}{\\ln(\\Delta T_1/\\Delta T_2)}", "LMTD = (ΔT₁ − ΔT₂) / ln(ΔT₁/ΔT₂)",
+  [["ΔT_1", "Difference at one end", "K", 60], ["ΔT_2", "Difference at the other end", "K", 20]],
+  ["LMTD", "Log mean temperature difference", "K"],
+  v => (v.ΔT_1 - v.ΔT_2) / Math.log(v.ΔT_1 / v.ΔT_2), 36.409,
+  "Ends of 60 K and 20 K give 36.4 K, not the 40 K arithmetic mean. The log mean is always the smaller of the two, so using the average oversizes nothing and undersizes the answer.",
+  "Counterflow as written. Crossflow and shell-and-tube need a correction factor F, typically 0.8–0.95.");
+
+E("thermo", "Heat exchangers", "Heat exchanger duty",
+  "\\dot Q = U A \\cdot LMTD", "Q̇ = U·A·LMTD",
+  [["U", "Overall coefficient", "W/m²·K", 7.1204], ["A", "Heat transfer area", "m²", 12], ["LMTD", "Log mean temperature difference", "K", 36.409]],
+  ["Q̇", "Heat duty", "W"],
+  v => v.U * v.A * v.LMTD, 3110.8,
+  "3.11 kW through 12 m² at U = 7.1. Rearranged for A, this is how every heat exchanger gets sized.",
+  "Include the crossflow correction F if the flow is not pure counterflow, and a fouling allowance for anything that runs longer than a test.");
+
+E("thermo", "Flow", "Reynolds number",
+  "Re = \\frac{\\rho v D}{\\mu}", "Re = ρ·v·D / μ",
+  [["ρ", "Density", "kg/m³", 1000], ["v", "Velocity", "m/s", 2], ["D", "Diameter", "m", 0.05], ["μ", "Dynamic viscosity", "Pa·s", 0.001]],
+  ["Re", "Reynolds number", "—"],
+  v => v.ρ * v.v * v.D / v.μ, 100000,
+  "Water at 2 m/s in a 50 mm pipe gives Re = 100 000 — firmly turbulent, and where nearly all industrial pipework sits.",
+  "Below 2300 laminar, above 4000 turbulent, and a no-man's-land between. The transition depends on roughness and inlet disturbance, so treat it as a band.");
+
+E("thermo", "Flow", "Mass flow rate",
+  "\\dot m = \\rho A v", "ṁ = ρ·A·v",
+  [["ρ", "Density", "kg/m³", 1000], ["A", "Cross-sectional area", "m²", 0.0019635], ["v", "Velocity", "m/s", 2]],
+  ["ṁ", "Mass flow rate", "kg/s"],
+  v => v.ρ * v.A * v.v, 3.927,
+  "The same 50 mm pipe carries 3.93 kg/s, or 236 kg/min.",
+  "Conserved along a duct even where density changes. For gases, use the density at the point where you measured the velocity.");
+
+E("thermo", "Flow", "Dittus–Boelter correlation",
+  "Nu = 0.023\\,Re^{0.8} Pr^{0.4}", "Nu = 0.023·Re^0.8·Pr^0.4",
+  [["Re", "Reynolds number", "—", 100000], ["Pr", "Prandtl number", "—", 7]],
+  ["Nu", "Nusselt number", "—"],
+  v => 0.023 * Math.pow(v.Re, 0.8) * Math.pow(v.Pr, 0.4), 500.75,
+  "Re = 100 000 in water (Pr = 7) gives Nu = 501, and h = Nu·k/D = 6010 W/m²·K for a 50 mm pipe. This is how a film coefficient is actually obtained.",
+  "Turbulent, fully developed, smooth tube, Re > 10 000, 0.7 < Pr < 160. The 0.4 exponent is for heating; use 0.3 for cooling.");
+
+E("thermo", "Flow", "Film coefficient from Nusselt number",
+  "h = \\frac{Nu\\,k}{D}", "h = Nu·k / D",
+  [["Nu", "Nusselt number", "—", 500.75], ["k", "Fluid thermal conductivity", "W/m·K", 0.6], ["D", "Characteristic length", "m", 0.05]],
+  ["h", "Heat transfer coefficient", "W/m²·K"],
+  v => v.Nu * v.k / v.D, 6009,
+  "6010 W/m²·K for water in a 50 mm tube — two hundred times better than still air, which is why water cooling wins whenever it is allowed.",
+  "The Nusselt number is the ratio of convective to conductive transport. Nu = 1 means the fluid may as well be a solid slab.");
+
+E("thermo", "Entropy", "Entropy change of a solid or liquid",
+  "\\Delta S = m c \\ln\\!\\left(\\frac{T_2}{T_1}\\right)", "ΔS = m·c·ln(T₂/T₁)",
+  [["m", "Mass", "kg", 5], ["c", "Specific heat capacity", "J/kg·K", 4186], ["T_1", "Start temperature", "K", 293], ["T_2", "End temperature", "K", 333]],
+  ["ΔS", "Entropy change", "J/K"],
+  v => v.m * v.c * Math.log(v.T_2 / v.T_1), 2678.6,
+  "Heating 5 kg of water from 20 °C to 60 °C raises its entropy by 2679 J/K.",
+  "Absolute temperatures. Entropy is a property, so this depends only on the end states — not on how you got there.");
+
+
+/* ── STATICS ───────────────────────────────────────────────────────── */
+E("statics", "Equilibrium", "Resultant of two forces",
+  "R = \\sqrt{F_x^2 + F_y^2}", "R = √(Fx² + Fy²)",
+  [["F_x", "Component along x", "N", 300], ["F_y", "Component along y", "N", 400]],
+  ["R", "Resultant force", "N"],
+  v => Math.sqrt(v.F_x * v.F_x + v.F_y * v.F_y), 500,
+  "300 N east and 400 N north resolve to 500 N at 53.1° from the x axis. Equilibrium then needs an equal and opposite 500 N somewhere.",
+  "Components first, resultant second — never add magnitudes directly unless the forces are collinear.");
+
+E("statics", "Equilibrium", "Moment of a force",
+  "M = F d", "M = F · d",
+  [["F", "Force", "N", 250], ["d", "Perpendicular distance to the pivot", "m", 0.3]],
+  ["M", "Moment", "N·m"],
+  v => v.F * v.d, 75,
+  "250 N on a 300 mm spanner is 75 N·m. The perpendicular distance is what counts — pulling at an angle shortens it and the torque drops with the cosine.",
+  "d is the perpendicular distance from the line of action to the pivot, not the length of the lever.");
+
+E("statics", "Equilibrium", "Angle of repose",
+  "\\theta = \\arctan(\\mu_s)", "θ = arctan(μs)",
+  [["μ_s", "Static friction coefficient", "—", 0.3]],
+  ["θ", "Angle of repose", "deg"],
+  v => Math.atan(v.μ_s) * 180 / Math.PI, 16.699,
+  "At μ = 0.3 a block starts to slide once the ramp passes 16.7°. Tilt a surface until something slips and you have measured its friction coefficient.",
+  "Independent of mass — the weight term cancels on both sides, which is why the test works with any object.");
+
+E("statics", "Equilibrium", "Force to push a body up an incline",
+  "F = W(\\sin\\theta + \\mu\\cos\\theta)", "F = W(sinθ + μ·cosθ)",
+  [["W", "Weight", "N", 1000], ["θ", "Incline angle", "deg", 15], ["μ", "Friction coefficient", "—", 0.2]],
+  ["F", "Force along the slope", "N"],
+  v => v.W * (Math.sin(v.θ * Math.PI / 180) + v.μ * Math.cos(v.θ * Math.PI / 180)), 452.03,
+  "Pushing 1 kN up a 15° slope against μ = 0.2 takes 452 N. Coming back down, friction helps and the holding force drops to 65 N.",
+  "Swap the sign on the friction term for motion down the slope. If W(sinθ − μcosθ) is negative the body will not slide on its own.");
+
+E("statics", "Beam reactions", "Simply supported reaction, point load",
+  "R_A = \\frac{P b}{L}", "R_A = P·b / L",
+  [["P", "Point load", "N", 12000], ["b", "Distance from the load to the far support", "m", 1.2], ["L", "Span", "m", 3]],
+  ["R_A", "Reaction at the near support", "N"],
+  v => v.P * v.b / v.L, 4800,
+  "A 12 kN load 1.8 m along a 3 m span puts 4.8 kN on the near support and 7.2 kN on the far one. The nearer support always takes more.",
+  "Statically determinate beams only. Two supports, two equations — add a third support and you need compatibility as well.");
+
+E("statics", "Beam reactions", "Maximum moment, central point load",
+  "M_{max} = \\frac{P L}{4}", "M_max = P·L / 4",
+  [["P", "Central point load", "N", 12000], ["L", "Span", "m", 3]],
+  ["M_max", "Maximum bending moment", "N·m"],
+  v => v.P * v.L / 4, 9000,
+  "12 kN at the centre of a 3 m span gives 9 kN·m at mid-span, which is where the beam is sized.",
+  "Simply supported with the load at mid-span. Off-centre, the maximum is Pab/L and sits under the load.");
+
+E("statics", "Beam reactions", "Maximum moment, uniform load",
+  "M_{max} = \\frac{w L^2}{8}", "M_max = w·L² / 8",
+  [["w", "Load per unit length", "N/m", 4000], ["L", "Span", "m", 3]],
+  ["M_max", "Maximum bending moment", "N·m"],
+  v => v.w * v.L * v.L / 8, 4500,
+  "4 kN/m over 3 m gives 4.5 kN·m — half what the same total load would do concentrated at the centre. Spreading a load always helps.",
+  "Simply supported. A fixed-ended beam under the same load carries wL²/12 at the supports and wL²/24 at mid-span.");
+
+E("statics", "Beam reactions", "Maximum shear, uniform load",
+  "V_{max} = \\frac{w L}{2}", "V_max = w·L / 2",
+  [["w", "Load per unit length", "N/m", 4000], ["L", "Span", "m", 3]],
+  ["V_max", "Maximum shear force", "N"],
+  v => v.w * v.L / 2, 6000,
+  "6 kN at each support. Shear peaks at the supports while moment peaks at mid-span — the two never coincide on a simple beam.",
+  "dM/dx = V, so the moment is a maximum exactly where the shear crosses zero.");
+
+E("statics", "Composite sections", "Centroid of a composite area",
+  "\\bar{y} = \\frac{\\sum A_i y_i}{\\sum A_i}", "ȳ = (A₁y₁ + A₂y₂) / (A₁ + A₂)",
+  [["A_1", "Area of part 1", "mm²", 2000], ["y_1", "Centroid height of part 1", "mm", 10], ["A_2", "Area of part 2", "mm²", 600], ["y_2", "Centroid height of part 2", "mm", 55]],
+  ["ȳ", "Composite centroid height", "mm"],
+  v => (v.A_1 * v.y_1 + v.A_2 * v.y_2) / (v.A_1 + v.A_2), 20.385,
+  "A 100 × 20 flange with a 10 × 60 rib sits at ȳ = 20.4 mm from the base. Every second moment of area then has to be transferred to this axis.",
+  "Treat a cut-out as a negative area. The centroid must land inside the material for the result to be believable.");
+
+E("statics", "Friction drives", "Belt friction (capstan)",
+  "\\frac{T_1}{T_2} = e^{\\mu\\theta}", "T₁ = T₂·e^(μθ)",
+  [["T_2", "Slack-side tension", "N", 200], ["μ", "Friction coefficient", "—", 0.3], ["θ", "Wrap angle", "rad", 3.1416]],
+  ["T_1", "Tight-side tension", "N"],
+  v => v.T_2 * Math.exp(v.μ * v.θ), 513.27,
+  "180° of wrap at μ = 0.3 multiplies tension by 2.57, so 200 N of slack tension holds 513 N. Three full turns multiply it by nearly 300.",
+  "Exponential in the wrap angle, which is why a few turns of rope around a post holds a boat. Radians, not degrees.");
+
+/* ── FLUID MECHANICS ───────────────────────────────────────────────── */
+E("fluids", "Conservation", "Continuity",
+  "A_1 v_1 = A_2 v_2", "v₂ = A₁v₁ / A₂",
+  [["A_1", "Inlet area", "mm²", 1963], ["v_1", "Inlet velocity", "m/s", 2], ["A_2", "Outlet area", "mm²", 491]],
+  ["v_2", "Outlet velocity", "m/s"],
+  v => v.A_1 * v.v_1 / v.A_2, 7.9959,
+  "Squeeze a 50 mm pipe down to 25 mm and the velocity quadruples, 2 m/s to 8 m/s. Area goes as diameter squared, so halving the bore is a four-fold speed-up.",
+  "Steady incompressible flow. For a gas with changing density, conserve mass flow ρAv instead.");
+
+E("fluids", "Conservation", "Bernoulli — pressure at a second point",
+  "p_2 = p_1 + \\tfrac{1}{2}\\rho(v_1^2 - v_2^2) + \\rho g(z_1 - z_2)", "p₂ = p₁ + ½ρ(v₁²−v₂²) + ρg(z₁−z₂)",
+  [["p_1", "Pressure at point 1", "Pa", 300000], ["ρ", "Density", "kg/m³", 1000], ["v_1", "Velocity at 1", "m/s", 2], ["v_2", "Velocity at 2", "m/s", 8], ["z_1", "Elevation at 1", "m", 0], ["z_2", "Elevation at 2", "m", 0]],
+  ["p_2", "Pressure at point 2", "Pa"],
+  v => v.p_1 + 0.5 * v.ρ * (v.v_1 * v.v_1 - v.v_2 * v.v_2) + v.ρ * 9.81 * (v.z_1 - v.z_2), 270000,
+  "Accelerating water from 2 to 8 m/s costs 30 kPa of static pressure. Speed up the flow and the pressure falls — the whole basis of a venturi, and of cavitation.",
+  "Inviscid, incompressible, steady, along one streamline, no work or heat added. Real pipes also lose head to friction, which Bernoulli alone does not capture.");
+
+E("fluids", "Statics", "Hydrostatic pressure",
+  "p = p_0 + \\rho g h", "p = p₀ + ρ·g·h",
+  [["p_0", "Surface pressure", "Pa", 101325], ["ρ", "Density", "kg/m³", 1000], ["g", "Gravity", "m/s²", 9.81], ["h", "Depth", "m", 10]],
+  ["p", "Absolute pressure", "Pa"],
+  v => v.p_0 + v.ρ * v.g * v.h, 199425,
+  "Ten metres of water adds 98.1 kPa, so pressure roughly doubles at that depth. One bar per ten metres is the diver's rule of thumb.",
+  "Depends only on depth, never on the shape or volume of the vessel — the hydrostatic paradox.");
+
+E("fluids", "Statics", "Buoyancy",
+  "F_B = \\rho_f g V_{sub}", "F_B = ρ_f·g·V_sub",
+  [["ρ_f", "Fluid density", "kg/m³", 1000], ["g", "Gravity", "m/s²", 9.81], ["V_sub", "Submerged volume", "m³", 0.25]],
+  ["F_B", "Buoyant force", "N"],
+  v => v.ρ_f * v.g * v.V_sub, 2452.5,
+  "A quarter of a cubic metre submerged in water is pushed up with 2.45 kN — the weight of the water it displaced.",
+  "Archimedes. A body floats when the displaced weight equals its own, which fixes how deep it sits.");
+
+E("fluids", "Flow regime", "Reynolds number (pipe)",
+  "Re = \\frac{\\rho v D}{\\mu}", "Re = ρ·v·D / μ",
+  [["ρ", "Density", "kg/m³", 1000], ["v", "Mean velocity", "m/s", 2], ["D", "Diameter", "m", 0.05], ["μ", "Dynamic viscosity", "Pa·s", 0.001]],
+  ["Re", "Reynolds number", "—"],
+  v => v.ρ * v.v * v.D / v.μ, 100000,
+  "Water at 2 m/s in a 50 mm pipe gives Re = 100 000, firmly turbulent. Oil of 100 cP in the same pipe gives Re = 1000 and stays laminar.",
+  "Laminar below 2300, turbulent above 4000, unpredictable between. Use the hydraulic diameter 4A/P for anything not round.");
+
+E("fluids", "Flow regime", "Friction factor, laminar flow",
+  "f = \\frac{64}{Re}", "f = 64 / Re",
+  [["Re", "Reynolds number", "—", 1800]],
+  ["f", "Darcy friction factor", "—"],
+  v => 64 / v.Re, 0.035556,
+  "At Re = 1800 the friction factor is 0.0356, and it depends only on Reynolds number — pipe roughness is irrelevant in laminar flow.",
+  "Laminar only. Turbulent flow needs Colebrook or the Moody chart, where roughness matters a great deal.");
+
+E("fluids", "Losses", "Darcy–Weisbach pressure loss",
+  "\\Delta p = f\\frac{L}{D}\\frac{\\rho v^2}{2}", "Δp = f·(L/D)·(ρv²/2)",
+  [["f", "Darcy friction factor", "—", 0.018], ["L", "Pipe length", "m", 50], ["D", "Diameter", "m", 0.05], ["ρ", "Density", "kg/m³", 1000], ["v", "Mean velocity", "m/s", 2]],
+  ["Δp", "Pressure loss", "Pa"],
+  v => v.f * (v.L / v.D) * (v.ρ * v.v * v.v / 2), 36000,
+  "50 m of 50 mm pipe at 2 m/s costs 36 kPa, about 3.7 m of head. Velocity is squared, so sizing the pipe one size up is usually cheaper than a bigger pump.",
+  "Major losses only. Add the fittings separately — on a short run with many bends they can exceed the straight-pipe loss.");
+
+E("fluids", "Losses", "Minor head loss",
+  "h_L = K_L\\frac{v^2}{2g}", "h_L = K_L·v² / (2g)",
+  [["K_L", "Loss coefficient", "—", 0.9], ["v", "Velocity", "m/s", 2], ["g", "Gravity", "m/s²", 9.81]],
+  ["h_L", "Head loss", "m"],
+  v => v.K_L * v.v * v.v / (2 * v.g), 0.18349,
+  "A 90° elbow at K = 0.9 and 2 m/s costs 0.18 m of head. Ten of them equal about 50 m of straight pipe.",
+  "K values are empirical and vary by make. A fully open gate valve is about 0.2; a globe valve is around 10.");
+
+E("fluids", "Forces", "Drag force",
+  "F_D = \\tfrac{1}{2} C_D \\rho A v^2", "F_D = ½·C_D·ρ·A·v²",
+  [["C_D", "Drag coefficient", "—", 0.32], ["ρ", "Density", "kg/m³", 1.225], ["A", "Frontal area", "m²", 2.2], ["v", "Velocity", "m/s", 27.78]],
+  ["F_D", "Drag force", "N"],
+  v => 0.5 * v.C_D * v.ρ * v.A * v.v * v.v, 332.75,
+  "A car with Cd 0.32 and 2.2 m² frontal area meets 333 N of drag at 100 km/h, which takes 9.2 kW just to overcome. At 200 km/h it needs eight times that power.",
+  "Drag goes as v² and the power to overcome it as v³. Cd itself drifts with Reynolds number.");
+
+E("fluids", "Forces", "Newtonian shear stress",
+  "\\tau = \\mu \\frac{dv}{dy}", "τ = μ · dv/dy",
+  [["μ", "Dynamic viscosity", "Pa·s", 0.1], ["dvdy", "Velocity gradient", "1/s", 500]],
+  ["τ", "Shear stress", "Pa"],
+  v => v.μ * v.dvdy, 50,
+  "A 0.1 Pa·s oil sheared at 500 s⁻¹ — say 0.5 m/s across a 1 mm film — carries 50 Pa. Multiply by the bearing area for the drag torque.",
+  "Newtonian fluids only. Greases, polymer melts and slurries shear-thin, and μ itself then depends on the rate.");
+
+E("fluids", "Compressible", "Mach number",
+  "Ma = \\frac{v}{\\sqrt{\\gamma R T}}", "Ma = v / √(γ·R·T)",
+  [["v", "Flow velocity", "m/s", 250], ["γ", "Ratio of specific heats", "—", 1.4], ["R", "Specific gas constant", "J/kg·K", 287], ["T", "Absolute temperature", "K", 288]],
+  ["Ma", "Mach number", "—"],
+  v => v.v / Math.sqrt(v.γ * v.R * v.T), 0.73527,
+  "250 m/s in air at 15 °C is Mach 0.735. Above about Mach 0.3 compressibility starts to matter and the incompressible formulas drift.",
+  "Speed of sound depends on temperature alone for an ideal gas — not on pressure, and not on altitude except through temperature.");
+
+E("fluids", "Metering", "Orifice flow rate",
+  "Q = C_d A_0 \\sqrt{2 g \\Delta h}", "Q = C_d·A₀·√(2g·Δh)",
+  [["C_d", "Discharge coefficient", "—", 0.61], ["A_0", "Orifice area", "m²", 0.0005], ["g", "Gravity", "m/s²", 9.81], ["Δh", "Head across the orifice", "m", 3]],
+  ["Q", "Volumetric flow", "m³/s"],
+  v => v.C_d * v.A_0 * Math.sqrt(2 * v.g * v.Δh), 0.0023404,
+  "A 25 mm orifice under 3 m of head passes 2.34 L/s. Flow goes as the square root of head, so doubling the head gains only 41 %.",
+  "Cd ≈ 0.61 for a sharp-edged orifice, 0.98 for a well-shaped nozzle. The jet contracts below the hole area, which is most of what Cd accounts for.");
+
+E("fluids", "Machines", "Pump shaft power",
+  "P = \\frac{\\rho g Q H}{\\eta}", "P = ρ·g·Q·H / η",
+  [["ρ", "Density", "kg/m³", 1000], ["g", "Gravity", "m/s²", 9.81], ["Q", "Volumetric flow", "m³/s", 0.02], ["H", "Head", "m", 25], ["η", "Pump efficiency", "—", 0.7]],
+  ["P", "Shaft power", "W"],
+  v => v.ρ * v.g * v.Q * v.H / v.η, 7007.1,
+  "20 L/s against 25 m of head at 70 % efficiency needs 7.0 kW at the shaft. The hydraulic power is only 4.9 kW; the rest is pump loss.",
+  "Shaft power, not motor input — add the motor efficiency on top, and size the drive for the worst point on the curve rather than the duty point.");
+
+/* ── FATIGUE ───────────────────────────────────────────────────────── */
+E("fatigue", "Cycle description", "Alternating stress",
+  "\\sigma_a = \\frac{\\sigma_{max} - \\sigma_{min}}{2}", "σ_a = (σ_max − σ_min) / 2",
+  [["σ_max", "Peak stress in the cycle", "MPa", 180], ["σ_min", "Valley stress in the cycle", "MPa", 40]],
+  ["σ_a", "Alternating stress amplitude", "MPa"],
+  v => (v.σ_max - v.σ_min) / 2, 70,
+  "A cycle running between 40 and 180 MPa has an amplitude of 70 MPa about a mean of 110. The amplitude drives crack growth; the mean decides how much the material can take.",
+  "Fatigue is driven by the stress range, not the peak. A part held at a steady 180 MPa never fatigues.");
+
+E("fatigue", "Cycle description", "Mean stress",
+  "\\sigma_m = \\frac{\\sigma_{max} + \\sigma_{min}}{2}", "σ_m = (σ_max + σ_min) / 2",
+  [["σ_max", "Peak stress", "MPa", 180], ["σ_min", "Valley stress", "MPa", 40]],
+  ["σ_m", "Mean stress", "MPa"],
+  v => (v.σ_max + v.σ_min) / 2, 110,
+  "110 MPa mean. Positive mean stress holds cracks open and shortens life; compressive mean stress closes them, which is why shot peening works.",
+  "A bolted joint is a mean-stress problem: preload sets σ_m high and the external load adds only a small σ_a on top.");
+
+E("fatigue", "Cycle description", "Stress ratio",
+  "R = \\frac{\\sigma_{min}}{\\sigma_{max}}", "R = σ_min / σ_max",
+  [["σ_min", "Valley stress", "MPa", 40], ["σ_max", "Peak stress", "MPa", 180]],
+  ["R", "Stress ratio", "—"],
+  v => v.σ_min / v.σ_max, 0.22222,
+  "R = 0.22 here. R = −1 is fully reversed, R = 0 is zero-to-tension, and R → 1 approaches a static load. Published S-N data must state its R.",
+  "Comparing fatigue data taken at different R values without a mean-stress correction is one of the easier ways to get a wrong answer.");
+
+E("fatigue", "Strength", "Corrected endurance limit",
+  "S_e = k_a k_b k_c k_d k_e S_e'", "S_e = k_a·k_b·k_c·k_d·k_e·S_e′",
+  [["k_a", "Surface finish factor", "—", 0.75], ["k_b", "Size factor", "—", 0.9], ["k_c", "Load type factor", "—", 1], ["k_d", "Temperature factor", "—", 1], ["k_e", "Reliability factor", "—", 0.868], ["Sep", "Uncorrected endurance limit", "MPa", 350]],
+  ["S_e", "Corrected endurance limit", "MPa"],
+  v => v.k_a * v.k_b * v.k_c * v.k_d * v.k_e * v.Sep, 205.07,
+  "A 700 MPa steel starts at S_e′ ≈ 350 MPa and lands at 205 MPa once finish, size and 95 % reliability are applied. Those factors routinely halve the textbook number.",
+  "S_e′ ≈ 0.5·S_u for steel below 1400 MPa. Non-ferrous metals have no true endurance limit, so quote fatigue strength at a stated life instead.");
+
+E("fatigue", "Strength", "Notch fatigue factor",
+  "K_f = 1 + q(K_t - 1)", "K_f = 1 + q(K_t − 1)",
+  [["q", "Notch sensitivity", "—", 0.8], ["K_t", "Geometric stress concentration", "—", 2.5]],
+  ["K_f", "Fatigue stress concentration", "—"],
+  v => 1 + v.q * (v.K_t - 1), 2.2,
+  "A K_t of 2.5 in a notch-sensitive steel acts like 2.2 in fatigue. Divide the endurance limit by K_f, or multiply the alternating stress by it — not both.",
+  "q runs from 0 (fully insensitive) to 1 (fully sensitive) and rises with strength and notch radius. Hardened steels are the most notch sensitive.");
+
+E("fatigue", "Life criteria", "Modified Goodman factor of safety",
+  "\\frac{1}{n} = \\frac{\\sigma_a}{S_e} + \\frac{\\sigma_m}{S_u}", "n = 1 / (σ_a/S_e + σ_m/S_u)",
+  [["σ_a", "Alternating stress", "MPa", 70], ["S_e", "Corrected endurance limit", "MPa", 205], ["σ_m", "Mean stress", "MPa", 110], ["S_u", "Ultimate strength", "MPa", 700]],
+  ["n", "Factor of safety", "—"],
+  v => 1 / (v.σ_a / v.S_e + v.σ_m / v.S_u), 2.0056,
+  "70 MPa alternating on a 110 MPa mean against S_e = 205 and S_u = 700 gives n = 2.01 — comfortable for infinite life.",
+  "The conservative line, and the usual choice for design. Gerber's parabola fits ductile test data better but leaves less margin.");
+
+E("fatigue", "Life criteria", "Gerber factor of safety",
+  "\\frac{\\sigma_a}{S_e} + \\left(\\frac{\\sigma_m}{S_u}\\right)^2 = \\frac{1}{n}", "n from σ_a/S_e + (σ_m/S_u)² ",
+  [["σ_a", "Alternating stress", "MPa", 70], ["S_e", "Corrected endurance limit", "MPa", 205], ["σ_m", "Mean stress", "MPa", 110], ["S_u", "Ultimate strength", "MPa", 700]],
+  ["n", "Factor of safety", "—"],
+  v => {
+    const a = v.σ_a / v.S_e, b = v.σ_m / v.S_u;
+    /* solve a·n + (b·n)² = 1 for n */
+    return (-a + Math.sqrt(a * a + 4 * b * b)) / (2 * b * b);
+  }, 2.4828,
+  "The same stress state scores 2.48 on Gerber against 2.01 on Goodman. Gerber sits closer to the test data; Goodman keeps the margin.",
+  "Use Goodman for design and Gerber for explaining why a part that failed Goodman is still in service.");
+
+E("fatigue", "Cumulative damage", "Miner's rule",
+  "D = \\sum_i \\frac{n_i}{N_i}", "D = n₁/N₁ + n₂/N₂ + n₃/N₃",
+  [["n_1", "Cycles applied at level 1", "—", 20000], ["N_1", "Cycles to failure at level 1", "—", 50000], ["n_2", "Cycles applied at level 2", "—", 100000], ["N_2", "Cycles to failure at level 2", "—", 500000], ["n_3", "Cycles applied at level 3", "—", 300000], ["N_3", "Cycles to failure at level 3", "—", 2000000]],
+  ["D", "Cumulative damage", "—"],
+  v => v.n_1 / v.N_1 + v.n_2 / v.N_2 + v.n_3 / v.N_3, 0.75,
+  "Three load blocks sum to D = 0.75, so three quarters of the life is spent. Failure is predicted at D = 1.",
+  "Linear and order-independent, which reality is not — a high block first can do more damage than the same block last. Design practice often caps D at 0.3 to 0.7.");
+
+/* ── MACHINE DESIGN ────────────────────────────────────────────────── */
+E("machine", "Fasteners", "Torque to preload",
+  "T = K F_i d", "T = K · F_i · d",
+  [["K", "Nut factor", "—", 0.2], ["F_i", "Target preload", "N", 22500], ["d", "Nominal diameter", "mm", 10]],
+  ["T", "Tightening torque", "N·m"],
+  v => v.K * v.F_i * v.d / 1000, 45,
+  "22.5 kN of preload in an M10 at K = 0.2 needs 45 N·m. Only about 10 % of that torque becomes tension — the rest is lost to thread and head friction.",
+  "K swings from 0.11 lubricated to 0.30 dry and rusty, and it takes the preload with it. Torque control alone is worth about ±25 % scatter; the Joint Bench models that directly.");
+
+E("machine", "Fasteners", "Bolt preload stress",
+  "\\sigma_i = \\frac{F_i}{A_s}", "σ_i = F_i / A_s",
+  [["F_i", "Preload", "N", 22500], ["A_s", "Tensile stress area", "mm²", 58]],
+  ["σ_i", "Preload stress", "MPa"],
+  v => v.F_i / v.A_s, 387.93,
+  "22.5 kN through the 58 mm² stress area of an M10 is 388 MPa — 47 % of the 830 MPa proof stress of a 10.9 bolt. Typical practice targets 65 to 75 %.",
+  "Use the tensile stress area, never the shank or the minor-diameter area. The Joint Bench works this through with scatter and embedding losses applied.");
+
+E("machine", "Shafts", "Shaft diameter from torsion",
+  "d = \\left(\\frac{16T}{\\pi \\tau_{allow}}\\right)^{1/3}", "d = (16T / (π·τ_allow))^(1/3)",
+  [["T", "Transmitted torque", "N·mm", 500000], ["τ_allow", "Allowable shear stress", "MPa", 40]],
+  ["d", "Required diameter", "mm"],
+  v => Math.pow(16 * v.T / (Math.PI * v.τ_allow), 1 / 3), 39.929,
+  "500 N·m at a 40 MPa allowable needs Ø39.9 mm, so take the next standard size up. Diameter goes as the cube root — doubling the torque only adds 26 % to the diameter.",
+  "Solid circular shaft in pure torsion. Add bending through an equivalent stress, and a keyway knocks roughly 25 % off the section's capacity.");
+
+E("machine", "Shafts", "Torsional stiffness of a shaft",
+  "k_t = \\frac{J G}{L}", "k_t = J·G / L",
+  [["J", "Polar moment of area", "mm⁴", 251327], ["G", "Shear modulus", "MPa", 79000], ["L", "Length", "mm", 1000]],
+  ["k_t", "Torsional stiffness", "N·mm/rad"],
+  v => v.J * v.G / v.L, 19854833,
+  "A 1 m Ø40 mm steel shaft is 19.85 kN·m/rad, or 346 N·m per degree. Pair it with the drive inertia and you have the torsional resonance.",
+  "This is the k_t that goes into ω_n = √(k_t/J_mass). Note that J here is an area property while the J in the frequency formula is a mass property.");
+
+E("machine", "Gears", "Gear ratio",
+  "GR = \\frac{N_2}{N_1} = \\frac{\\omega_1}{\\omega_2} = \\frac{T_2}{T_1}", "GR = N₂ / N₁",
+  [["N_1", "Teeth on the driver", "—", 18], ["N_2", "Teeth on the driven gear", "—", 54]],
+  ["GR", "Gear ratio", "—"],
+  v => v.N_2 / v.N_1, 3,
+  "18 teeth driving 54 is a 3:1 reduction — a third of the speed and three times the torque, less whatever the mesh loses.",
+  "Below about 17 teeth a 20° pressure-angle pinion undercuts at the root unless it is profile shifted.");
+
+E("machine", "Gears", "Gear tangential force",
+  "W_t = \\frac{2T}{d}", "W_t = 2T / d",
+  [["T", "Torque on the gear", "N·mm", 150000], ["d", "Pitch diameter", "mm", 108]],
+  ["W_t", "Tangential tooth load", "N"],
+  v => 2 * v.T / v.d, 2777.8,
+  "150 N·m on a 108 mm pitch circle puts 2.78 kN on the tooth. The radial component adds W_t·tan(20°) = 1.01 kN, and the bearings carry the resultant.",
+  "Pitch diameter equals module × number of teeth. Tangential load drives tooth bending; the resultant drives bearing selection.");
+
+E("machine", "Gears", "Lewis bending stress",
+  "\\sigma = \\frac{W_t}{F m Y}", "σ = W_t / (F·m·Y)",
+  [["W_t", "Tangential load", "N", 2777.8], ["F", "Face width", "mm", 30], ["m", "Module", "mm", 2], ["Y", "Lewis form factor", "—", 0.34]],
+  ["σ", "Tooth root bending stress", "MPa"],
+  v => v.W_t / (v.F * v.m * v.Y), 136.17,
+  "2.78 kN on a 30 mm wide, module 2 tooth gives 136 MPa at the root. Against a 200 MPa allowable that is a factor of 1.5 before dynamic effects.",
+  "The Lewis equation is a first pass only. AGMA adds dynamic, size, load-distribution and rim-thickness factors, and they usually cost you 30 to 50 %.");
+
+E("machine", "Springs", "Helical spring rate",
+  "k = \\frac{G d^4}{8 D^3 n_a}", "k = G·d⁴ / (8·D³·n_a)",
+  [["G", "Shear modulus", "MPa", 79000], ["d", "Wire diameter", "mm", 3], ["D", "Mean coil diameter", "mm", 20], ["n_a", "Active coils", "—", 8]],
+  ["k", "Spring rate", "N/mm"],
+  v => v.G * Math.pow(v.d, 4) / (8 * Math.pow(v.D, 3) * v.n_a), 12.498,
+  "3 mm wire on a 20 mm coil with 8 active turns gives 12.5 N/mm. Wire diameter to the fourth power dominates — going up to 3.2 mm wire takes it to 16.2 N/mm.",
+  "Active coils, not total — squared and ground ends contribute about two inactive coils.");
+
+E("machine", "Springs", "Spring shear stress",
+  "\\tau = K_W \\frac{8 F D}{\\pi d^3}", "τ = K_W·8·F·D / (π·d³)",
+  [["K_W", "Wahl correction factor", "—", 1.2], ["F", "Spring force", "N", 150], ["D", "Mean coil diameter", "mm", 20], ["d", "Wire diameter", "mm", 3]],
+  ["τ", "Shear stress in the wire", "MPa"],
+  v => v.K_W * 8 * v.F * v.D / (Math.PI * Math.pow(v.d, 3)), 339.53,
+  "150 N on that spring puts 340 MPa in the wire, against the 700 MPa or so a music-wire spring is allowed in static service. Stress goes as the cube of wire diameter, so thinner wire bites quickly.",
+  "The Wahl factor accounts for curvature and direct shear, and runs 1.1 to 1.6 as the spring index D/d falls. An index below 4 is hard to coil.");
+
+E("machine", "Bearings", "Rolling bearing L10 life",
+  "L_{10} = \\left(\\frac{C}{P}\\right)^{p} \\times 10^6", "L₁₀ = (C/P)^p × 10⁶ rev",
+  [["C", "Basic dynamic load rating", "N", 25000], ["P", "Equivalent dynamic load", "N", 5000], ["p", "Exponent — 3 ball, 10/3 roller", "—", 3]],
+  ["L_10", "Life", "Mrev"],
+  v => Math.pow(v.C / v.P, v.p), 125,
+  "A 5:1 margin on load rating gives 125 million revolutions — about 20 800 hours at 100 rpm. Halving the load multiplies life by eight.",
+  "L10 means 90 % survive, so one bearing in ten is expected to fail by then. Life goes as the cube of load, which is why a small load reduction pays so well.");
+
+E("machine", "Contact", "Hertz contact pressure, sphere on flat",
+  "p_0 = \\left(\\frac{6 F E^{*2}}{\\pi^3 R^2}\\right)^{1/3}", "p₀ = (6F·E*² / (π³·R²))^(1/3)",
+  [["F", "Normal force", "N", 500], ["Estar", "Effective modulus E*", "MPa", 113000], ["R", "Sphere radius", "mm", 10]],
+  ["p_0", "Peak contact pressure", "MPa"],
+  v => Math.pow(6 * v.F * v.Estar * v.Estar / (Math.pow(Math.PI, 3) * v.R * v.R), 1 / 3), 2311.8,
+  "500 N on a 10 mm steel ball against a flat peaks at 2312 MPa — far above yield in tension, yet survivable because the contact is triaxially confined.",
+  "1/E* = (1−ν₁²)/E₁ + (1−ν₂²)/E₂. Peak subsurface shear sits about 0.48a below the surface, which is where spalling starts.");
+
+/* ═══════════════════════════════════════════════════════════════════════
+   TAXONOMY
+   The library was first written against four subjects. The groups map onto
+   the nine engineering disciplines below without touching the entries.
+   ═══════════════════════════════════════════════════════════════════════ */
+const CATS = {
+  statics:    {n: "Statics",          d: "Equilibrium, reactions and friction",        k: "--c-statics"},
+  materials:  {n: "Mech. of Materials", d: "Stress, strain, beams and torsion",        k: "--c-materials"},
+  machine:    {n: "Machine Design",   d: "Fasteners, shafts, gears, springs, bearings", k: "--c-machine"},
+  dynamics:   {n: "Dynamics",         d: "Motion, force, energy and momentum",          k: "--c-dynamics"},
+  vibrations: {n: "Vibration",        d: "Natural frequency, damping and isolation",    k: "--c-vibrations"},
+  fluids:     {n: "Fluid Mechanics",  d: "Flow, losses, drag and pumps",                k: "--c-fluids"},
+  thermo:     {n: "Thermodynamics",   d: "Gas laws, cycles and entropy",                k: "--c-thermo"},
+  heat:       {n: "Heat Transfer",    d: "Conduction, convection, radiation, exchangers", k: "--c-heat"},
+  fatigue:    {n: "Fatigue",          d: "Cyclic stress, endurance and damage",         k: "--c-fatigue"}
+};
+const REMAP = {
+  "Stress & strain": "materials", "Bending & torsion": "materials", "Deflection": "materials",
+  "Combined stress": "materials", "Pressure vessels": "materials",
+  "Stability": "machine", "Design margin": "machine",
+  "Linear kinematics": "dynamics", "Kinetics": "dynamics", "Rotation": "dynamics",
+  "Energy & power": "dynamics", "Momentum": "dynamics", "Projectiles": "dynamics",
+  "Free vibration": "vibrations", "Damping": "vibrations", "Forced response": "vibrations",
+  "Isolation": "vibrations", "Excitation": "vibrations", "Continuous systems": "vibrations",
+  "Gas laws": "thermo", "First law": "thermo", "Cycles": "thermo", "Entropy": "thermo",
+  "Heat transfer": "heat", "Heat exchangers": "heat", "Flow": "fluids"
+};
+EQ.forEach(e => { if (REMAP[e.grp]) e.cat = REMAP[e.grp]; });
+/* stable sort: disciplines in rail order, original order kept inside each */
+EQ.sort((a, b) => {
+  const ks = Object.keys(CATS);
+  return ks.indexOf(a.cat) - ks.indexOf(b.cat);
+});
+EQ.forEach((e, i) => e.i = i + 1);
+
+/* ═══════════════════════════════════════════════════════════════════════
+   CROSS-SECTION PROPERTIES
+   Each shape draws itself from the dimensions you type and returns its real
+   properties, so the picture and the numbers can never disagree.
+   ═══════════════════════════════════════════════════════════════════════ */
+const P4 = Math.PI / 4, P64 = Math.PI / 64, P32 = Math.PI / 32;
+const SECTIONS = [
+  {
+    id: "rect", n: "Rectangle", sub: "solid bar, b × h",
+    vars: [["b", "Width", "mm", 50], ["h", "Depth", "mm", 100]],
+    props: v => {
+      const A = v.b * v.h, Ix = v.b * Math.pow(v.h, 3) / 12, Iy = v.h * Math.pow(v.b, 3) / 12;
+      return [["Area", "A = bh", A, "mm²"],
+        ["Centroid from base", "\\bar{y} = h/2", v.h / 2, "mm"],
+        ["Second moment I_x", "I_x = \\dfrac{bh^3}{12}", Ix, "mm⁴"],
+        ["Second moment I_y", "I_y = \\dfrac{hb^3}{12}", Iy, "mm⁴"],
+        ["Section modulus S_x", "S_x = \\dfrac{bh^2}{6}", v.b * v.h * v.h / 6, "mm³"],
+        ["Radius of gyration r_x", "r_x = \\dfrac{h}{\\sqrt{12}}", Math.sqrt(Ix / A), "mm"],
+        ["Torsion constant J", "J \\approx \\dfrac{bh(b^2+h^2)}{12}", v.b * v.h * (v.b * v.b + v.h * v.h) / 12, "mm⁴"]];
+    },
+    draw: v => ({w: v.b, h: v.h, path: (x, y, s) => "M" + x(-v.b / 2) + "," + y(0) + "H" + x(v.b / 2) + "V" + y(v.h) + "H" + x(-v.b / 2) + "Z"})
+  },
+  {
+    id: "box", n: "Hollow Rectangle", sub: "box section, wall t",
+    vars: [["b", "Outside width", "mm", 50], ["h", "Outside depth", "mm", 100], ["t", "Wall thickness", "mm", 5]],
+    props: v => {
+      const bi = Math.max(0.01, v.b - 2 * v.t), hi = Math.max(0.01, v.h - 2 * v.t);
+      const A = v.b * v.h - bi * hi;
+      const Ix = (v.b * Math.pow(v.h, 3) - bi * Math.pow(hi, 3)) / 12;
+      return [["Area", "A = bh - b_i h_i", A, "mm²"],
+        ["Centroid from base", "\\bar{y} = h/2", v.h / 2, "mm"],
+        ["Second moment I_x", "I_x = \\dfrac{bh^3 - b_i h_i^3}{12}", Ix, "mm⁴"],
+        ["Second moment I_y", "I_y = \\dfrac{hb^3 - h_i b_i^3}{12}", (v.h * Math.pow(v.b, 3) - hi * Math.pow(bi, 3)) / 12, "mm⁴"],
+        ["Section modulus S_x", "S_x = \\dfrac{2 I_x}{h}", 2 * Ix / v.h, "mm³"],
+        ["Radius of gyration r_x", "r_x = \\sqrt{I_x/A}", Math.sqrt(Ix / A), "mm"]];
+    },
+    draw: v => ({w: v.b, h: v.h, path: (x, y) => {
+      const bi = Math.max(0.01, v.b - 2 * v.t), hi = Math.max(0.01, v.h - 2 * v.t);
+      return "M" + x(-v.b / 2) + "," + y(0) + "H" + x(v.b / 2) + "V" + y(v.h) + "H" + x(-v.b / 2) + "Z" +
+        "M" + x(-bi / 2) + "," + y(v.t) + "V" + y(v.t + hi) + "H" + x(bi / 2) + "V" + y(v.t) + "Z";
+    }, rule: "evenodd"})
+  },
+  {
+    id: "circle", n: "Solid Circle", sub: "round bar, Ø d",
+    vars: [["d", "Diameter", "mm", 40]],
+    props: v => {
+      const A = P4 * v.d * v.d, I = P64 * Math.pow(v.d, 4);
+      return [["Area", "A = \\dfrac{\\pi d^2}{4}", A, "mm²"],
+        ["Centroid from base", "\\bar{y} = d/2", v.d / 2, "mm"],
+        ["Second moment I", "I = \\dfrac{\\pi d^4}{64}", I, "mm⁴"],
+        ["Polar moment J", "J = \\dfrac{\\pi d^4}{32}", P32 * Math.pow(v.d, 4), "mm⁴"],
+        ["Section modulus S", "S = \\dfrac{\\pi d^3}{32}", P32 * Math.pow(v.d, 3), "mm³"],
+        ["Radius of gyration r", "r = d/4", Math.sqrt(I / A), "mm"]];
+    },
+    draw: v => ({w: v.d, h: v.d, circle: [0, v.d / 2, v.d / 2]})
+  },
+  {
+    id: "tube", n: "Hollow Circle", sub: "tube, Ø outer / inner",
+    vars: [["do", "Outside diameter", "mm", 40], ["di", "Inside diameter", "mm", 30]],
+    props: v => {
+      const di = Math.min(v.di, v.do - 0.01);
+      const A = P4 * (v.do * v.do - di * di), I = P64 * (Math.pow(v.do, 4) - Math.pow(di, 4));
+      return [["Area", "A = \\dfrac{\\pi}{4}(d_o^2 - d_i^2)", A, "mm²"],
+        ["Second moment I", "I = \\dfrac{\\pi}{64}(d_o^4 - d_i^4)", I, "mm⁴"],
+        ["Polar moment J", "J = \\dfrac{\\pi}{32}(d_o^4 - d_i^4)", 2 * I, "mm⁴"],
+        ["Section modulus S", "S = \\dfrac{2I}{d_o}", 2 * I / v.do, "mm³"],
+        ["Radius of gyration r", "r = \\sqrt{I/A}", Math.sqrt(I / A), "mm"],
+        ["Stiffness per unit mass", "I/A", I / A, "mm²"]];
+    },
+    draw: v => ({w: v.do, h: v.do, circle: [0, v.do / 2, v.do / 2], circle2: [0, v.do / 2, Math.min(v.di, v.do - 0.01) / 2]})
+  },
+  {
+    id: "thin", n: "Thin-wall Tube", sub: "mean radius r, wall t",
+    vars: [["r", "Mean radius", "mm", 20], ["t", "Wall thickness", "mm", 2]],
+    props: v => {
+      const A = 2 * Math.PI * v.r * v.t, I = Math.PI * Math.pow(v.r, 3) * v.t;
+      return [["Area", "A \\approx 2\\pi r t", A, "mm²"],
+        ["Second moment I", "I \\approx \\pi r^3 t", I, "mm⁴"],
+        ["Polar moment J", "J \\approx 2\\pi r^3 t", 2 * I, "mm⁴"],
+        ["Section modulus S", "S \\approx \\pi r^2 t", Math.PI * v.r * v.r * v.t, "mm³"],
+        ["Radius of gyration r_g", "r_g \\approx r/\\sqrt{2}", Math.sqrt(I / A), "mm"],
+        ["Validity t/r", "t/r < 0.1", v.t / v.r, "—"]];
+    },
+    draw: v => ({w: 2 * (v.r + v.t / 2), h: 2 * (v.r + v.t / 2),
+      circle: [0, v.r + v.t / 2, v.r + v.t / 2], circle2: [0, v.r + v.t / 2, Math.max(0.01, v.r - v.t / 2)]})
+  },
+  {
+    id: "ibeam", n: "I-Beam", sub: "wide flange, b · d · t_f · t_w",
+    vars: [["b", "Flange width", "mm", 100], ["d", "Total depth", "mm", 200], ["tf", "Flange thickness", "mm", 12], ["tw", "Web thickness", "mm", 8]],
+    props: v => {
+      const hw = Math.max(0.01, v.d - 2 * v.tf);
+      const A = 2 * v.b * v.tf + hw * v.tw;
+      const Ix = (v.b * Math.pow(v.d, 3) - (v.b - v.tw) * Math.pow(hw, 3)) / 12;
+      const Iy = (2 * v.tf * Math.pow(v.b, 3) + hw * Math.pow(v.tw, 3)) / 12;
+      return [["Area", "A = 2bt_f + (d-2t_f)t_w", A, "mm²"],
+        ["Centroid from base", "\\bar{y} = d/2", v.d / 2, "mm"],
+        ["Second moment I_x", "I_x = \\dfrac{bd^3 - (b-t_w)h_w^3}{12}", Ix, "mm⁴"],
+        ["Second moment I_y", "I_y = \\dfrac{2t_f b^3 + h_w t_w^3}{12}", Iy, "mm⁴"],
+        ["Section modulus S_x", "S_x = \\dfrac{2I_x}{d}", 2 * Ix / v.d, "mm³"],
+        ["Radius of gyration r_x", "r_x = \\sqrt{I_x/A}", Math.sqrt(Ix / A), "mm"],
+        ["Radius of gyration r_y", "r_y = \\sqrt{I_y/A}", Math.sqrt(Iy / A), "mm"]];
+    },
+    draw: v => ({w: v.b, h: v.d, path: (x, y) => {
+      const hw = Math.max(0.01, v.d - 2 * v.tf), tw = v.tw / 2, bb = v.b / 2;
+      return "M" + x(-bb) + "," + y(0) + "H" + x(bb) + "V" + y(v.tf) + "H" + x(tw) + "V" + y(v.tf + hw) +
+        "H" + x(bb) + "V" + y(v.d) + "H" + x(-bb) + "V" + y(v.tf + hw) + "H" + x(-tw) + "V" + y(v.tf) + "H" + x(-bb) + "Z";
+    }})
+  },
+  {
+    id: "tri", n: "Triangle", sub: "base b, height h",
+    vars: [["b", "Base width", "mm", 80], ["h", "Height", "mm", 100]],
+    props: v => {
+      const A = v.b * v.h / 2, Ix = v.b * Math.pow(v.h, 3) / 36;
+      return [["Area", "A = \\dfrac{bh}{2}", A, "mm²"],
+        ["Centroid from base", "\\bar{y} = h/3", v.h / 3, "mm"],
+        ["Second moment I_x", "I_x = \\dfrac{bh^3}{36}", Ix, "mm⁴"],
+        ["Second moment about base", "I_{base} = \\dfrac{bh^3}{12}", v.b * Math.pow(v.h, 3) / 12, "mm⁴"],
+        ["Section modulus, apex", "S = \\dfrac{I_x}{2h/3}", Ix / (2 * v.h / 3), "mm³"],
+        ["Radius of gyration r_x", "r_x = \\sqrt{I_x/A}", Math.sqrt(Ix / A), "mm"]];
+    },
+    draw: v => ({w: v.b, h: v.h, path: (x, y) => "M" + x(-v.b / 2) + "," + y(0) + "H" + x(v.b / 2) + "L" + x(0) + "," + y(v.h) + "Z"})
+  },
+  {
+    id: "ellipse", n: "Ellipse", sub: "width B, depth H",
+    vars: [["B", "Width", "mm", 60], ["H", "Depth", "mm", 100]],
+    props: v => {
+      const A = P4 * v.B * v.H, Ix = P64 * v.B * Math.pow(v.H, 3);
+      return [["Area", "A = \\dfrac{\\pi B H}{4}", A, "mm²"],
+        ["Centroid from base", "\\bar{y} = H/2", v.H / 2, "mm"],
+        ["Second moment I_x", "I_x = \\dfrac{\\pi B H^3}{64}", Ix, "mm⁴"],
+        ["Second moment I_y", "I_y = \\dfrac{\\pi H B^3}{64}", P64 * v.H * Math.pow(v.B, 3), "mm⁴"],
+        ["Section modulus S_x", "S_x = \\dfrac{\\pi B H^2}{32}", P32 * v.B * v.H * v.H, "mm³"],
+        ["Radius of gyration r_x", "r_x = H/4", Math.sqrt(Ix / A), "mm"]];
+    },
+    draw: v => ({w: v.B, h: v.H, ellipse: [0, v.H / 2, v.B / 2, v.H / 2]})
+  }
+];
+
+/* ═══════════════════════════════════════════════════════════════════════
+   REFERENCE DIAGRAMS
+   Drawn on canvas from the theme's own tokens, so they stay legible in both
+   light and dark. Mohr's circle is live — it draws the state you type.
+   ═══════════════════════════════════════════════════════════════════════ */
+const DIAGRAMS = [
+  {id: "ss", t: "Stress–strain curve", s: "Mild steel against aluminium 6061-T6", f: "Elastic · yield · hardening · necking"},
+  {id: "sn", t: "S–N fatigue curves", s: "Steel endurance limit against aluminium", f: "Why aluminium has no safe stress"},
+  {id: "mohr", t: "Mohr's circle", s: "Live from the plane-stress state you type", f: "Principal stresses and maximum shear"}
+];
+const MOHR = {σx: 120, σy: 40, τxy: 50};
+
+function cssv(n) { return getComputedStyle(document.documentElement).getPropertyValue(n).trim() || "#888"; }
+function prepCanvas(cv, h) {
+  const box = cv.parentElement, w = Math.max(240, (box ? box.clientWidth : 480) - 22);
+  const dpr = Math.min(2, window.devicePixelRatio || 1);
+  cv.width = w * dpr; cv.height = h * dpr; cv.style.height = h + "px";
+  const ctx = cv.getContext("2d"); ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.clearRect(0, 0, w, h);
+  return {ctx, w, h};
+}
+function axes(ctx, pl, pt, gW, gH, big) {
+  ctx.strokeStyle = cssv("--line-3"); ctx.lineWidth = 1.1; ctx.setLineDash([]);
+  ctx.beginPath(); ctx.moveTo(pl, pt); ctx.lineTo(pl, pt + gH); ctx.lineTo(pl + gW, pt + gH); ctx.stroke();
+  if (!big) return;
+  ctx.strokeStyle = cssv("--line"); ctx.setLineDash([3, 4]); ctx.lineWidth = .8;
+  for (let i = 1; i < 5; i++) { const y = pt + gH * i / 5; ctx.beginPath(); ctx.moveTo(pl, y); ctx.lineTo(pl + gW, y); ctx.stroke(); }
+  ctx.setLineDash([]);
+}
+function poly(ctx, pts, pl, pt, gW, gH, col, lw, dash) {
+  ctx.beginPath();
+  pts.forEach(([nx, ny], i) => { const x = pl + nx * gW, y = pt + gH * (1 - ny); i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); });
+  ctx.strokeStyle = col; ctx.lineWidth = lw; ctx.setLineDash(dash || []); ctx.stroke(); ctx.setLineDash([]);
+}
+function legend(ctx, x, y, rows) {
+  const w = 168, h = 12 + rows.length * 17;
+  ctx.fillStyle = cssv("--surface"); ctx.globalAlpha = .92; ctx.fillRect(x, y, w, h); ctx.globalAlpha = 1;
+  ctx.strokeStyle = cssv("--line-2"); ctx.lineWidth = 1; ctx.strokeRect(x, y, w, h);
+  rows.forEach(([col, lbl, dash], i) => {
+    const yy = y + 13 + i * 17;
+    ctx.strokeStyle = col; ctx.lineWidth = 2.4; ctx.setLineDash(dash || []);
+    ctx.beginPath(); ctx.moveTo(x + 9, yy); ctx.lineTo(x + 31, yy); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle = cssv("--ink-2"); ctx.font = '10.5px "IBM Plex Sans",sans-serif'; ctx.textAlign = "left";
+    ctx.fillText(lbl, x + 37, yy + 3.5);
+  });
+}
+const STEEL_SS = [[0, 0], [.05, .12], [.10, .24], [.15, .34], [.18, .40], [.185, .46], [.19, .52], [.195, .555], [.20, .56],
+  [.202, .553], [.205, .54], [.21, .535], [.22, .535], [.26, .545], [.32, .565], [.40, .59], [.50, .62], [.62, .66],
+  [.72, .695], [.79, .71], [.83, .70], [.87, .69], [.90, .68], [.94, .66], [.965, .625], [.98, .575], [1, .50]];
+const AL_SS = [[0, 0], [.015, .095], [.028, .175], [.04, .24], [.052, .285], [.065, .315], [.078, .332], [.09, .338],
+  [.102, .342], [.12, .346], [.15, .352], [.185, .358], [.23, .362], [.28, .365], [.33, .368], [.40, .37], [.46, .368],
+  [.51, .36], [.54, .345], [.558, .315]];
+
+function drawSS(cv, big) {
+  const {ctx, w, h} = prepCanvas(cv, big ? 330 : 165);
+  const pl = big ? 64 : 40, pr = big ? 24 : 14, pt = big ? 22 : 12, pb = big ? 48 : 24;
+  const gW = w - pl - pr, gH = h - pt - pb;
+  [[0, .185, "--c-fluids"], [.185, .22, "--c-materials"], [.22, .75, "--c-fatigue"], [.75, 1, "--c-statics"]]
+    .forEach(([a, b, tok]) => { ctx.fillStyle = cssv(tok); ctx.globalAlpha = .10; ctx.fillRect(pl + a * gW, pt, (b - a) * gW, gH); ctx.globalAlpha = 1; });
+  axes(ctx, pl, pt, gW, gH, big);
+  poly(ctx, AL_SS, pl, pt, gW, gH, cssv("--c-dynamics"), big ? 2.4 : 1.7, [6, 4]);
+  poly(ctx, STEEL_SS, pl, pt, gW, gH, cssv("--ink"), big ? 2.4 : 1.7);
+  if (!big) return;
+  ctx.font = '10.5px "IBM Plex Mono",monospace';
+  [[.20, .56, "upper yield", "--c-materials", -11], [.79, .71, "UTS", "--c-fatigue", -11], [1, .50, "fracture", "--c-statics", -11],
+   [.105, .343, "0.2 % proof", "--c-dynamics", 14], [.40, .37, "Al UTS", "--c-dynamics", -11], [.558, .315, "Al fracture", "--c-dynamics", 14]]
+    .forEach(([nx, ny, lbl, tok, dy]) => {
+      const x = pl + nx * gW, y = pt + gH * (1 - ny), c = cssv(tok);
+      ctx.beginPath(); ctx.arc(x, y, 3.6, 0, 7); ctx.fillStyle = c; ctx.fill();
+      ctx.strokeStyle = cssv("--surface"); ctx.lineWidth = 1.2; ctx.stroke();
+      ctx.fillStyle = c; ctx.textAlign = "center";
+      ctx.fillText(lbl, Math.min(Math.max(x, pl + 38), pl + gW - 38), y + dy);
+    });
+  ctx.strokeStyle = cssv("--c-dynamics"); ctx.globalAlpha = .5; ctx.lineWidth = 1; ctx.setLineDash([4, 4]);
+  ctx.beginPath(); ctx.moveTo(pl + .05 * gW, pt + gH); ctx.lineTo(pl + .40 * gW, pt + gH * (1 - .37)); ctx.stroke();
+  ctx.setLineDash([]); ctx.globalAlpha = 1;
+  legend(ctx, pl + gW - 176, pt + 6, [[cssv("--ink"), "Mild steel"], [cssv("--c-dynamics"), "Al 6061-T6", [6, 4]]]);
+  ctx.fillStyle = cssv("--ink-2"); ctx.textAlign = "center"; ctx.font = '600 11px "IBM Plex Sans",sans-serif';
+  ctx.fillText("Strain ε", pl + gW / 2, h - 8);
+  ctx.save(); ctx.translate(15, pt + gH / 2); ctx.rotate(-Math.PI / 2); ctx.fillText("Stress σ", 0, 0); ctx.restore();
+  ctx.font = '600 9.5px "IBM Plex Mono",monospace';
+  [[.09, "elastic", "--c-fluids"], [.205, "yield", "--c-materials"], [.485, "strain hardening", "--c-fatigue"], [.875, "necking", "--c-statics"]]
+    .forEach(([nx, lbl, tok]) => { ctx.fillStyle = cssv(tok); ctx.fillText(lbl, pl + nx * gW, pt + gH + 28); });
+}
+function drawSN(cv, big) {
+  const {ctx, w, h} = prepCanvas(cv, big ? 330 : 165);
+  const pl = big ? 64 : 40, pr = big ? 24 : 14, pt = big ? 22 : 12, pb = big ? 48 : 24;
+  const gW = w - pl - pr, gH = h - pt - pb;
+  axes(ctx, pl, pt, gW, gH, big);
+  const nz = n => (n - 3) / 6;
+  const steel = [[3, .9], [4, .72], [5, .55], [6, .40], [6.5, .35], [7, .34], [8, .34], [9, .34]].map(([a, b]) => [nz(a), b]);
+  const al = [[3, .85], [4, .66], [5, .50], [6, .37], [7, .26], [8, .19], [9, .14]].map(([a, b]) => [nz(a), b]);
+  if (big) {
+    const y = pt + gH * (1 - .34);
+    ctx.strokeStyle = cssv("--c-statics"); ctx.globalAlpha = .55; ctx.setLineDash([5, 5]); ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(pl, y); ctx.lineTo(pl + gW, y); ctx.stroke(); ctx.setLineDash([]); ctx.globalAlpha = 1;
+    ctx.fillStyle = cssv("--c-statics"); ctx.font = '10.5px "IBM Plex Mono",monospace'; ctx.textAlign = "left";
+    ctx.fillText("Se — steel endurance limit", pl + 6, y - 6);
+  }
+  poly(ctx, steel, pl, pt, gW, gH, cssv("--c-statics"), big ? 2.4 : 1.8);
+  poly(ctx, al, pl, pt, gW, gH, cssv("--c-fluids"), big ? 2.4 : 1.8);
+  if (!big) return;
+  legend(ctx, pl + gW - 176, pt + 6, [[cssv("--c-statics"), "Steel — has a limit"], [cssv("--c-fluids"), "Aluminium — none"]]);
+  ctx.fillStyle = cssv("--ink-2"); ctx.textAlign = "center"; ctx.font = '600 11px "IBM Plex Sans",sans-serif';
+  ctx.fillText("Cycles to failure N", pl + gW / 2, h - 8);
+  ctx.save(); ctx.translate(15, pt + gH / 2); ctx.rotate(-Math.PI / 2); ctx.fillText("Stress amplitude σa / Su", 0, 0); ctx.restore();
+  ctx.font = '9.5px "IBM Plex Mono",monospace'; ctx.fillStyle = cssv("--ink-3");
+  ["10³", "10⁴", "10⁵", "10⁶", "10⁷", "10⁸", "10⁹"].forEach((s, i) => ctx.fillText(s, pl + nz(i + 3) * gW, pt + gH + 15));
+}
+function mohrData(s) {
+  const c = (s.σx + s.σy) / 2, r = Math.hypot((s.σx - s.σy) / 2, s.τxy);
+  return {c, r, s1: c + r, s2: c - r, tmax: r, th: 0.5 * Math.atan2(2 * s.τxy, s.σx - s.σy) * 180 / Math.PI};
+}
+function drawMohr(cv, big) {
+  const {ctx, w, h} = prepCanvas(cv, big ? 330 : 165);
+  const pad = big ? 42 : 24;
+  const m = mohrData(MOHR);
+  /* the view is centred on the circle, so only its own radius sets the scale */
+  const span = Math.max(m.r * 1.3, 1e-6);
+  const sc = Math.min((w - 2 * pad) / (span * 2), (h - 2 * pad) / (span * 2));
+  const cx = w / 2, cy = h / 2;
+  const X = v => cx + (v - m.c) * sc, Y = v => cy - v * sc;
+  ctx.strokeStyle = cssv("--line"); ctx.lineWidth = 1; ctx.setLineDash([4, 4]);
+  ctx.beginPath(); ctx.moveTo(pad / 2, cy); ctx.lineTo(w - pad / 2, cy); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(X(m.c), pad / 2); ctx.lineTo(X(m.c), h - pad / 2); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.beginPath(); ctx.arc(X(m.c), cy, m.r * sc, 0, Math.PI * 2);
+  ctx.strokeStyle = cssv("--c-materials"); ctx.lineWidth = big ? 2.2 : 1.7; ctx.stroke();
+  ctx.fillStyle = cssv("--c-materials"); ctx.globalAlpha = .1; ctx.fill(); ctx.globalAlpha = 1;
+  /* the state point and its conjugate */
+  ctx.strokeStyle = cssv("--c-machine"); ctx.lineWidth = 1.4;
+  ctx.beginPath(); ctx.moveTo(X(MOHR.σx), Y(MOHR.τxy)); ctx.lineTo(X(MOHR.σy), Y(-MOHR.τxy)); ctx.stroke();
+  const dot = (vx, vy, tok) => { ctx.beginPath(); ctx.arc(X(vx), Y(vy), big ? 4.2 : 3, 0, 7); ctx.fillStyle = cssv(tok); ctx.fill(); ctx.strokeStyle = cssv("--surface"); ctx.lineWidth = 1.2; ctx.stroke(); };
+  dot(MOHR.σx, MOHR.τxy, "--c-machine"); dot(MOHR.σy, -MOHR.τxy, "--c-machine");
+  dot(m.s1, 0, "--c-statics"); dot(m.s2, 0, "--c-statics"); dot(m.c, m.tmax, "--c-dynamics");
+  if (!big) return;
+  ctx.font = '10.5px "IBM Plex Mono",monospace'; ctx.textAlign = "center";
+  ctx.fillStyle = cssv("--c-statics");
+  ctx.fillText("σ₁ " + m.s1.toFixed(1), X(m.s1), Y(0) + 17);
+  ctx.fillText("σ₂ " + m.s2.toFixed(1), X(m.s2), Y(0) + 17);
+  ctx.fillStyle = cssv("--c-dynamics"); ctx.fillText("τmax " + m.tmax.toFixed(1), X(m.c), Y(m.tmax) - 9);
+  ctx.fillStyle = cssv("--c-machine");
+  ctx.fillText("(σx, τxy)", X(MOHR.σx), Y(MOHR.τxy) - 9);
+  ctx.fillText("(σy, −τxy)", X(MOHR.σy), Y(-MOHR.τxy) + 17);
+  ctx.fillStyle = cssv("--ink-2"); ctx.textAlign = "left"; ctx.font = '600 11px "IBM Plex Sans",sans-serif';
+  ctx.fillText("σ", w - pad + 6, cy + 4);
+  ctx.save(); ctx.translate(X(m.c) - 10, pad - 6); ctx.fillText("τ", 0, 0); ctx.restore();
+}
+const DRAW = {ss: drawSS, sn: drawSN, mohr: drawMohr};
+
+/* ═══════════════════════════════════════════════════════════════════════
+   VIEW
+   ═══════════════════════════════════════════════════════════════════════ */
+const $ = (s, r) => (r || document).querySelector(s);
+const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
+const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"}[c]));
+const pretty = s => esc(s).replace(/_([A-Za-z0-9]+)/g, "<sub>$1</sub>");
+const kvar = c => "--k:var(" + CATS[c].k + ")";
+
+let FILT = {}, QRY = "", sel = null, SECV = {}, open = null;
+Object.keys(CATS).forEach(c => FILT[c] = true);
+let FAV = new Set();
+try { FAV = new Set(JSON.parse(localStorage.getItem("mechEq.fav") || "[]")); } catch (e) { }
+const saveFav = () => { try { localStorage.setItem("mechEq.fav", JSON.stringify([...FAV])); } catch (e) { } };
+const VALS = {};
+SECTIONS.forEach(s => { SECV[s.id] = {}; s.vars.forEach(v => SECV[s.id][v[0]] = v[3]); });
+
+function fmt(x) {
+  if (!Number.isFinite(x)) return "—";
+  const a = Math.abs(x);
+  if (a !== 0 && (a < 1e-3 || a >= 1e7)) {
+    const s = x.toExponential(4).split("e");
+    return s[0].replace(/\.?0+$/, "") + " × 10" + String(s[1]).replace("+", "").split("").map(c => ({"-": "⁻", "0": "⁰", "1": "¹", "2": "²", "3": "³", "4": "⁴", "5": "⁵", "6": "⁶", "7": "⁷", "8": "⁸", "9": "⁹"}[c] || c)).join("");
+  }
+  const dp = a >= 1000 ? 1 : a >= 100 ? 2 : a >= 1 ? 4 : 6;
+  return parseFloat(x.toFixed(dp)).toLocaleString(undefined, {maximumFractionDigits: dp});
+}
+function toast(m) { const t = $("#toast"); t.textContent = m; t.classList.add("show"); clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove("show"), 2400); }
+function tex(el, s, display) {
+  if (window.katex) { try { katex.render(s, el, {throwOnError: false, displayMode: !!display}); return; } catch (e) { } }
+  el.classList.add("fallback"); el.textContent = el.dataset.plain || s;
+}
+function texAll(root) {
+  $$("[data-tex]", root).forEach(el => { if (!el.dataset.done) { el.dataset.done = "1"; tex(el, el.dataset.tex, el.dataset.display === "1"); } });
+}
+function copy(text, msg) {
+  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(() => toast(msg), () => fb());
+  else fb();
+  function fb() {
+    const ta = document.createElement("textarea"); ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand("copy"); toast(msg); } catch (e) { toast("Copy: " + text); }
+    ta.remove();
+  }
+}
+const tagOf = e => e.plain.length <= 22 ? e.plain : e.out.s;
+
+/* ── rail + table ──────────────────────────────────────────────────── */
+function renderRail() {
+  $("#rail").innerHTML =
+    Object.keys(CATS).map(c =>
+      '<button class="fchip" data-cat="' + c + '" aria-pressed="' + FILT[c] + '" style="' + kvar(c) + '">' +
+      '<span class="dot"></span>' + esc(CATS[c].n) + '<span class="n">' + EQ.filter(e => e.cat === c).length + "</span></button>").join("") +
+    '<label class="search"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5 L14 14"/></svg>' +
+    '<input id="q" type="search" placeholder="Search ' + EQ.length + ' equations…" aria-label="Search equations" value="' + esc(QRY) + '"></label>' +
+    '<span class="spacer"></span>' +
+    '<button class="btn ghost" id="only-fav" aria-pressed="false">☆ Starred</button>' +
+    '<button class="btn ghost" id="all-on">Reset filters</button>';
+  $$("#rail .fchip").forEach(b => b.addEventListener("click", () => {
+    FILT[b.dataset.cat] = b.getAttribute("aria-pressed") !== "true";
+    b.setAttribute("aria-pressed", String(FILT[b.dataset.cat]));
+    renderTable();
+  }));
+  $("#q").addEventListener("input", e => { QRY = e.target.value.trim(); renderTable(); });
+  $("#only-fav").addEventListener("click", e => {
+    const on = e.currentTarget.getAttribute("aria-pressed") !== "true";
+    e.currentTarget.setAttribute("aria-pressed", String(on));
+    e.currentTarget.textContent = on ? "★ Starred" : "☆ Starred";
+    renderTable();
+  });
+  $("#all-on").addEventListener("click", () => {
+    Object.keys(CATS).forEach(c => FILT[c] = true);
+    QRY = ""; $("#q").value = "";
+    $("#only-fav").setAttribute("aria-pressed", "false"); $("#only-fav").textContent = "☆ Starred";
+    renderRail(); renderTable();
+  });
+}
+function visible(e) {
+  if (!FILT[e.cat]) return false;
+  if ($("#only-fav") && $("#only-fav").getAttribute("aria-pressed") === "true" && !FAV.has(e.id)) return false;
+  if (!QRY) return true;
+  const hay = (e.name + " " + e.grp + " " + e.plain + " " + CATS[e.cat].n + " " + e.story + " " +
+    e.vars.map(v => v.s + " " + v.n).join(" ") + " " + e.out.s + " " + e.out.n).toLowerCase();
+  return QRY.toLowerCase().split(/\s+/).every(w => hay.indexOf(w) >= 0);
+}
+function renderTable() {
+  const shown = EQ.filter(visible);
+  let html = "";
+  Object.keys(CATS).forEach(cat => {
+    const mine = shown.filter(e => e.cat === cat);
+    if (!mine.length) return;
+    const groups = [];
+    mine.forEach(e => { if (groups.indexOf(e.grp) < 0) groups.push(e.grp); });
+    html += '<div class="block" style="' + kvar(cat) + '"><div class="blockhead"><b>' + esc(CATS[cat].n) + "</b>" +
+      '<span class="n">' + mine.length + '</span><span class="rule"></span><span class="d">' + esc(CATS[cat].d) + "</span></div>" +
+      '<div class="sub">' + groups.map(esc).join(" · ") + "</div>" +
+      '<div class="tiles">' +
+      mine.map(e =>
+        '<button class="tile" data-eq="' + e.id + '" title="' + esc(e.grp) + " — " + esc(e.name) + '">' +
+        '<span class="no">' + e.i + "</span>" +
+        '<span class="eq">' + pretty(tagOf(e)) + "</span>" +
+        '<span class="nm">' + esc(e.name) + "</span>" +
+        (FAV.has(e.id) ? '<span class="star">★</span>' : "") + "</button>").join("") +
+      "</div></div>";
+  });
+  $("#table").innerHTML = html || '<div class="empty">Nothing matches. Widen the search, or switch a discipline back on.</div>';
+  $$("#table .tile").forEach(b => b.addEventListener("click", () => openEq(b.dataset.eq)));
+  $("#count").textContent = shown.length + " of " + EQ.length + " equations";
+}
+
+/* ── shapes + diagram cards ────────────────────────────────────────── */
+function shapeSVG(sec, v, size, detail) {
+  const g = sec.draw(v), pad = detail ? 18 : 12;
+  const sc = Math.min((size - 2 * pad) / Math.max(0.01, g.w), (size - 2 * pad) / Math.max(0.01, g.h));
+  const cx = size / 2, base = size / 2 + g.h * sc / 2;
+  const X = mm => (cx + mm * sc).toFixed(2), Y = mm => (base - mm * sc).toFixed(2);
+  const col = "var(--accent)";
+  let body = "";
+  if (g.path) body += '<path d="' + g.path(X, Y, sc) + '" fill="' + col + '" fill-opacity=".14" stroke="' + col + '" stroke-width="1.6"' + (g.rule ? ' fill-rule="evenodd"' : "") + "/>";
+  if (g.circle) body += '<circle cx="' + X(g.circle[0]) + '" cy="' + Y(g.circle[1]) + '" r="' + (g.circle[2] * sc).toFixed(2) + '" fill="' + col + '" fill-opacity=".14" stroke="' + col + '" stroke-width="1.6"/>';
+  if (g.circle2) body += '<circle cx="' + X(g.circle2[0]) + '" cy="' + Y(g.circle2[1]) + '" r="' + (g.circle2[2] * sc).toFixed(2) + '" fill="var(--surface-2)" stroke="' + col + '" stroke-width="1.6"/>';
+  if (g.ellipse) body += '<ellipse cx="' + X(g.ellipse[0]) + '" cy="' + Y(g.ellipse[1]) + '" rx="' + (g.ellipse[2] * sc).toFixed(2) + '" ry="' + (g.ellipse[3] * sc).toFixed(2) + '" fill="' + col + '" fill-opacity=".14" stroke="' + col + '" stroke-width="1.6"/>';
+  if (detail) {
+    const yb = sec.props(v).find(p => /Centroid/.test(p[0]));
+    const yc = yb ? yb[2] : g.h / 2;
+    body += '<path d="M' + (pad / 2) + "," + Y(yc) + "H" + (size - pad / 2) + '" stroke="var(--c-machine)" stroke-width="1" stroke-dasharray="5 3" opacity=".75"/>';
+    body += '<path d="M' + X(0) + "," + (pad / 2) + "V" + (size - pad / 2) + '" stroke="var(--c-machine)" stroke-width="1" stroke-dasharray="5 3" opacity=".75"/>';
+    body += '<circle cx="' + X(0) + '" cy="' + Y(yc) + '" r="2.6" fill="var(--c-machine)"/>';
+  }
+  return '<svg viewBox="0 0 ' + size + " " + size + '" width="' + size + '" height="' + size + '" role="img" aria-label="' + esc(sec.n) + '">' + body + "</svg>";
+}
+function renderShapes() {
+  $("#shapes").innerHTML = SECTIONS.map(s =>
+    '<button class="shape" data-sec="' + s.id + '">' + shapeSVG(s, SECV[s.id], 72, false) +
+    '<div class="sn">' + esc(s.n) + '</div><div class="ss">' + esc(s.sub) + "</div></button>").join("");
+  $$("#shapes .shape").forEach(b => b.addEventListener("click", () => openSec(b.dataset.sec)));
+}
+function renderDiagrams() {
+  $("#diagrams").innerHTML = DIAGRAMS.map(d =>
+    '<button class="dgcard" data-dg="' + d.id + '"><div class="dh"><div class="dt">' + esc(d.t) + '</div><div class="ds">' + esc(d.s) + "</div></div>" +
+    '<canvas id="pv-' + d.id + '"></canvas><div class="df">' + esc(d.f) + " →</div></button>").join("");
+  $$("#diagrams .dgcard").forEach(b => b.addEventListener("click", () => openDg(b.dataset.dg)));
+  DIAGRAMS.forEach(d => requestAnimationFrame(() => { const c = $("#pv-" + d.id); if (c) DRAW[d.id](c, false); }));
+}
+
+/* ── modal ─────────────────────────────────────────────────────────── */
+function showModal(cat, title, html, afterPaint) {
+  open = {cat, title};
+  $("#m-cat").textContent = cat.label;
+  $("#m-cat").setAttribute("style", "--k:var(" + cat.k + ")");
+  $("#m-title").textContent = title;
+  $("#modal").setAttribute("style", "--k:var(" + cat.k + ")");
+  $("#m-body").innerHTML = html;
+  $("#backdrop").classList.add("open");
+  document.body.style.overflow = "hidden";
+  texAll($("#m-body"));
+  if (afterPaint) afterPaint();
+}
+function closeModal() {
+  $("#backdrop").classList.remove("open");
+  document.body.style.overflow = "";
+  open = null;
+}
+function openEq(id) {
+  const e = EQ.find(x => x.id === id); if (!e) return;
+  sel = id;
+  const v = VALS[e.id] || (VALS[e.id] = Object.fromEntries(e.vars.map(x => [x.s, x.d])));
+  const near = EQ.filter(x => x.grp === e.grp && x.id !== e.id).slice(0, 6);
+  showModal({label: CATS[e.cat].n, k: CATS[e.cat].k}, e.name,
+    '<div class="eqslab"><div data-tex="' + esc(e.tex) + '" data-display="1" data-plain="' + esc(e.plain) + '"></div></div>' +
+    '<div class="rel"><button id="cp-tex">Copy LaTeX</button><button id="cp-txt">Copy plain text</button><button id="rs">Reset values</button></div>' +
+    '<div class="subhead">Solve it</div><div class="solve">' +
+      e.vars.map(x => '<div class="sv"><label for="iv-' + esc(x.s) + '"><i>' + pretty(x.s) + "</i>" + esc(x.n) + "</label>" +
+        '<input id="iv-' + esc(x.s) + '" type="number" step="any" data-s="' + esc(x.s) + '" value="' + v[x.s] + '">' +
+        '<span class="u">' + esc(x.u) + "</span></div>").join("") + "</div>" +
+    '<div class="result"><span class="lbl">' + pretty(e.out.s) + '</span><span class="v" id="r-out">—</span>' +
+      '<span class="u">' + esc(e.out.u) + '</span><span class="spacer"></span>' +
+      '<button class="btn ghost icon" id="cp-res" title="Copy the result">⧉</button></div>' +
+    '<div class="subhead">Symbols</div><div class="tablewrap"><table><tbody>' +
+      e.vars.map(x => '<tr><td class="sym">' + pretty(x.s) + "</td><td>" + esc(x.n) + '</td><td class="un">' + esc(x.u) + "</td></tr>").join("") +
+      '<tr><td class="sym">' + pretty(e.out.s) + "</td><td><b>" + esc(e.out.n) + '</b></td><td class="un">' + esc(e.out.u) + "</td></tr>" +
+    "</tbody></table></div>" +
+    '<div class="subhead">In practice</div><p class="prose">' + esc(e.story) + "</p>" +
+    '<div class="subhead">Watch out for</div><p class="note">' + esc(e.note) + "</p>" +
+    (near.length ? '<div class="subhead">Same topic</div><div class="rel">' +
+      near.map(x => '<button data-go="' + x.id + '">' + esc(x.name) + "</button>").join("") + "</div>" : ""),
+    () => {
+      const solve = () => { let o; try { o = e.f(VALS[e.id]); } catch (err) { o = NaN; } $("#r-out").textContent = fmt(o); };
+      $$("#m-body .sv input").forEach(i => i.addEventListener("input", () => { VALS[e.id][i.dataset.s] = parseFloat(i.value); solve(); }));
+      $("#cp-tex").addEventListener("click", () => copy(e.tex, "LaTeX copied"));
+      $("#cp-txt").addEventListener("click", () => copy(e.plain, "Equation copied"));
+      $("#cp-res").addEventListener("click", () => copy($("#r-out").textContent + " " + e.out.u, "Result copied"));
+      $("#rs").addEventListener("click", () => { VALS[e.id] = Object.fromEntries(e.vars.map(x => [x.s, x.d])); openEq(id); });
+      $$("#m-body [data-go]").forEach(b => b.addEventListener("click", () => openEq(b.dataset.go)));
+      solve();
+    });
+  setFav(e.id);
+  if (history.replaceState) history.replaceState(null, "", "#" + id);
+}
+function setFav(id) {
+  const b = $("#m-fav");
+  b.textContent = FAV.has(id) ? "★" : "☆";
+  b.onclick = () => { if (FAV.has(id)) FAV.delete(id); else FAV.add(id); saveFav(); b.textContent = FAV.has(id) ? "★" : "☆"; renderTable(); };
+  b.hidden = false;
+}
+function openSec(id) {
+  const s = SECTIONS.find(x => x.id === id); if (!s) return;
+  const v = SECV[s.id];
+  const paint = () => {
+    $("#sec-draw").innerHTML = shapeSVG(s, v, 190, true);
+    $("#sec-props").innerHTML = s.props(v).map(p =>
+      '<tr><td>' + esc(p[0]) + '</td><td><span data-tex="' + esc(p[1]) + '"></span></td>' +
+      '<td class="val">' + fmt(p[2]) + '</td><td class="un">' + esc(p[3]) + "</td></tr>").join("");
+    texAll($("#sec-props"));
+  };
+  showModal({label: "Cross-section", k: "--accent"}, s.n,
+    '<div style="display:flex;gap:14px;flex-wrap:wrap;align-items:flex-start">' +
+      '<div id="sec-draw" style="flex:0 0 auto;background:var(--surface-2);border:1px solid var(--line);border-radius:6px;padding:8px"></div>' +
+      '<div style="flex:1 1 220px;min-width:200px"><div class="subhead" style="margin-top:0">Dimensions</div>' +
+      '<div class="solve">' + s.vars.map(x =>
+        '<div class="sv"><label><i>' + pretty(x[0]) + "</i>" + esc(x[1]) + "</label>" +
+        '<input type="number" step="any" min="0.01" data-s="' + esc(x[0]) + '" value="' + v[x[0]] + '">' +
+        '<span class="u">' + esc(x[2]) + "</span></div>").join("") + "</div></div></div>" +
+    '<div class="subhead">Properties</div><div class="tablewrap"><table>' +
+      "<thead><tr><th>Property</th><th>Formula</th><th style=\"text-align:right\">Value</th><th></th></tr></thead>" +
+      '<tbody id="sec-props"></tbody></table></div>' +
+    '<p class="note" style="margin-top:12px">Properties are about the centroidal axis shown dashed. Section modulus is I divided by the distance to the extreme fibre, and the radius of gyration is √(I/A) — the number that goes into a slenderness ratio.</p>',
+    () => {
+      $$("#m-body .sv input").forEach(i => i.addEventListener("input", () => {
+        const n = parseFloat(i.value);
+        v[i.dataset.s] = Number.isFinite(n) && n > 0 ? n : 0.01;
+        paint();
+      }));
+      paint();
+    });
+  $("#m-fav").hidden = true;
+}
+function openDg(id) {
+  const d = DIAGRAMS.find(x => x.id === id); if (!d) return;
+  const REG = {
+    ss: [["--c-fluids", "Elastic", "Stress and strain stay proportional and the bar springs back. Steel's slope (E ≈ 200 GPa) is about three times aluminium's (69 GPa), so steel is three times stiffer for the same section."],
+      ["--c-materials", "Yield", "Steel shows a sharp upper yield point and then a plateau as Lüders bands sweep along the bar. Aluminium has no such knee, so its yield is <i>defined</i> as the 0.2 % offset proof stress — the dashed line parallel to the elastic slope."],
+      ["--c-fatigue", "Strain hardening", "Both harden after yielding. Steel keeps hardening to roughly 20 % strain; aluminium reaches its ultimate at 5 to 8 % and has far less reserve past yield."],
+      ["--c-statics", "Necking and fracture", "Load falls while true stress keeps rising, because the section is shrinking faster than the material hardens. Steel elongates 20 to 30 % before it parts; 6061-T6 manages 8 to 12 %."]],
+    sn: [["--c-statics", "Steel — endurance limit", "Ferrous metals flatten out at Se ≈ 0.5·Su below about 1400 MPa. Stay under that amplitude and the part survives indefinitely, which is what makes infinite-life design possible."],
+      ["--c-fluids", "Aluminium — no limit", "Non-ferrous metals never flatten. There is no safe stress, only a stress for a stated life, so aluminium parts are designed to a finite life and retired."],
+      ["--c-fatigue", "High cycle against low cycle", "Above about 10⁴ cycles the behaviour is elastic and S-N applies. Below 10³ each cycle yields the material, and Coffin–Manson strain-life is the right tool instead."],
+      ["--c-vibrations", "Mean stress", "Every curve here is for fully reversed loading, R = −1. A tensile mean stress shifts the whole curve down — correct for it with Goodman or Gerber before reading a life off the chart."]],
+    mohr: [["--c-machine", "The state you typed", "The two blue points are the stresses on the x and y faces, (σx, τxy) and (σy, −τxy). They are always diametrically opposite, so the line joining them is a diameter of the circle."],
+      ["--c-statics", "Principal stresses", "Where the circle crosses the σ axis the shear is zero. Those two points are σ₁ and σ₂, and the planes they act on are 2θ around the circle from the state point — so θ in the real part."],
+      ["--c-dynamics", "Maximum shear", "The top of the circle. Its height is the radius, so τmax = (σ₁ − σ₂)/2, and it acts on planes 45° from the principal directions. Tresca compares 2τmax with yield."],
+      ["--c-materials", "The circle itself", "Centre at (σx + σy)/2, radius √(((σx − σy)/2)² + τxy²). Every possible plane through the point maps to a point on this circle — rotating the element just moves you around it."]]
+  };
+  const extra = id === "mohr" ?
+    '<div class="subhead">Stress state</div><div class="solve">' +
+      [["σx", "Direct stress, x", "MPa"], ["σy", "Direct stress, y", "MPa"], ["τxy", "Shear stress", "MPa"]].map(([k, n, u]) =>
+        '<div class="sv"><label><i>' + k + "</i>" + n + "</label>" +
+        '<input type="number" step="any" data-m="' + k + '" value="' + MOHR[k] + '"><span class="u">' + u + "</span></div>").join("") + "</div>" +
+      '<div class="result" id="mohr-out"></div>' : "";
+  showModal({label: "Reference diagram", k: "--accent"}, d.t,
+    '<div class="canvaswrap"><canvas id="dg-big"></canvas></div>' + extra +
+    '<div class="subhead">What you are looking at</div><ul class="regions">' +
+      REG[id].map(([tok, n, t]) => '<li><span class="dot" style="background:var(' + tok + ')"></span>' +
+        '<span class="rn" style="color:var(' + tok + ')">' + esc(n) + '</span><span class="rd">' + t + "</span></li>").join("") + "</ul>" +
+    (id === "ss" ? '<p class="note" style="margin-top:12px">Mild steel: Sy ≈ 250 MPa, Su ≈ 400–500 MPa, E ≈ 200 GPa, elongation ≈ 25 %. Aluminium 6061-T6: Sy ≈ 276 MPa, Su ≈ 310 MPa, E ≈ 69 GPa, elongation ≈ 12 %. The curves are schematic — shapes are right, exact values are not.</p>' : "") +
+    (id === "sn" ? '<p class="note" style="margin-top:12px">Curves are illustrative. Correct the endurance limit for surface finish, size, load type, temperature and reliability before using it — those factors routinely halve it.</p>' : ""),
+    () => {
+      const redraw = () => DRAW[id]($("#dg-big"), true);
+      if (id === "mohr") {
+        const upd = () => {
+          const m = mohrData(MOHR);
+          $("#mohr-out").innerHTML = '<span class="lbl">σ₁</span><span class="v">' + fmt(m.s1) + '</span><span class="u">MPa</span>' +
+            '<span class="lbl" style="margin-left:14px">σ₂</span><span class="v">' + fmt(m.s2) + '</span><span class="u">MPa</span>' +
+            '<span class="lbl" style="margin-left:14px">τmax</span><span class="v">' + fmt(m.tmax) + '</span><span class="u">MPa</span>' +
+            '<span class="spacer"></span><span class="u">θp = ' + fmt(m.th) + "°</span>";
+          redraw();
+        };
+        $$("#m-body [data-m]").forEach(i => i.addEventListener("input", () => {
+          const n = parseFloat(i.value); MOHR[i.dataset.m] = Number.isFinite(n) ? n : 0; upd();
+        }));
+        upd();
+      } else redraw();
+    });
+  $("#m-fav").hidden = true;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   SELF-VALIDATION
+   ═══════════════════════════════════════════════════════════════════════ */
+function runValidation() {
+  const S = [];
+  const near = (a, b, tol) => Math.abs(a - b) <= Math.abs(b) * (tol === undefined ? 1e-9 : tol) + 1e-12;
+
+  /* 1 — every worked example recomputed by its own solver */
+  (function () {
+    const fails = [];
+    EQ.forEach(e => {
+      const v = {}; e.vars.forEach(x => v[x.s] = x.d);
+      let got;
+      try { got = e.f(v); } catch (err) { fails.push(e.name + ": solver threw — " + err.message); return; }
+      if (!Number.isFinite(got)) { fails.push(e.name + ": returned " + got); return; }
+      if (Math.abs(got - e.ex) > Math.abs(e.ex) * 0.0012 + 1e-9)
+        fails.push(e.name + ": solver gives " + fmt(got) + ", the write-up says " + fmt(e.ex));
+    });
+    S.push({n: "Worked examples", c: EQ.length, u: "equations", fails,
+      d: "Each example's inputs are pushed back through the same function that drives the live solver. The number in the prose has to be the number the formula gives."});
+  })();
+
+  /* 2 — library integrity */
+  (function () {
+    const fails = []; const ids = {}; let n = 0;
+    EQ.forEach(e => {
+      n++;
+      if (ids[e.id]) fails.push("duplicate id: " + e.id); else ids[e.id] = 1;
+      if (!CATS[e.cat]) fails.push(e.name + ": unknown discipline " + e.cat);
+      if (!e.vars.length) fails.push(e.name + ": no variables");
+      if (!e.out || !e.out.u) fails.push(e.name + ": no output unit");
+      if (!e.story || !e.note) fails.push(e.name + ": missing example or caveat");
+      const seen = {};
+      e.vars.forEach(x => {
+        if (seen[x.s]) fails.push(e.name + ": repeated symbol " + x.s); else seen[x.s] = 1;
+        if (!x.u) fails.push(e.name + ": " + x.s + " has no unit");
+        if (!Number.isFinite(x.d)) fails.push(e.name + ": " + x.s + " has no default");
+      });
+      /* the solver must actually read every variable it declares */
+      const v = {}; e.vars.forEach(x => v[x.s] = x.d);
+      const base = e.f(v);
+      e.vars.forEach(x => {
+        const probe = Object.assign({}, v); probe[x.s] = v[x.s] * 1.7 + 0.31;
+        let out; try { out = e.f(probe); } catch (err) { out = NaN; }
+        if (Number.isFinite(out) && Number.isFinite(base) && out === base)
+          fails.push(e.name + ": changing " + x.s + " does not change the result");
+      });
+    });
+    S.push({n: "Library integrity", c: n, u: "equations", fails,
+      d: "Unique identifiers, a known discipline, units on every symbol and on the result, no repeated symbols, and a solver that genuinely depends on every variable it asks for."});
+  })();
+
+  /* 3 — cross-section identities */
+  (function () {
+    const fails = []; let n = 0;
+    SECTIONS.forEach(s => {
+      const v = {}; s.vars.forEach(x => v[x[0]] = x[3]);
+      const p = s.props(v), get = k => { const r = p.find(q => q[0].indexOf(k) === 0); return r ? r[2] : null; };
+      n++;
+      const A = get("Area"), I = get("Second moment"), rg = p.find(q => /Radius of gyration/.test(q[0]));
+      if (!(A > 0)) fails.push(s.n + ": area is not positive");
+      if (!(I > 0)) fails.push(s.n + ": second moment is not positive");
+      if (rg && !near(rg[2], Math.sqrt(I / A), 1e-9)) fails.push(s.n + ": radius of gyration ≠ √(I/A)");
+      p.forEach(q => { if (!Number.isFinite(q[2])) fails.push(s.n + ": " + q[0] + " is not finite"); });
+    });
+    /* a hollow circle with no bore must equal the solid one */
+    n++;
+    const solid = SECTIONS.find(s => s.id === "circle").props({d: 40});
+    const hollow = SECTIONS.find(s => s.id === "tube").props({do: 40, di: 0});
+    const sI = solid.find(q => q[0].indexOf("Second moment") === 0)[2];
+    const hI = hollow.find(q => q[0].indexOf("Second moment") === 0)[2];
+    if (!near(hI, sI, 1e-9)) fails.push("a tube with no bore does not match the solid circle");
+    /* the thin-wall approximation must converge on the exact tube */
+    n++;
+    const t = 0.2, r = 50;
+    const thin = SECTIONS.find(s => s.id === "thin").props({r, t}).find(q => q[0].indexOf("Second moment") === 0)[2];
+    const exact = SECTIONS.find(s => s.id === "tube").props({do: 2 * (r + t / 2), di: 2 * (r - t / 2)}).find(q => q[0].indexOf("Second moment") === 0)[2];
+    if (Math.abs(thin - exact) > exact * 0.01) fails.push("the thin-wall approximation is off by " + fmt((thin / exact - 1) * 100) + " % at t/r = " + (t / r));
+    /* scaling laws: double the depth of a rectangle, I must go up eight times */
+    n++;
+    const r1 = SECTIONS.find(s => s.id === "rect");
+    const I1 = r1.props({b: 50, h: 100}).find(q => q[0].indexOf("Second moment I_x") === 0)[2];
+    const I2 = r1.props({b: 50, h: 200}).find(q => q[0].indexOf("Second moment I_x") === 0)[2];
+    if (!near(I2 / I1, 8, 1e-9)) fails.push("doubling a rectangle's depth changed I by " + fmt(I2 / I1) + "×, expected 8");
+    S.push({n: "Cross-section properties", c: n, u: "shapes and identities", fails,
+      d: "Every property finite and positive, the radius of gyration consistent with √(I/A), a bore-less tube equal to the solid bar, the thin-wall formula converging on the exact one, and depth-cubed scaling holding."});
+  })();
+
+  /* 4 — Mohr's circle against the closed-form equations in the library */
+  (function () {
+    const fails = []; let n = 0;
+    [[120, 40, 50], [-80, 200, -35], [0, 0, 60], [150, 150, 0]].forEach(([σx, σy, τ]) => {
+      n++;
+      const m = mohrData({σx, σy, τxy: τ});
+      const s1 = EQ.find(e => e.id === "principal-stress");
+      const tm = EQ.find(e => e.id === "maximum-shear-stress");
+      if (s1 && !near(m.s1, s1.f({σ_x: σx, σ_y: σy, τ_xy: τ}), 1e-9)) fails.push("σ₁ disagrees with the principal-stress equation at (" + σx + ", " + σy + ", " + τ + ")");
+      if (tm && !near(m.tmax, tm.f({σ_x: σx, σ_y: σy, τ_xy: τ}), 1e-9)) fails.push("τmax disagrees with the maximum-shear equation at (" + σx + ", " + σy + ", " + τ + ")");
+      if (!near(m.s1 + m.s2, σx + σy, 1e-9)) fails.push("σ₁ + σ₂ ≠ σx + σy — the first stress invariant is broken");
+      if (!near(m.tmax, (m.s1 - m.s2) / 2, 1e-9)) fails.push("τmax ≠ (σ₁ − σ₂)/2");
+    });
+    S.push({n: "Mohr's circle", c: n, u: "stress states", fails,
+      d: "The drawing's own geometry is checked against the closed-form principal-stress and maximum-shear equations in the library, and against the invariant σ₁ + σ₂ = σx + σy."});
+  })();
+
+  /* 5 — cross-discipline agreement */
+  (function () {
+    const fails = []; let n = 0;
+    const by = id => EQ.find(e => e.id === id);
+    const pair = (a, b, va, vb, lbl) => {
+      n++;
+      const A = by(a), B = by(b);
+      if (!A || !B) { fails.push("missing equation for " + lbl); return; }
+      const x = A.f(va), y = B.f(vb);
+      if (!near(x, y, 1e-6)) fails.push(lbl + ": " + fmt(x) + " vs " + fmt(y));
+    };
+    /* polar moment is exactly twice the second moment for a circle */
+    n++;
+    const I0 = by("second-moment-of-area-circle").f({d: 40}), J0 = by("polar-moment-of-area").f({d: 40});
+    if (!near(J0, 2 * I0, 1e-9)) fails.push("J ≠ 2I for a solid circle: " + fmt(J0) + " vs " + fmt(2 * I0));
+    /* the natural-frequency pair must agree */
+    n++;
+    const wn = by("natural-frequency").f({k: 50000, m: 20});
+    const fn = by("natural-frequency-in-hertz").f({ω_n: wn});
+    if (!near(fn * 2 * Math.PI, wn, 1e-9)) fails.push("f_n and ω_n disagree");
+    /* torque-to-preload and preload stress must reproduce the Joint Bench example */
+    n++;
+    const T = by("torque-to-preload").f({K: 0.2, F_i: 22500, d: 10});
+    if (!near(T, 45, 1e-9)) fails.push("torque to preload gives " + fmt(T) + " N·m, expected 45");
+    n++;
+    const σi = by("bolt-preload-stress").f({F_i: 22500, A_s: 58});
+    if (Math.abs(σi - 388) > 1) fails.push("bolt preload stress gives " + fmt(σi) + " MPa, expected about 388");
+    /* the section library and the equation library must agree on I for a rectangle */
+    n++;
+    const Irect = by("second-moment-of-area-rectangle").f({b: 50, h: 100});
+    const Isec = SECTIONS.find(s => s.id === "rect").props({b: 50, h: 100}).find(q => q[0].indexOf("Second moment I_x") === 0)[2];
+    if (!near(Irect, Isec, 1e-9)) fails.push("the equation and the section card disagree on I: " + fmt(Irect) + " vs " + fmt(Isec));
+    S.push({n: "Cross-discipline agreement", c: n, u: "identities", fails,
+      d: "Results that appear in more than one place have to match: J = 2I for a circle, ω_n against f_n, the section cards against the equation library, and the fastener equations against the Joint Bench's own worked example."});
+  })();
+
+  return S;
+}
+function paintValidation() {
+  const suites = runValidation();
+  const tot = suites.reduce((a, s) => a + s.c, 0);
+  const bad = suites.reduce((a, s) => a + s.fails.length, 0);
+  $("#v-out").innerHTML = suites.map(s =>
+    '<div class="flag" data-s="' + (s.fails.length ? "bad" : "ok") + '"><b>' + (s.fails.length ? "FAIL" : "PASS") + "</b><span>" +
+    "<b>" + esc(s.n) + "</b> — " + s.c + " " + esc(s.u) + " checked<br>" +
+    '<span style="color:var(--ink-3)">' + esc(s.d) + "</span>" +
+    (s.fails.length ? '<br><span style="color:var(--bad)">' + s.fails.slice(0, 12).map(esc).join("<br>") + "</span>" : "") +
+    "</span></div>").join("");
+  const tag = $("#v-sum");
+  tag.className = "chip " + (bad ? "bad" : "ok");
+  tag.textContent = bad ? bad + " failed of " + tot : tot + " checks passed";
+  return {tot, bad};
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   BOOT
+   ═══════════════════════════════════════════════════════════════════════ */
+$("#m-close").addEventListener("click", closeModal);
+$("#backdrop").addEventListener("click", e => { if (e.target === $("#backdrop")) closeModal(); });
+window.addEventListener("keydown", e => {
+  if (e.key === "Escape" && open) closeModal();
+  if (e.key === "/" && !open && document.activeElement !== $("#q")) { e.preventDefault(); $("#q").focus(); }
+});
+$("#theme").addEventListener("click", () => {
+  const root = document.documentElement;
+  const dark = root.dataset.theme ? root.dataset.theme === "dark" : window.matchMedia("(prefers-color-scheme: dark)").matches;
+  root.dataset.theme = dark ? "light" : "dark";
+  try { localStorage.setItem("mechSuite.theme", root.dataset.theme); } catch (e) { }
+  DIAGRAMS.forEach(d => { const c = $("#pv-" + d.id); if (c) DRAW[d.id](c, false); });
+  if (open && $("#dg-big")) { const id = DIAGRAMS.find(d => d.t === open.title); if (id) DRAW[id.id]($("#dg-big"), true); }
+});
+$("#v-run").addEventListener("click", () => {
+  const r = paintValidation();
+  toast(r.bad ? r.bad + " check" + (r.bad === 1 ? "" : "s") + " failed of " + r.tot : "All " + r.tot + " checks passed");
+});
+let rt = 0;
+window.addEventListener("resize", () => {
+  clearTimeout(rt);
+  rt = setTimeout(() => {
+    DIAGRAMS.forEach(d => { const c = $("#pv-" + d.id); if (c) DRAW[d.id](c, false); });
+    if (open && $("#dg-big")) { const d = DIAGRAMS.find(x => x.t === open.title); if (d) DRAW[d.id]($("#dg-big"), true); }
+  }, 120);
+});
+(function init() {
+  try { const t = localStorage.getItem("mechSuite.theme"); if (t) document.documentElement.dataset.theme = t; } catch (e) { }
+  renderRail(); renderTable(); renderShapes(); renderDiagrams();
+  $("#m-fav").hidden = true;
+  const h = (location.hash || "").replace(/^#/, "");
+  if (h && EQ.some(e => e.id === h)) openEq(h);
+  window.addEventListener("load", () => {
+    DIAGRAMS.forEach(d => { const c = $("#pv-" + d.id); if (c) DRAW[d.id](c, false); });
+    if (open) texAll($("#m-body"));
+  });
+})();
+</script>
+</body>
+</html>

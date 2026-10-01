@@ -1,0 +1,804 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mech Converter</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;450;500;600&display=swap">
+<style>
+/* Layout: pick a quantity from the subject rail, type once on the left, and the
+   right-hand column shows every unit in that family at the same instant. */
+:root{
+  --bg:#e9edf1; --bg-grid:#dde3e9;
+  --surface:#ffffff; --surface-2:#f3f6f9; --surface-3:#e7edf2;
+  --ink:#0e151b; --ink-2:#4a5a67; --ink-3:#78899a;
+  --line:#ccd6de; --line-2:#aebcca; --line-3:#8b9cab;
+  --accent:#0d7c8c; --accent-ink:#ffffff; --accent-soft:#d6ecef; --accent-line:#8fcad3;
+  --c-geo:#5a6b78; --c-mech:#0d7c8c; --c-dyn:#4152a8; --c-vib:#8d5b0e; --c-thermo:#a3402a;
+  --c-geo-soft:#e3e8ec; --c-mech-soft:#d7ecef; --c-dyn-soft:#dee2f7; --c-vib-soft:#f8ead1; --c-thermo-soft:#f9e0d9;
+  --ok:#16764a; --ok-soft:#dbf0e4; --warn:#95610a; --bad:#af252c;
+  --shadow:0 1px 2px rgba(14,21,27,.06), 0 8px 24px -16px rgba(14,21,27,.28);
+  --r:8px; --r-sm:5px;
+  --f-display:"IBM Plex Sans Condensed","Oswald","Arial Narrow",system-ui,sans-serif;
+  --f-body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,"Cascadia Mono","Consolas",monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0c1014; --bg-grid:#151b22;
+  --surface:#141a21; --surface-2:#1a2129; --surface-3:#222b35;
+  --ink:#e7eef4; --ink-2:#9dafbd; --ink-3:#6d7f8e;
+  --line:#25303a; --line-2:#37454f; --line-3:#4d5f6c;
+  --accent:#34bfc7; --accent-ink:#04191c; --accent-soft:#12333a; --accent-line:#1f5a64;
+  --c-geo:#9aacba; --c-mech:#34bfc7; --c-dyn:#8b98ee; --c-vib:#e0a83c; --c-thermo:#e8846a;
+  --c-geo-soft:#1d242b; --c-mech-soft:#11333a; --c-dyn-soft:#1c2145; --c-vib-soft:#2f2410; --c-thermo-soft:#37180f;
+  --ok:#52cb8c; --ok-soft:#0f2e21; --warn:#e2ab46; --bad:#f0787a;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 10px 28px -18px rgba(0,0,0,.8);
+  color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --bg:#0c1014; --bg-grid:#151b22;
+  --surface:#141a21; --surface-2:#1a2129; --surface-3:#222b35;
+  --ink:#e7eef4; --ink-2:#9dafbd; --ink-3:#6d7f8e;
+  --line:#25303a; --line-2:#37454f; --line-3:#4d5f6c;
+  --accent:#34bfc7; --accent-ink:#04191c; --accent-soft:#12333a; --accent-line:#1f5a64;
+  --c-geo:#9aacba; --c-mech:#34bfc7; --c-dyn:#8b98ee; --c-vib:#e0a83c; --c-thermo:#e8846a;
+  --c-geo-soft:#1d242b; --c-mech-soft:#11333a; --c-dyn-soft:#1c2145; --c-vib-soft:#2f2410; --c-thermo-soft:#37180f;
+  --ok:#52cb8c; --ok-soft:#0f2e21; --warn:#e2ab46; --bad:#f0787a;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 10px 28px -18px rgba(0,0,0,.8);
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{
+  background:
+    linear-gradient(var(--bg-grid) 1px, transparent 1px) 0 0/100% 28px,
+    linear-gradient(90deg, var(--bg-grid) 1px, transparent 1px) 0 0/28px 100%,
+    var(--bg);
+  color:var(--ink); font-family:var(--f-body); font-size:14px; line-height:1.5; -webkit-text-size-adjust:100%;
+}
+.wrap{max-width:1560px; margin:0 auto; padding-inline:16px; padding-block:0 40px}
+.titleblock{
+  position:sticky; top:0; z-index:40; margin-inline:-16px; padding-inline:16px;
+  background:color-mix(in srgb, var(--surface) 88%, transparent);
+  backdrop-filter:blur(10px) saturate(1.3); border-bottom:1px solid var(--line);
+}
+.tb-row{display:flex; align-items:center; gap:16px; flex-wrap:wrap; padding-block:10px}
+.brand{display:flex; align-items:baseline; gap:10px; min-width:0}
+.brand h1{font-family:var(--f-display); font-size:clamp(17px,2.4vw,23px); font-weight:700; letter-spacing:.055em; text-transform:uppercase; margin:0; white-space:nowrap}
+.brand .std{font:500 10px/1 var(--f-mono); color:var(--ink-3); letter-spacing:.09em; white-space:nowrap}
+.suite{display:flex; gap:2px; align-items:center; border:1px solid var(--line); border-radius:var(--r-sm); padding:2px; background:var(--surface)}
+.suite a{text-decoration:none; color:var(--ink-2); font:500 11.5px/1 var(--f-mono); letter-spacing:.04em; padding:6px 9px; border-radius:3px; white-space:nowrap}
+.suite a:hover{background:var(--surface-2); color:var(--ink)}
+.suite a[aria-current="page"]{background:var(--accent); color:var(--accent-ink); font-weight:600}
+.tb-actions{display:flex; gap:6px; align-items:center; margin-left:auto}
+
+button,select,input{font-family:inherit; font-size:inherit; color:inherit}
+.btn{display:inline-flex; align-items:center; gap:6px; cursor:pointer; background:var(--surface); border:1px solid var(--line-2); color:var(--ink); border-radius:var(--r-sm); padding:6px 11px; font-weight:500; font-size:12.5px; transition:background .14s,border-color .14s,transform .08s}
+.btn:hover{background:var(--surface-2); border-color:var(--line-3)}
+.btn:active{transform:translateY(1px)}
+.btn.icon{padding:5px 8px; font:500 12px/1 var(--f-mono)}
+.btn.ghost{background:transparent; border-color:transparent; color:var(--ink-2)}
+.btn.ghost:hover{background:var(--surface-2); color:var(--ink)}
+:where(button,select,input,a,[tabindex]):focus-visible{outline:2px solid var(--accent); outline-offset:2px; border-radius:3px}
+
+.card{background:var(--surface); border:1px solid var(--line); border-radius:var(--r); box-shadow:var(--shadow); overflow:hidden}
+.card>header{display:flex; align-items:center; gap:9px; padding:9px 13px; border-bottom:1px solid var(--line); background:var(--surface-2)}
+.card>header h2{margin:0; font-family:var(--f-display); font-size:13px; font-weight:700; letter-spacing:.1em; text-transform:uppercase}
+.card>header .num{font:600 9.5px/1 var(--f-mono); color:var(--ink-3); border:1px solid var(--line-2); border-radius:3px; padding:3px 5px; letter-spacing:.06em}
+.card .body{padding:13px}
+.spacer{margin-left:auto}
+.chip{display:inline-flex; align-items:center; gap:4px; padding:1.5px 7px; border-radius:99px; font:600 10px/1.6 var(--f-mono); letter-spacing:.05em; border:1px solid transparent; white-space:nowrap}
+.chip.neutral{background:var(--surface-3); color:var(--ink-2); border-color:var(--line)}
+.chip.cat{background:var(--ks); color:var(--k); border-color:color-mix(in srgb,var(--k) 35%,transparent)}
+
+/* ── quantity rail ─────────────────────────────────────────── */
+.subjrow{padding:10px 13px 2px}
+.subjrow+.subjrow{border-top:1px solid var(--line)}
+.subjhead{display:flex; align-items:center; gap:9px; margin-bottom:8px}
+.subjhead b{font:700 10.5px/1.3 var(--f-display); letter-spacing:.12em; text-transform:uppercase; color:var(--k)}
+.subjhead .rule{flex:1; height:1px; background:var(--line)}
+.qgrid{display:flex; flex-wrap:wrap; gap:5px; margin-bottom:10px}
+.q{
+  cursor:pointer; border:1px solid color-mix(in srgb,var(--k) 26%,var(--line)); background:var(--ks);
+  border-radius:99px; padding:5px 11px; font:500 12px/1.3 var(--f-body); color:var(--ink-2);
+  transition:border-color .12s, color .12s, transform .1s;
+}
+.q:hover{border-color:var(--k); color:var(--k); transform:translateY(-1px)}
+.q[aria-pressed="true"]{background:var(--k); border-color:var(--k); color:var(--surface); font-weight:600}
+
+/* ── converter ─────────────────────────────────────────────── */
+.conv{display:grid; grid-template-columns:1fr auto 1fr; gap:10px; align-items:end}
+@media (max-width:620px){.conv{grid-template-columns:1fr; }.swapwrap{justify-self:center}}
+.field{display:flex; flex-direction:column; gap:4px; min-width:0}
+.field label{font:600 9.5px/1.3 var(--f-mono); letter-spacing:.09em; text-transform:uppercase; color:var(--ink-3)}
+.field input,.field select{
+  width:100%; min-width:0; background:var(--surface); border:1px solid var(--line-2); border-radius:var(--r-sm);
+  padding:9px 10px; font:500 18px/1.3 var(--f-mono); font-variant-numeric:tabular-nums;
+}
+.field select{font-family:var(--f-body); font-size:14px; font-weight:450; padding:9px 6px 9px 10px}
+.field input:focus,.field select:focus{border-color:var(--k); outline:none; box-shadow:0 0 0 2.5px var(--ks)}
+.field.out input{background:var(--ks); border-color:color-mix(in srgb,var(--k) 34%,transparent); color:var(--k); font-weight:600}
+.swapwrap{display:flex; align-items:center; padding-bottom:4px}
+.swap{
+  cursor:pointer; border:1px solid var(--line-2); background:var(--surface); border-radius:50%;
+  width:34px; height:34px; display:grid; place-items:center; font-size:15px; color:var(--ink-2); transition:transform .2s, border-color .14s;
+}
+.swap:hover{border-color:var(--k); color:var(--k)}
+.swap:active{transform:rotate(180deg)}
+.readout{
+  margin-top:12px; border:1px solid color-mix(in srgb,var(--k) 30%,transparent); background:var(--ks);
+  border-radius:var(--r-sm); padding:11px 13px; font:500 15px/1.5 var(--f-mono); color:var(--ink);
+  display:flex; align-items:baseline; gap:8px; flex-wrap:wrap; word-break:break-word;
+}
+.readout b{font-weight:600; color:var(--k)}
+.opts{display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-top:11px}
+.tog{
+  display:inline-flex; align-items:center; gap:5px; cursor:pointer; user-select:none;
+  font:500 11px/1 var(--f-mono); letter-spacing:.03em; color:var(--ink-2);
+  border:1px solid var(--line-2); border-radius:99px; padding:5px 10px; background:var(--surface);
+}
+.tog input{appearance:none; width:9px; height:9px; margin:0; border-radius:50%; border:1px solid var(--line-3)}
+.tog input:checked{background:var(--k); border-color:var(--k); box-shadow:0 0 0 2px var(--ks)}
+.tog:has(input:checked){color:var(--ink); border-color:color-mix(in srgb,var(--k) 50%,transparent)}
+.sig{display:flex; align-items:center; gap:7px; font:500 11px/1 var(--f-mono); color:var(--ink-2)}
+.sig input{width:92px}
+
+/* ── all units ─────────────────────────────────────────────── */
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse; width:100%; font-variant-numeric:tabular-nums}
+th,td{padding:6px 11px; border-bottom:1px solid var(--line); text-align:right; white-space:nowrap}
+th{font:600 9px/1.4 var(--f-mono); letter-spacing:.1em; text-transform:uppercase; color:var(--ink-3); background:var(--surface-2); position:sticky; top:0}
+th:first-child,td:first-child{text-align:left}
+td{font:450 13px/1.5 var(--f-mono)}
+td.nm{font-family:var(--f-body); font-size:12.5px; color:var(--ink-2); white-space:normal}
+td.sy{font-weight:600; color:var(--ink)}
+td.val{font-weight:500; color:var(--ink)}
+tbody tr{cursor:pointer}
+tbody tr:hover td{background:var(--surface-2)}
+tbody tr.on td{background:var(--ks)}
+tbody tr.on td.val,tbody tr.on td.sy{color:var(--k); font-weight:600}
+tbody tr:last-child td{border-bottom:0}
+.cpy{opacity:0; border:0; background:transparent; cursor:pointer; color:var(--ink-3); font:500 12px/1 var(--f-mono); padding:2px 4px}
+tbody tr:hover .cpy{opacity:1}
+.cpy:hover{color:var(--k)}
+.flags{display:flex; flex-direction:column; gap:6px}
+.flag{display:flex; gap:9px; align-items:flex-start; padding:8px 10px; border-radius:var(--r-sm); border:1px solid var(--line); background:var(--surface-2); font-size:12.5px; line-height:1.5}
+.flag b{font:600 9.5px/1.6 var(--f-mono); letter-spacing:.08em; flex:none}
+.flag[data-s="ok"]{background:var(--ok-soft); border-color:color-mix(in srgb,var(--ok) 28%,transparent)} .flag[data-s="ok"] b{color:var(--ok)}
+.flag[data-s="bad"]{background:color-mix(in srgb,var(--bad) 14%,var(--surface)); border-color:color-mix(in srgb,var(--bad) 30%,transparent)} .flag[data-s="bad"] b{color:var(--bad)}
+.chip.ok{background:var(--ok-soft); color:var(--ok); border-color:color-mix(in srgb,var(--ok) 35%,transparent)}
+.chip.bad{background:color-mix(in srgb,var(--bad) 14%,var(--surface)); color:var(--bad); border-color:color-mix(in srgb,var(--bad) 35%,transparent)}
+.recent{display:flex; flex-direction:column; gap:5px}
+.rec{
+  display:flex; gap:9px; align-items:baseline; padding:6px 9px; border:1px solid var(--line); border-radius:var(--r-sm);
+  background:var(--surface-2); font:450 12.5px/1.4 var(--f-mono); cursor:pointer;
+}
+.rec:hover{border-color:var(--k)}
+.rec .q{font-size:10px; padding:1px 6px; pointer-events:none}
+.hint{font-size:11.5px; color:var(--ink-3); line-height:1.5}
+.bench{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,.86fr); gap:14px; align-items:start}
+@media (max-width:1060px){.bench{grid-template-columns:1fr}}
+.col{display:flex; flex-direction:column; gap:14px; min-width:0}
+.col.right{position:sticky; top:62px}
+@media (max-width:1060px){.col.right{position:static}}
+.toast{
+  position:fixed; left:50%; bottom:calc(20px + env(safe-area-inset-bottom,0px)); transform:translateX(-50%) translateY(8px);
+  background:var(--ink); color:var(--bg); padding:9px 15px; border-radius:99px; font-size:12.5px; font-weight:500;
+  box-shadow:0 10px 30px -10px rgba(0,0,0,.5); opacity:0; pointer-events:none; transition:opacity .2s,transform .2s; z-index:90;
+}
+.toast.show{opacity:1; transform:translateX(-50%)}
+footer.credits{margin-top:16px; padding-top:12px; border-top:1px solid var(--line); display:flex; gap:10px; flex-wrap:wrap; font-size:11.5px; color:var(--ink-3)}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{transition-duration:.01ms!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="titleblock">
+  <div class="tb-row">
+    <div class="brand">
+      <h1>Mech Converter</h1>
+      <span class="std">31 QUANTITIES · EXACT FACTORS</span>
+    </div>
+    <nav class="suite" aria-label="Mech Suite">
+      <a href="joint-calculator.html">Joint Bench</a>
+      <a href="mech-equations.html">Equations</a>
+      <a href="mech-converter.html" aria-current="page">Converter</a>
+    </nav>
+    <div class="tb-actions">
+      <button class="btn icon" id="theme" title="Switch light / dark" aria-label="Switch light / dark">◐</button>
+    </div>
+  </div>
+</div>
+
+<div class="bench" style="margin-top:14px">
+  <div class="col left">
+    <section class="card">
+      <header><span class="num">01</span><h2>Quantity</h2><span class="spacer"></span>
+        <span class="chip neutral" id="q-tag">—</span></header>
+      <div id="qrail"></div>
+    </section>
+
+    <section class="card" id="convcard">
+      <header><span class="num">02</span><h2>Convert</h2><span class="spacer"></span>
+        <span class="chip cat" id="c-tag">—</span></header>
+      <div class="body">
+        <div class="conv">
+          <div class="field">
+            <label for="in-v">Value</label>
+            <input id="in-v" type="number" step="any" value="1" inputmode="decimal">
+            <select id="in-u" aria-label="Convert from"></select>
+          </div>
+          <div class="swapwrap"><button class="swap" id="swap" title="Swap the two units" aria-label="Swap units">⇄</button></div>
+          <div class="field out">
+            <label for="out-v">Result</label>
+            <input id="out-v" type="text" readonly>
+            <select id="out-u" aria-label="Convert to"></select>
+          </div>
+        </div>
+        <div class="readout" id="readout">—</div>
+        <div class="opts">
+          <span class="sig"><label for="sf" style="font:inherit">Significant figures</label>
+            <input id="sf" type="range" min="3" max="12" step="1" value="6"><b id="sfv">6</b></span>
+          <label class="tog"><input type="checkbox" id="sci">Scientific notation</label>
+          <span class="spacer"></span>
+          <button class="btn ghost" id="copyline">⧉ Copy line</button>
+        </div>
+        <p class="hint" id="note" style="margin:10px 0 0"></p>
+      </div>
+    </section>
+
+    <section class="card">
+      <header><span class="num">04</span><h2>Recent</h2><span class="spacer"></span>
+        <button class="btn ghost icon" id="clearrec" title="Clear the list">clear</button></header>
+      <div class="body">
+        <div class="recent" id="recent"></div>
+      </div>
+    </section>
+
+    <section class="card">
+      <header><span class="num">05</span><h2>Validation</h2><span class="spacer"></span>
+        <span class="chip neutral" id="v-sum">not run</span>
+        <button class="btn" id="v-run" style="background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:600">Run checks</button>
+      </header>
+      <div class="body">
+        <p class="hint" style="margin:0 0 11px">Every unit is converted to every other unit and back again, and the defined
+        factors are checked against their standards. These run here, on the table this page is using.</p>
+        <div class="flags" id="v-out"></div>
+      </div>
+    </section>
+  </div>
+
+  <div class="col right">
+    <section class="card" id="allcard">
+      <header><span class="num">03</span><h2>Every unit at once</h2><span class="spacer"></span>
+        <span class="chip neutral" id="base-tag">—</span></header>
+      <div class="tablewrap"><table id="all"></table></div>
+    </section>
+  </div>
+</div>
+
+<footer class="credits">
+  <span>Mech Suite · Converter</span><span>·</span>
+  <span>Factors are the exact defined values where one exists — 1 in = 25.4 mm, 1 lbf = 4.448 221 615 N — so round-trips return the number you started with.</span>
+</footer>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script>
+"use strict";
+/* ═══════════════════════════════════════════════════════════════════════
+   UNIT TABLES
+   Each unit carries its value in the family's base unit. Where a conversion
+   is defined exactly by standard (inch, pound, lbf, BTU-IT) the exact factor
+   is used, so converting out and back returns the original number.
+   ═══════════════════════════════════════════════════════════════════════ */
+const SUBJ = {
+  geo:    {n: "Geometry",       k: "--c-geo"},
+  mech:   {n: "Mechanics",      k: "--c-mech"},
+  dyn:    {n: "Dynamics",       k: "--c-dyn"},
+  vib:    {n: "Vibration",      k: "--c-vib"},
+  thermo: {n: "Thermodynamics", k: "--c-thermo"}
+};
+const PI2 = Math.PI * 2;
+const Q = {
+  length: {n: "Length", s: "geo", base: "m", note: "The inch is defined as exactly 25.4 mm, so every imperial length here is exact.", u: [
+    ["m", "metre", 1], ["mm", "millimetre", 1e-3], ["cm", "centimetre", 1e-2], ["µm", "micrometre", 1e-6],
+    ["km", "kilometre", 1e3], ["in", "inch", 0.0254], ["thou", "thousandth of an inch", 2.54e-5],
+    ["ft", "foot", 0.3048], ["yd", "yard", 0.9144], ["mi", "mile", 1609.344], ["nmi", "nautical mile", 1852]]},
+
+  area: {n: "Area", s: "geo", base: "m²", note: "", u: [
+    ["m²", "square metre", 1], ["mm²", "square millimetre", 1e-6], ["cm²", "square centimetre", 1e-4],
+    ["in²", "square inch", 6.4516e-4], ["ft²", "square foot", 0.09290304], ["yd²", "square yard", 0.83612736],
+    ["ha", "hectare", 1e4], ["acre", "acre", 4046.8564224], ["km²", "square kilometre", 1e6]]},
+
+  volume: {n: "Volume", s: "geo", base: "m³", note: "US and imperial gallons differ by 20 % — check which one a datasheet means.", u: [
+    ["m³", "cubic metre", 1], ["L", "litre", 1e-3], ["mL", "millilitre", 1e-6], ["cm³", "cubic centimetre", 1e-6],
+    ["mm³", "cubic millimetre", 1e-9], ["in³", "cubic inch", 1.6387064e-5], ["ft³", "cubic foot", 0.028316846592],
+    ["gal US", "US gallon", 3.785411784e-3], ["gal UK", "imperial gallon", 4.54609e-3], ["qt US", "US quart", 9.46352946e-4]]},
+
+  angle: {n: "Angle", s: "geo", base: "rad", note: "Trigonometry and every dynamics formula want radians; drawings and instruments give degrees.", u: [
+    ["rad", "radian", 1], ["°", "degree", Math.PI / 180], ["rev", "revolution", PI2], ["grad", "gradian", Math.PI / 200],
+    ["′", "arcminute", Math.PI / 10800], ["″", "arcsecond", Math.PI / 648000], ["mrad", "milliradian", 1e-3]]},
+
+  secondmoment: {n: "Second moment of area", s: "geo", base: "m⁴", note: "The I in bending. Section tables are usually cm⁴ in Europe and in⁴ in the US.", u: [
+    ["m⁴", "metre⁴", 1], ["mm⁴", "millimetre⁴", 1e-12], ["cm⁴", "centimetre⁴", 1e-8],
+    ["in⁴", "inch⁴", 4.162314256e-7], ["ft⁴", "foot⁴", 8.6309748412416e-3]]},
+
+  mass: {n: "Mass", s: "mech", base: "kg", note: "Mass, not weight. The slug is the imperial mass unit that makes F = ma work with lbf and ft/s².", u: [
+    ["kg", "kilogram", 1], ["g", "gram", 1e-3], ["mg", "milligram", 1e-6], ["t", "tonne", 1e3],
+    ["lb", "pound", 0.45359237], ["oz", "ounce", 0.028349523125], ["slug", "slug", 14.5939029372064],
+    ["ton US", "short ton", 907.18474], ["ton UK", "long ton", 1016.0469088], ["gr", "grain", 6.479891e-5]]},
+
+  force: {n: "Force", s: "mech", base: "N", note: "1 kgf is the force a kilogram exerts under standard gravity — common on older European drawings.", u: [
+    ["N", "newton", 1], ["kN", "kilonewton", 1e3], ["MN", "meganewton", 1e6], ["mN", "millinewton", 1e-3],
+    ["kgf", "kilogram-force", 9.80665], ["lbf", "pound-force", 4.4482216152605], ["kip", "kip", 4448.2216152605],
+    ["ozf", "ounce-force", 0.2780138509537812], ["dyn", "dyne", 1e-5]]},
+
+  pressure: {n: "Pressure & stress", s: "mech", base: "Pa", note: "1 N/mm² is exactly 1 MPa — the single most useful identity in stress work.", u: [
+    ["Pa", "pascal", 1], ["kPa", "kilopascal", 1e3], ["MPa", "megapascal", 1e6], ["GPa", "gigapascal", 1e9],
+    ["N/mm²", "newton per mm²", 1e6], ["bar", "bar", 1e5], ["mbar", "millibar", 1e2],
+    ["psi", "pound per square inch", 6894.757293168361], ["ksi", "kilopound per square inch", 6894757.293168361],
+    ["atm", "standard atmosphere", 101325], ["Torr", "torr", 101325 / 760], ["mmHg", "millimetre of mercury", 133.322387415],
+    ["inHg", "inch of mercury", 3386.388640341], ["mH₂O", "metre of water", 9806.65], ["kgf/cm²", "kilogram-force per cm²", 98066.5]]},
+
+  torque: {n: "Torque", s: "mech", base: "N·m", note: "Torque and energy share dimensions but never mix them — a N·m of torque is not a joule.", u: [
+    ["N·m", "newton metre", 1], ["N·mm", "newton millimetre", 1e-3], ["kN·m", "kilonewton metre", 1e3],
+    ["kgf·m", "kilogram-force metre", 9.80665], ["lbf·ft", "pound-force foot", 1.3558179483314004],
+    ["lbf·in", "pound-force inch", 0.1129848290276167], ["ozf·in", "ounce-force inch", 7.0615518333333e-3]]},
+
+  density: {n: "Density", s: "mech", base: "kg/m³", note: "Steel is about 7850, aluminium 2700, water 1000 kg/m³.", u: [
+    ["kg/m³", "kilogram per m³", 1], ["g/cm³", "gram per cm³", 1e3], ["kg/L", "kilogram per litre", 1e3],
+    ["t/m³", "tonne per m³", 1e3], ["lb/ft³", "pound per ft³", 16.018463373960142],
+    ["lb/in³", "pound per in³", 27679.904710203122], ["g/m³", "gram per m³", 1e-3]]},
+
+  stiffness: {n: "Stiffness", s: "mech", base: "N/m", note: "Spring rate. A bolt's AE/L and a mount's published rate are the same quantity.", u: [
+    ["N/m", "newton per metre", 1], ["N/mm", "newton per millimetre", 1e3], ["kN/m", "kilonewton per metre", 1e3],
+    ["kN/mm", "kilonewton per millimetre", 1e6], ["lbf/in", "pound-force per inch", 175.12683524647645],
+    ["lbf/ft", "pound-force per foot", 14.593902937206371]]},
+
+  velocity: {n: "Velocity", s: "dyn", base: "m/s", note: "Divide km/h by 3.6 for m/s. Surface speed in machining is usually m/min or sfm.", u: [
+    ["m/s", "metre per second", 1], ["km/h", "kilometre per hour", 1 / 3.6], ["mm/s", "millimetre per second", 1e-3],
+    ["m/min", "metre per minute", 1 / 60], ["mph", "mile per hour", 0.44704], ["ft/s", "foot per second", 0.3048],
+    ["ft/min", "foot per minute", 5.08e-3], ["in/s", "inch per second", 0.0254], ["kn", "knot", 1852 / 3600]]},
+
+  acceleration: {n: "Acceleration", s: "dyn", base: "m/s²", note: "Standard gravity g is defined as exactly 9.806 65 m/s².", u: [
+    ["m/s²", "metre per second²", 1], ["g", "standard gravity", 9.80665], ["mm/s²", "millimetre per second²", 1e-3],
+    ["ft/s²", "foot per second²", 0.3048], ["in/s²", "inch per second²", 0.0254], ["Gal", "gal (cm/s²)", 1e-2]]},
+
+  angvel: {n: "Angular velocity", s: "dyn", base: "rad/s", note: "rad/s = rpm × π/30. Mixing rpm into a dynamics formula is the classic 9.55× error.", u: [
+    ["rad/s", "radian per second", 1], ["rpm", "revolution per minute", PI2 / 60], ["rev/s", "revolution per second", PI2],
+    ["°/s", "degree per second", Math.PI / 180], ["rad/min", "radian per minute", 1 / 60], ["°/min", "degree per minute", Math.PI / 10800]]},
+
+  inertia: {n: "Mass moment of inertia", s: "dyn", base: "kg·m²", note: "The I in T = Iα. Not the same as the second moment of area, despite the shared letter.", u: [
+    ["kg·m²", "kilogram metre²", 1], ["kg·cm²", "kilogram centimetre²", 1e-4], ["g·cm²", "gram centimetre²", 1e-7],
+    ["lb·ft²", "pound foot²", 0.0421401100938048], ["lb·in²", "pound inch²", 2.926396534375e-4],
+    ["slug·ft²", "slug foot²", 1.3558179483314004], ["oz·in²", "ounce inch²", 1.8289978339844e-5]]},
+
+  energy: {n: "Energy & work", s: "dyn", base: "J", note: "1 kWh = 3.6 MJ exactly. The BTU here is the international table value.", u: [
+    ["J", "joule", 1], ["kJ", "kilojoule", 1e3], ["MJ", "megajoule", 1e6], ["Wh", "watt hour", 3600],
+    ["kWh", "kilowatt hour", 3.6e6], ["cal", "calorie (IT)", 4.1868], ["kcal", "kilocalorie", 4186.8],
+    ["BTU", "British thermal unit (IT)", 1055.05585262], ["ft·lbf", "foot pound-force", 1.3558179483314004],
+    ["therm", "therm (US)", 1.054804e8], ["eV", "electronvolt", 1.602176634e-19]]},
+
+  power: {n: "Power & heat flow", s: "dyn", base: "W", note: "Mechanical horsepower is 745.7 W; metric PS is 735.5 W. They are not the same.", u: [
+    ["W", "watt", 1], ["kW", "kilowatt", 1e3], ["MW", "megawatt", 1e6], ["mW", "milliwatt", 1e-3],
+    ["hp", "mechanical horsepower", 745.6998715822702], ["PS", "metric horsepower", 735.49875],
+    ["BTU/h", "BTU per hour", 0.29307107017222], ["ft·lbf/s", "foot pound-force per second", 1.3558179483314004],
+    ["kcal/h", "kilocalorie per hour", 1.163], ["TR", "ton of refrigeration", 3516.8528420667]]},
+
+  momentum: {n: "Momentum & impulse", s: "dyn", base: "kg·m/s", note: "1 kg·m/s is 1 N·s — momentum and impulse are the same unit.", u: [
+    ["kg·m/s", "kilogram metre per second", 1], ["N·s", "newton second", 1], ["lb·ft/s", "pound foot per second", 0.1382549543764],
+    ["slug·ft/s", "slug foot per second", 4.4482216152605], ["kgf·s", "kilogram-force second", 9.80665]]},
+
+  time: {n: "Time", s: "dyn", base: "s", note: "", u: [
+    ["s", "second", 1], ["ms", "millisecond", 1e-3], ["µs", "microsecond", 1e-6], ["min", "minute", 60],
+    ["h", "hour", 3600], ["day", "day", 86400], ["wk", "week", 604800], ["yr", "year (365.25 d)", 31557600]]},
+
+  frequency: {n: "Frequency", s: "vib", base: "Hz", note: "A 1500 rpm machine excites at 25 Hz — the 1× line on its spectrum.", u: [
+    ["Hz", "hertz", 1], ["kHz", "kilohertz", 1e3], ["MHz", "megahertz", 1e6], ["rpm", "revolution per minute", 1 / 60],
+    ["cpm", "cycle per minute", 1 / 60], ["rad/s", "radian per second", 1 / PI2], ["cps", "cycle per second", 1]]},
+
+  damping: {n: "Damping coefficient", s: "vib", base: "N·s/m", note: "The c in F = c·v. Divide by 2√(km) to get the damping ratio ζ.", u: [
+    ["N·s/m", "newton second per metre", 1], ["N·s/mm", "newton second per millimetre", 1e3],
+    ["kgf·s/m", "kilogram-force second per metre", 9.80665], ["lbf·s/in", "pound-force second per inch", 175.12683524647645],
+    ["lbf·s/ft", "pound-force second per foot", 14.593902937206371]]},
+
+  temperature: {n: "Temperature", s: "thermo", base: "K", abs: true, note: "An absolute scale point, not a difference. For a temperature rise use Temperature difference instead.", u: [
+    ["K", "kelvin", 1, 0], ["°C", "degree Celsius", 1, 273.15], ["°F", "degree Fahrenheit", 5 / 9, 255.3722222222222], ["°R", "degree Rankine", 5 / 9, 0]]},
+
+  tempdiff: {n: "Temperature difference", s: "thermo", base: "K", note: "A change of 1 °C equals a change of 1 K exactly, and 1.8 °F.", u: [
+    ["K", "kelvin", 1], ["°C", "celsius degree", 1], ["°F", "fahrenheit degree", 5 / 9], ["°R", "rankine degree", 5 / 9]]},
+
+  conductivity: {n: "Thermal conductivity", s: "thermo", base: "W/m·K", note: "Copper 400, steel 45, water 0.6, air 0.026, mineral wool 0.04 W/m·K.", u: [
+    ["W/m·K", "watt per metre kelvin", 1], ["mW/m·K", "milliwatt per metre kelvin", 1e-3], ["kW/m·K", "kilowatt per metre kelvin", 1e3],
+    ["BTU/h·ft·°F", "BTU per hour foot °F", 1.730734666371], ["BTU·in/h·ft²·°F", "BTU inch per hour ft² °F", 0.1442278889],
+    ["cal/s·cm·°C", "calorie per second cm °C", 418.68], ["kcal/h·m·°C", "kilocalorie per hour metre °C", 1.163]]},
+
+  specificheat: {n: "Specific heat capacity", s: "thermo", base: "J/kg·K", note: "Water 4186, steel 490, aluminium 900, air 1005 J/kg·K.", u: [
+    ["J/kg·K", "joule per kilogram kelvin", 1], ["kJ/kg·K", "kilojoule per kilogram kelvin", 1e3],
+    ["cal/g·°C", "calorie per gram °C", 4186.8], ["BTU/lb·°F", "BTU per pound °F", 4186.8],
+    ["J/g·°C", "joule per gram °C", 1e3]]},
+
+  htc: {n: "Heat transfer coefficient", s: "thermo", base: "W/m²·K", note: "Natural air 5–25, forced air 25–250, water 500–10 000 W/m²·K.", u: [
+    ["W/m²·K", "watt per m² kelvin", 1], ["kW/m²·K", "kilowatt per m² kelvin", 1e3],
+    ["BTU/h·ft²·°F", "BTU per hour ft² °F", 5.678263341113], ["cal/s·cm²·°C", "calorie per second cm² °C", 41868],
+    ["kcal/h·m²·°C", "kilocalorie per hour m² °C", 1.163]]},
+
+  expansion: {n: "Thermal expansion", s: "thermo", base: "1/K", note: "Steel 12, aluminium 23, titanium 8.6, PTFE 135 — all ×10⁻⁶ per kelvin.", u: [
+    ["1/K", "per kelvin", 1], ["µm/m·K", "micrometre per metre kelvin", 1e-6], ["1/°C", "per celsius degree", 1],
+    ["1/°F", "per fahrenheit degree", 1.8], ["µin/in·°F", "microinch per inch °F", 1.8e-6], ["ppm/K", "parts per million per kelvin", 1e-6]]},
+
+  dynvisc: {n: "Dynamic viscosity", s: "thermo", base: "Pa·s", note: "Water at 20 °C is 1 cP = 1 mPa·s. SAE 30 oil is roughly 100 times thicker.", u: [
+    ["Pa·s", "pascal second", 1], ["mPa·s", "millipascal second", 1e-3], ["cP", "centipoise", 1e-3],
+    ["P", "poise", 0.1], ["lbf·s/ft²", "pound-force second per ft²", 47.880258980336],
+    ["lb/ft·s", "pound per foot second", 1.4881639435695], ["kgf·s/m²", "kilogram-force second per m²", 9.80665]]},
+
+  kinvisc: {n: "Kinematic viscosity", s: "thermo", base: "m²/s", note: "Oil grades (ISO VG 46 etc.) are centistokes at 40 °C.", u: [
+    ["m²/s", "metre² per second", 1], ["mm²/s", "millimetre² per second", 1e-6], ["cSt", "centistokes", 1e-6],
+    ["St", "stokes", 1e-4], ["ft²/s", "foot² per second", 0.09290304], ["in²/s", "inch² per second", 6.4516e-4]]},
+
+  volflow: {n: "Volumetric flow", s: "thermo", base: "m³/s", note: "CFM is the usual unit for fans and compressors; L/min for hydraulics.", u: [
+    ["m³/s", "metre³ per second", 1], ["m³/h", "metre³ per hour", 1 / 3600], ["L/s", "litre per second", 1e-3],
+    ["L/min", "litre per minute", 1e-3 / 60], ["CFM", "foot³ per minute", 4.719474432e-4],
+    ["ft³/s", "foot³ per second", 0.028316846592], ["gpm US", "US gallon per minute", 6.30901964e-5],
+    ["gph US", "US gallon per hour", 1.0515032733333e-6]]},
+
+  massflow: {n: "Mass flow", s: "thermo", base: "kg/s", note: "", u: [
+    ["kg/s", "kilogram per second", 1], ["kg/h", "kilogram per hour", 1 / 3600], ["g/s", "gram per second", 1e-3],
+    ["t/h", "tonne per hour", 1 / 3.6], ["lb/s", "pound per second", 0.45359237], ["lb/h", "pound per hour", 1.2599788055556e-4]]}
+};
+
+/* ═══════════════════════════════════════════════════════════════════════
+   VIEW
+   ═══════════════════════════════════════════════════════════════════════ */
+const $ = (s, r) => (r || document).querySelector(s);
+const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
+const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"}[c]));
+const SUPS = {"-": "⁻", "+": "", "0": "⁰", "1": "¹", "2": "²", "3": "³", "4": "⁴", "5": "⁵", "6": "⁶", "7": "⁷", "8": "⁸", "9": "⁹"};
+const sup = s => String(s).split("").map(c => SUPS[c] !== undefined ? SUPS[c] : c).join("");
+
+let QK = "length", FROM = 0, TO = 1, VAL = 1, SF = 6, SCI = false;
+let REC = [];
+try { REC = JSON.parse(localStorage.getItem("mechConv.recent") || "[]"); } catch (e) { }
+
+const qOf = () => Q[QK];
+const styleOf = k => "--k:var(" + SUBJ[Q[k].s].k + ");--ks:var(" + SUBJ[Q[k].s].k + "-soft)";
+
+function toBase(q, v, i) {
+  const u = q.u[i];
+  return q.abs ? v * u[2] + (u[3] || 0) : v * u[2];
+}
+function fromBase(q, b, i) {
+  const u = q.u[i];
+  return q.abs ? (b - (u[3] || 0)) / u[2] : b / u[2];
+}
+function group(intPart) { return intPart.replace(/\B(?=(\d{3})+(?!\d))/g, " "); }
+function fmt(x) {
+  if (x === null || x === undefined || !Number.isFinite(x)) return "—";
+  if (x === 0) return "0";
+  const a = Math.abs(x);
+  if (SCI || a < 1e-6 || a >= 1e10) {
+    const s = x.toExponential(Math.max(1, SF - 1));
+    const m = s.split("e");
+    let mant = m[0];
+    if (mant.indexOf(".") >= 0) mant = mant.replace(/0+$/, "").replace(/\.$/, "");
+    return mant + " × 10" + sup(m[1]);
+  }
+  let s = x.toPrecision(SF);
+  if (s.indexOf("e") >= 0) s = Number(s).toFixed(Math.max(0, SF));
+  if (s.indexOf(".") >= 0) s = s.replace(/0+$/, "").replace(/\.$/, "");
+  const neg = s[0] === "-"; if (neg) s = s.slice(1);
+  const parts = s.split(".");
+  return (neg ? "-" : "") + group(parts[0]) + (parts[1] ? "." + parts[1] : "");
+}
+/* plain machine-readable number: no digit grouping, so a copied value pastes
+   into a spreadsheet as a number rather than as text */
+function raw(x) {
+  if (!Number.isFinite(x)) return "";
+  if (x === 0) return "0";
+  const a = Math.abs(x);
+  if (SCI || a < 1e-6 || a >= 1e10) return x.toExponential(Math.max(1, SF - 1)).replace(/\.?0+e/, "e");
+  let s = x.toPrecision(SF);
+  if (s.indexOf("e") >= 0) return s;
+  if (s.indexOf(".") >= 0) s = s.replace(/0+$/, "").replace(/\.$/, "");
+  return s;
+}
+function toast(m) {
+  const t = $("#toast"); t.textContent = m; t.classList.add("show");
+  clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove("show"), 2200);
+}
+function copy(text, msg) {
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(() => toast(msg), () => fb(text, msg));
+  } else fb(text, msg);
+  function fb(t2, m2) {
+    const ta = document.createElement("textarea");
+    ta.value = t2; ta.style.position = "fixed"; ta.style.opacity = "0";
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand("copy"); toast(m2); } catch (e) { toast("Copy: " + t2); }
+    ta.remove();
+  }
+}
+
+/* ── quantity rail ─────────────────────────────────────────────────── */
+function renderRail() {
+  let html = "";
+  Object.keys(SUBJ).forEach(sk => {
+    const keys = Object.keys(Q).filter(k => Q[k].s === sk);
+    if (!keys.length) return;
+    html += '<div class="subjrow" style="--k:var(' + SUBJ[sk].k + ');--ks:var(' + SUBJ[sk].k + '-soft)">' +
+      '<div class="subjhead"><b>' + esc(SUBJ[sk].n) + '</b><span class="rule"></span></div><div class="qgrid">' +
+      keys.map(k => '<button class="q" data-q="' + k + '" aria-pressed="' + (k === QK) + '">' + esc(Q[k].n) + "</button>").join("") +
+      "</div></div>";
+  });
+  $("#qrail").innerHTML = html;
+  $$("#qrail .q").forEach(b => b.addEventListener("click", () => pick(b.dataset.q)));
+  $("#q-tag").textContent = Object.keys(Q).length + " quantities";
+}
+
+/* ── selects + results ─────────────────────────────────────────────── */
+function renderSelects() {
+  const q = qOf();
+  const opts = q.u.map((u, i) => '<option value="' + i + '">' + esc(u[0]) + " — " + esc(u[1]) + "</option>").join("");
+  $("#in-u").innerHTML = opts; $("#out-u").innerHTML = opts;
+  $("#in-u").value = String(FROM); $("#out-u").value = String(TO);
+  $("#c-tag").textContent = q.n;
+  $("#base-tag").textContent = "base " + q.base;
+  $("#note").textContent = q.note || "";
+  $("#note").hidden = !q.note;
+  $("#convcard").setAttribute("style", styleOf(QK));
+  $("#allcard").setAttribute("style", styleOf(QK));
+}
+function compute() {
+  const q = qOf();
+  const b = toBase(q, VAL, FROM);
+  return {b, out: fromBase(q, b, TO)};
+}
+function renderResult() {
+  const q = qOf(), r = compute();
+  $("#out-v").value = fmt(r.out);
+  $("#readout").innerHTML = "<b>" + esc(fmt(VAL)) + " " + esc(q.u[FROM][0]) + "</b> = <b>" + esc(fmt(r.out)) + " " + esc(q.u[TO][0]) + "</b>" +
+    '<span class="spacer"></span><span style="font-size:11.5px;color:var(--ink-3)">' + esc(fmt(r.b)) + " " + esc(q.base) + "</span>";
+  renderAll(r.b);
+}
+function renderAll(base) {
+  const q = qOf();
+  let h = "<thead><tr><th>Unit</th><th>Symbol</th><th>Value</th><th></th></tr></thead><tbody>";
+  q.u.forEach((u, i) => {
+    const v = fromBase(q, base, i);
+    h += '<tr data-i="' + i + '" class="' + (i === TO ? "on" : "") + '">' +
+      '<td class="nm">' + esc(u[1]) + "</td>" +
+      '<td class="sy">' + esc(u[0]) + "</td>" +
+      '<td class="val">' + esc(fmt(v)) + "</td>" +
+      '<td style="width:1%"><button class="cpy" data-v="' + esc(raw(v)) + '" data-u="' + esc(u[0]) + '" title="Copy this value">⧉</button></td></tr>';
+  });
+  $("#all").innerHTML = h + "</tbody>";
+  $$("#all tbody tr").forEach(tr => tr.addEventListener("click", ev => {
+    if (ev.target.closest(".cpy")) return;
+    TO = +tr.dataset.i; $("#out-u").value = String(TO); renderResult();
+  }));
+  $$("#all .cpy").forEach(b => b.addEventListener("click", ev => {
+    ev.stopPropagation(); copy(b.dataset.v, "Copied " + b.dataset.v + " " + b.dataset.u);
+  }));
+}
+
+/* ── recents ───────────────────────────────────────────────────────── */
+function pushRecent() {
+  const q = qOf(), r = compute();
+  const e = {q: QK, v: VAL, f: FROM, t: TO, label: fmt(VAL) + " " + q.u[FROM][0] + " → " + fmt(r.out) + " " + q.u[TO][0], n: q.n};
+  REC = REC.filter(x => !(x.q === e.q && x.v === e.v && x.f === e.f && x.t === e.t));
+  REC.unshift(e);
+  REC = REC.slice(0, 8);
+  try { localStorage.setItem("mechConv.recent", JSON.stringify(REC)); } catch (err) { }
+  renderRecent();
+}
+function renderRecent() {
+  const host = $("#recent");
+  if (!REC.length) { host.innerHTML = '<p class="hint" style="margin:0">Conversions you copy or swap land here, so you can jump back to them.</p>'; return; }
+  host.innerHTML = REC.map((e, i) =>
+    '<button class="rec" data-r="' + i + '" style="' + styleOf(e.q) + '"><span class="q" aria-pressed="false">' + esc(e.n) + "</span>" +
+    "<span>" + esc(e.label) + "</span></button>").join("");
+  $$("#recent .rec").forEach(b => b.addEventListener("click", () => {
+    const e = REC[+b.dataset.r];
+    QK = e.q; VAL = e.v; FROM = e.f; TO = e.t;
+    $("#in-v").value = VAL;
+    renderRail(); renderSelects(); renderResult();
+  }));
+}
+
+/* ── interactions ──────────────────────────────────────────────────── */
+function pick(k) {
+  if (!Q[k]) return;
+  QK = k; FROM = 0; TO = Math.min(1, Q[k].u.length - 1);
+  $$("#qrail .q").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.q === k)));
+  renderSelects(); renderResult();
+  if (history.replaceState) history.replaceState(null, "", "#" + k);
+}
+$("#in-v").addEventListener("input", e => {
+  const n = parseFloat(e.target.value);
+  VAL = Number.isFinite(n) ? n : 0;
+  renderResult();
+});
+$("#in-u").addEventListener("change", e => { FROM = +e.target.value; renderResult(); });
+$("#out-u").addEventListener("change", e => { TO = +e.target.value; renderResult(); });
+$("#swap").addEventListener("click", () => {
+  const r = compute();
+  const t = FROM; FROM = TO; TO = t;
+  VAL = Number(r.out.toPrecision(SF));
+  if (!Number.isFinite(VAL)) VAL = r.out;
+  $("#in-v").value = VAL;
+  $("#in-u").value = String(FROM); $("#out-u").value = String(TO);
+  renderResult(); pushRecent();
+});
+$("#sf").addEventListener("input", e => { SF = +e.target.value; $("#sfv").textContent = SF; renderResult(); });
+$("#sci").addEventListener("change", e => { SCI = e.target.checked; renderResult(); });
+$("#copyline").addEventListener("click", () => {
+  const q = qOf(), r = compute();
+  copy(raw(VAL) + " " + q.u[FROM][0] + " = " + raw(r.out) + " " + q.u[TO][0], "Line copied");
+  pushRecent();
+});
+$("#clearrec").addEventListener("click", () => {
+  REC = []; try { localStorage.removeItem("mechConv.recent"); } catch (e) { } renderRecent();
+});
+$("#theme").addEventListener("click", () => {
+  const root = document.documentElement;
+  const dark = root.dataset.theme ? root.dataset.theme === "dark" : window.matchMedia("(prefers-color-scheme: dark)").matches;
+  root.dataset.theme = dark ? "light" : "dark";
+  try { localStorage.setItem("mechSuite.theme", root.dataset.theme); } catch (e) { }
+});
+window.addEventListener("keydown", e => {
+  if (e.key === "Enter" && document.activeElement === $("#in-v")) pushRecent();
+});
+
+/* ═══════════════════════════════════════════════════════════════════════
+   SELF-VALIDATION
+   ═══════════════════════════════════════════════════════════════════════ */
+/* Defined conversions, from the standards that define them. */
+const IDENTITIES = [
+  ["length", 1, "in", "mm", 25.4], ["length", 1, "ft", "m", 0.3048], ["length", 1, "mi", "km", 1.609344],
+  ["length", 1, "nmi", "m", 1852], ["area", 1, "in²", "mm²", 645.16], ["area", 1, "acre", "m²", 4046.8564224],
+  ["volume", 1, "ft³", "L", 28.316846592], ["volume", 1, "gal US", "L", 3.785411784], ["volume", 1, "gal UK", "L", 4.54609],
+  ["angle", 180, "°", "rad", Math.PI], ["angle", 1, "rev", "°", 360],
+  ["secondmoment", 1, "in⁴", "cm⁴", 41.62314256],
+  ["mass", 1, "lb", "kg", 0.45359237], ["mass", 1, "oz", "g", 28.349523125], ["mass", 1, "ton US", "lb", 2000],
+  ["force", 1, "lbf", "N", 4.4482216152605], ["force", 1, "kgf", "N", 9.80665], ["force", 1, "kip", "lbf", 1000],
+  ["pressure", 1, "MPa", "N/mm²", 1], ["pressure", 1, "ksi", "psi", 1000], ["pressure", 1, "atm", "Pa", 101325],
+  ["pressure", 1, "atm", "Torr", 760], ["pressure", 1, "bar", "kPa", 100],
+  ["torque", 1, "lbf·ft", "lbf·in", 12], ["torque", 1, "kgf·m", "N·m", 9.80665],
+  ["density", 1, "g/cm³", "kg/m³", 1000],
+  ["velocity", 1, "km/h", "m/s", 1 / 3.6], ["velocity", 1, "kn", "m/s", 1852 / 3600], ["velocity", 1, "mph", "m/s", 0.44704],
+  ["acceleration", 1, "g", "m/s²", 9.80665],
+  ["angvel", 1, "rev/s", "rad/s", 2 * Math.PI], ["angvel", 60, "rpm", "rev/s", 1],
+  ["energy", 1, "kWh", "MJ", 3.6], ["energy", 1, "BTU", "J", 1055.05585262], ["energy", 1, "cal", "J", 4.1868],
+  ["power", 1, "hp", "W", 745.6998715822702], ["power", 1, "PS", "W", 735.49875],
+  ["time", 1, "h", "s", 3600], ["time", 1, "day", "h", 24],
+  ["frequency", 1500, "rpm", "Hz", 25], ["frequency", 1, "Hz", "rad/s", 2 * Math.PI],
+  ["temperature", 0, "°C", "K", 273.15], ["temperature", 100, "°C", "°F", 212], ["temperature", -40, "°C", "°F", -40],
+  ["temperature", 32, "°F", "°C", 0], ["temperature", 491.67, "°R", "K", 273.15],
+  ["tempdiff", 1, "°F", "K", 5 / 9],
+  ["specificheat", 1, "BTU/lb·°F", "J/kg·K", 4186.8],
+  ["expansion", 12e-6, "1/K", "µm/m·K", 12],
+  ["dynvisc", 1, "cP", "mPa·s", 1], ["kinvisc", 1, "cSt", "mm²/s", 1],
+  ["volflow", 1, "CFM", "L/min", 28.316846592], ["massflow", 1, "t/h", "kg/s", 1 / 3.6]
+];
+function runValidation() {
+  const out = [];
+  const conv = (k, v, from, to) => {
+    const q = Q[k], i = q.u.findIndex(u => u[0] === from), j = q.u.findIndex(u => u[0] === to);
+    if (i < 0 || j < 0) return NaN;
+    return fromBase(q, toBase(q, v, i), j);
+  };
+
+  /* 1 — every unit pair round-trips */
+  (function () {
+    const fails = []; let n = 0;
+    Object.keys(Q).forEach(k => {
+      const q = Q[k];
+      q.u.forEach((u, i) => q.u.forEach((_, j) => {
+        n++;
+        const v0 = 123.456;
+        const back = fromBase(q, toBase(q, fromBase(q, toBase(q, v0, i), j), j), i);
+        if (Math.abs(back - v0) > Math.abs(v0) * 1e-12)
+          fails.push(q.n + ": " + q.u[i][0] + " → " + q.u[j][0] + " → back gave " + back);
+      }));
+    });
+    out.push({n: "Round-trip through every unit pair", c: n, u: "pairs", fails,
+      d: "Each unit is converted into every other unit in its family and back again. Anything that does not return to where it started has a factor that disagrees with itself."});
+  })();
+
+  /* 2 — defined conversions against their standards */
+  (function () {
+    const fails = [];
+    IDENTITIES.forEach(([k, v, from, to, want]) => {
+      const got = conv(k, v, from, to);
+      if (!Number.isFinite(got)) { fails.push(k + ": " + from + " or " + to + " is missing"); return; }
+      if (Math.abs(got - want) > Math.abs(want) * 1e-10 + 1e-12)
+        fails.push(v + " " + from + " → " + to + ": got " + got + ", standard says " + want);
+    });
+    out.push({n: "Defined conversions", c: IDENTITIES.length, u: "identities", fails,
+      d: "Exact values from the standards that define them — 1 in = 25.4 mm, 1 lbf = 4.448 221 615 2605 N, 1 kWh = 3.6 MJ, 1 atm = 760 Torr, −40 °C = −40 °F."});
+  })();
+
+  /* 3 — table integrity */
+  (function () {
+    const fails = []; let n = 0;
+    Object.keys(Q).forEach(k => {
+      const q = Q[k]; n++;
+      if (!SUBJ[q.s]) fails.push(q.n + ": unknown subject");
+      if (!q.u.length) fails.push(q.n + ": no units");
+      if (!q.u.some(u => u[0] === q.base)) fails.push(q.n + ": base unit " + q.base + " is not in its own list");
+      const seen = {};
+      q.u.forEach(u => {
+        if (!Number.isFinite(u[2]) || u[2] <= 0) fails.push(q.n + " / " + u[0] + ": factor is not a positive number");
+        if (!u[1]) fails.push(q.n + " / " + u[0] + ": no name");
+        const key = u[0] + "|" + u[2];
+        if (seen[key]) fails.push(q.n + ": " + u[0] + " appears twice"); else seen[key] = 1;
+      });
+      /* the base unit must have a factor of exactly 1 */
+      const b = q.u.find(u => u[0] === q.base);
+      if (b && b[2] !== 1) fails.push(q.n + ": base unit factor is " + b[2] + ", not 1");
+    });
+    out.push({n: "Table integrity", c: n, u: "quantities", fails,
+      d: "Every quantity names a subject, lists its own base unit with a factor of exactly 1, and gives every unit a positive factor and a name."});
+  })();
+
+  /* 4 — scaling and sign behaviour */
+  (function () {
+    const fails = []; let n = 0;
+    Object.keys(Q).forEach(k => {
+      const q = Q[k];
+      if (q.abs) return;               /* offset scales are not linear */
+      n++;
+      const a = conv(k, 2, q.u[0][0], q.u[q.u.length - 1][0]);
+      const b = conv(k, 4, q.u[0][0], q.u[q.u.length - 1][0]);
+      if (Math.abs(b - 2 * a) > Math.abs(b) * 1e-12) fails.push(q.n + ": not linear — doubling the input did not double the output");
+      const z = conv(k, 0, q.u[0][0], q.u[1][0]);
+      if (Math.abs(z) > 1e-12) fails.push(q.n + ": zero does not map to zero");
+      const neg = conv(k, -5, q.u[0][0], q.u[1][0]);
+      if (!(neg < 0)) fails.push(q.n + ": a negative value did not stay negative");
+    });
+    /* temperature must not be linear — it is the one with an offset */
+    n++;
+    if (Math.abs(conv("temperature", 0, "°C", "K")) < 1e-9) fails.push("temperature is being treated as a ratio scale");
+    out.push({n: "Scale behaviour", c: n, u: "quantities", fails,
+      d: "Ratio quantities scale linearly, map zero to zero and keep the sign of a negative input. Temperature is checked to confirm it is handled as an interval scale with an offset instead."});
+  })();
+
+  return out;
+}
+function paintValidation() {
+  const suites = runValidation();
+  const tot = suites.reduce((a, s) => a + s.c, 0);
+  const bad = suites.reduce((a, s) => a + s.fails.length, 0);
+  $("#v-out").innerHTML = suites.map(s =>
+    '<div class="flag" data-s="' + (s.fails.length ? "bad" : "ok") + '"><b>' + (s.fails.length ? "FAIL" : "PASS") + "</b><span>" +
+    "<b>" + esc(s.n) + "</b> — " + s.c.toLocaleString() + " " + esc(s.u) + " checked<br>" +
+    '<span style="color:var(--ink-3)">' + esc(s.d) + "</span>" +
+    (s.fails.length ? '<br><span style="color:var(--bad)">' + s.fails.slice(0, 12).map(esc).join("<br>") + "</span>" : "") +
+    "</span></div>").join("");
+  const tag = $("#v-sum");
+  tag.className = "chip " + (bad ? "bad" : "ok");
+  tag.textContent = bad ? bad + " failed of " + tot.toLocaleString() : tot.toLocaleString() + " checks passed";
+  return {tot, bad};
+}
+$("#v-run").addEventListener("click", () => {
+  const r = paintValidation();
+  toast(r.bad ? r.bad + " check" + (r.bad === 1 ? "" : "s") + " failed" : "All " + r.tot.toLocaleString() + " checks passed");
+});
+
+/* ── boot ──────────────────────────────────────────────────────────── */
+(function init() {
+  try { const t = localStorage.getItem("mechSuite.theme"); if (t) document.documentElement.dataset.theme = t; } catch (e) { }
+  const h = (location.hash || "").replace(/^#/, "");
+  if (Q[h]) QK = h;
+  FROM = 0; TO = 1; VAL = 1;
+  $("#in-v").value = VAL;
+  $("#sfv").textContent = SF;
+  renderRail(); renderSelects(); renderResult(); renderRecent();
+})();
+</script>
+</body>
+</html>

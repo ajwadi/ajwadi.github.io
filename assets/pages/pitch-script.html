@@ -1,0 +1,417 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans+Condensed:wght@700&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Equivalent of the wrapper the artifact host adds at publish time, so this file
+   renders identically on its own. The page's own tokens override it below. */
+:root{color-scheme:light; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0; font:14px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif; background:#faf9f7}
+img{max-width:100%}
+[hidden]{display:none!important}
+</style>
+<title>Mech Suite Pitch</title>
+<style>
+/* Layout: a presenter rail that keeps the clock and the current beat fixed at the top,
+   with the spoken words set large for reading at arm's length and the stage directions
+   kept quiet in mono beside them. Same instrument palette as the tools being demoed. */
+:root{
+  --bg:#eef1f4; --surface:#ffffff; --surface-2:#f4f7f9; --surface-3:#e6ecf1;
+  --ink:#0e151b; --ink-2:#485966; --ink-3:#7a8b9a;
+  --line:#ccd6de; --line-2:#aebccb;
+  --accent:#0d7c8c; --accent-ink:#ffffff; --accent-soft:#d8edf0;
+  --cue:#9a5b12; --cue-soft:#fbeedb;
+  --fill:#a5293b; --fill-soft:#fadfe3;
+  --ok:#16764a;
+  --f-display:"IBM Plex Sans Condensed","Arial Narrow",system-ui,sans-serif;
+  --f-body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,"Cascadia Mono",Consolas,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0c1014; --surface:#141a21; --surface-2:#1a2129; --surface-3:#232c36;
+  --ink:#e8eff5; --ink-2:#a0b2c0; --ink-3:#6f8190;
+  --line:#26313b; --line-2:#394854;
+  --accent:#34bfc7; --accent-ink:#04191c; --accent-soft:#113038;
+  --cue:#e0a84a; --cue-soft:#2e2310;
+  --fill:#f08090; --fill-soft:#3a171d;
+  --ok:#52cb8c;
+  color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --bg:#0c1014; --surface:#141a21; --surface-2:#1a2129; --surface-3:#232c36;
+  --ink:#e8eff5; --ink-2:#a0b2c0; --ink-3:#6f8190;
+  --line:#26313b; --line-2:#394854;
+  --accent:#34bfc7; --accent-ink:#04191c; --accent-soft:#113038;
+  --cue:#e0a84a; --cue-soft:#2e2310;
+  --fill:#f08090; --fill-soft:#3a171d;
+  --ok:#52cb8c;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg); color:var(--ink); font-family:var(--f-body); margin:0; line-height:1.5}
+.wrap{max-width:860px; margin:0 auto; padding-inline:16px; padding-block:0 56px}
+
+/* ── presenter rail ──────────────────────────────────────── */
+.rail{
+  position:sticky; top:env(safe-area-inset-top, 0px); z-index:20;
+  margin-inline:-16px; padding-inline:16px; padding-block:10px;
+  background:color-mix(in srgb, var(--surface) 92%, transparent);
+  backdrop-filter:blur(10px) saturate(1.3); border-bottom:1px solid var(--line);
+  display:flex; align-items:center; gap:12px; flex-wrap:wrap;
+}
+.clock{
+  font:600 clamp(26px,5vw,34px)/1 var(--f-mono); font-variant-numeric:tabular-nums;
+  letter-spacing:-.02em; color:var(--accent); min-width:4.6ch;
+}
+.clock.over{color:var(--fill)}
+.railbtn{
+  cursor:pointer; border:1px solid var(--line-2); background:var(--surface); color:var(--ink);
+  border-radius:6px; padding:7px 13px; font:500 13px/1 var(--f-body);
+}
+.railbtn:hover{background:var(--surface-2)}
+.railbtn.go{background:var(--accent); border-color:var(--accent); color:var(--accent-ink); font-weight:600}
+.now{
+  flex:1 1 170px; min-width:0; font:600 11px/1.4 var(--f-mono); letter-spacing:.09em;
+  text-transform:uppercase; color:var(--ink-3); text-align:right;
+}
+.now b{display:block; font:600 14px/1.4 var(--f-body); letter-spacing:0; text-transform:none; color:var(--ink)}
+
+/* ── head ────────────────────────────────────────────────── */
+header.top{padding-block:30px 10px}
+header.top h1{
+  font-family:var(--f-display); font-size:clamp(28px,6vw,42px); font-weight:700;
+  letter-spacing:.02em; margin:0 0 8px; text-wrap:balance;
+}
+header.top p{margin:0; color:var(--ink-2); font-size:15px; max-width:62ch}
+.meta{display:flex; gap:8px; flex-wrap:wrap; margin-top:14px}
+.pill{
+  font:600 10.5px/1.7 var(--f-mono); letter-spacing:.06em; text-transform:uppercase;
+  border:1px solid var(--line-2); border-radius:99px; padding:2px 10px; color:var(--ink-2); background:var(--surface);
+}
+.pill.key{background:var(--accent-soft); border-color:var(--accent); color:var(--accent)}
+
+/* ── beats ───────────────────────────────────────────────── */
+.beat{
+  border-top:1px solid var(--line); padding-block:22px;
+  display:grid; grid-template-columns:76px minmax(0,1fr); gap:18px;
+}
+@media (max-width:620px){.beat{grid-template-columns:1fr; gap:10px}}
+.beat.active{background:linear-gradient(90deg, var(--accent-soft), transparent 60%); margin-inline:-16px; padding-inline:16px}
+.tc{font:600 13px/1.5 var(--f-mono); color:var(--accent); font-variant-numeric:tabular-nums}
+.tc small{display:block; font:500 10.5px/1.6 var(--f-mono); color:var(--ink-3)}
+.beat h2{
+  font-family:var(--f-display); font-size:19px; font-weight:700; letter-spacing:.06em;
+  text-transform:uppercase; margin:0 0 12px;
+}
+.say{font-size:clamp(16px,2.1vw,18.5px); line-height:1.66; margin:0 0 14px; max-width:60ch}
+.say:last-child{margin-bottom:0}
+.say em{font-style:normal; background:var(--accent-soft); padding:1px 4px; border-radius:3px; font-weight:600}
+.cue{
+  display:block; font:500 12.5px/1.6 var(--f-mono); color:var(--cue); background:var(--cue-soft);
+  border-left:2px solid var(--cue); padding:7px 11px; border-radius:0 4px 4px 0; margin:0 0 14px; max-width:60ch;
+}
+.fill{background:var(--fill-soft); color:var(--fill); font-weight:600; padding:1px 6px; border-radius:3px; white-space:nowrap}
+.beat[data-cut="1"] .tc::after{
+  content:"CUT IF SHORT"; display:block; margin-top:6px; font:600 8.5px/1.4 var(--f-mono);
+  letter-spacing:.08em; color:var(--fill);
+}
+
+/* ── q&a ─────────────────────────────────────────────────── */
+.qa{margin-top:34px}
+.qa h2{font-family:var(--f-display); font-size:19px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; margin:0 0 4px}
+.qa>p{color:var(--ink-2); font-size:14px; margin:0 0 16px; max-width:62ch}
+details.q{border:1px solid var(--line); border-radius:7px; background:var(--surface); margin-bottom:8px; overflow:hidden}
+details.q summary{
+  cursor:pointer; padding:12px 14px; font-weight:600; font-size:15px; list-style:none;
+  display:flex; gap:10px; align-items:baseline;
+}
+details.q summary::-webkit-details-marker{display:none}
+details.q summary::before{content:"Q"; font:700 11px/1.5 var(--f-mono); color:var(--accent); flex:none}
+details.q[open] summary{border-bottom:1px solid var(--line); background:var(--surface-2)}
+details.q .a{padding:13px 14px 15px 34px; font-size:14.5px; line-height:1.62; color:var(--ink-2)}
+details.q .a strong{color:var(--ink)}
+
+/* ── checklist ───────────────────────────────────────────── */
+.pre{margin-top:34px; border:1px solid var(--line); border-radius:7px; background:var(--surface); padding:16px 18px}
+.pre h2{font-family:var(--f-display); font-size:16px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; margin:0 0 12px}
+.pre ul{margin:0; padding:0; list-style:none; display:grid; gap:9px}
+.pre li{display:flex; gap:10px; align-items:flex-start; font-size:14.5px; line-height:1.55; color:var(--ink-2)}
+.pre li::before{
+  content:""; flex:none; width:14px; height:14px; margin-top:4px; border:1.5px solid var(--line-2); border-radius:3px;
+}
+.pre li b{color:var(--ink)}
+footer.end{margin-top:30px; padding-top:14px; border-top:1px solid var(--line); font-size:12.5px; color:var(--ink-3)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+@media print{.rail{position:static} .beat.active{background:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="rail">
+  <span class="clock" id="clock">0:00</span>
+  <button class="railbtn go" id="go">Start</button>
+  <button class="railbtn" id="reset">Reset</button>
+  <span class="now" id="now">Not started<b>Press start when you begin speaking</b></span>
+</div>
+
+<header class="top">
+  <h1>Mech Suite</h1>
+  <p>Eight minutes of speaking, with the demo doing most of the work. Everything in
+  <span class="fill">red</span> is a blank only you can fill — get those numbers before you walk in.
+  The three beats marked <b>cut if short</b> take it down to five minutes without losing the argument.</p>
+  <div class="meta">
+    <span class="pill key">8 min + Q&amp;A</span>
+    <span class="pill">Live demo, no slides</span>
+    <span class="pill">3 files open in tabs</span>
+  </div>
+</header>
+
+<section class="beat" data-t0="0" data-t1="45">
+  <div class="tc">0:00<small>45 sec</small></div>
+  <div>
+    <h2>Open with the waste, not the tool</h2>
+    <span class="cue">Nothing on screen yet. Stand away from the laptop.</span>
+    <p class="say">A few weeks ago I needed to check whether a bolted joint would hold. I spent
+    an afternoon building a spreadsheet to do it. <span class="fill">[Colleague]</span> built almost
+    exactly the same spreadsheet last year for a different project. Neither of us can find the other's.</p>
+    <p class="say">That afternoon is happening somewhere in this building right now.</p>
+    <p class="say">So I described that calculation to an AI, in plain English, the way I'd describe it
+    to a graduate engineer on their first week. This is what came back.</p>
+  </div>
+</section>
+
+<section class="beat" data-t0="45" data-t1="180">
+  <div class="tc">0:45<small>2 min 15</small></div>
+  <div>
+    <h2>Demo — the joint does the talking</h2>
+    <span class="cue">Joint Bench, already open. Advanced mode. Don't narrate the UI, narrate the engineering.</span>
+    <p class="say">This is a bolted joint in section. Cover plate, shim, housing flange, an M10 bolt
+    through the middle. Every layer has its own material, its own thickness tolerance, and its own
+    corner breaks — the chamfers and radii a machinist actually puts on the hole.</p>
+    <span class="cue">Click <b>+ Add layer</b>. Let the drawing animate before you speak again.</span>
+    <p class="say">I've added a layer. The section redraws, the grip length changes, the bearing stress
+    changes, and the bolt length it recommends changes to the next standard size that still clears the
+    nut with two threads showing. Nothing here is a lookup. It is all computed, live.</p>
+    <span class="cue">Scroll to the washer material field. Change head and nut washers to Nylon 6/6.</span>
+    <p class="say">Now the part I didn't ask for. I've just specified a nylon washer instead of a
+    hardened steel one. <em>Look at the checks panel.</em> Bearing stress of 390 megapascals against an
+    82 megapascal allowable. Margin of safety, minus 0.79. It fails, and it fails at the one contact in
+    this joint where the stress is highest.</p>
+    <p class="say">Nobody told it to check the washer. That is the difference between a spreadsheet
+    and a tool that knows what a bolted joint is.</p>
+  </div>
+</section>
+
+<section class="beat" data-t0="180" data-t1="225">
+  <div class="tc">3:00<small>45 sec</small></div>
+  <div>
+    <h2>The reveal — how long, and what it is</h2>
+    <p class="say">This did not exist <span class="fill">[a week / two weeks]</span> ago.</p>
+    <p class="say">It is one HTML file. You open it by double-clicking it. No server, no login,
+    no install, no licence. And nothing leaves the laptop — which matters, because none of our
+    geometry is going to a cloud service to get a number back.</p>
+    <span class="cue">If someone looks sceptical here, this is the moment to say it plainly.</span>
+    <p class="say">I'm not a software developer. I described the calculation and reviewed the result,
+    the same way I'd review a graduate's work.</p>
+  </div>
+</section>
+
+<section class="beat" data-t0="225" data-t1="300">
+  <div class="tc">3:45<small>1 min 15</small></div>
+  <div>
+    <h2>Trust — the beat that wins the room</h2>
+    <p class="say">Now the real question, and it's the one I'd ask. Would any of you sign a drawing
+    based on a number an AI produced? Neither would I. So here is what we do about that.</p>
+    <span class="cue">Scroll to the Validation card. Press <b>Run checks</b>. Wait for it to finish — it is instant.</span>
+    <p class="say">Two thousand two hundred and ninety-three checks, across the three tools, just now,
+    in these files. Bolt stress areas against the ISO 898-1 table. Every unit conversion round-tripped
+    and checked against its defined standard. Every worked example recomputed by the same code that
+    produced it. Anyone can press that button, any time, and watch it happen.</p>
+    <p class="say">And here is the honest part. The first time I ran it, it failed. It caught six
+    equations where the published answer was wrong. The AI wrote those six. The test caught all six,
+    in under a second, before anybody used them.</p>
+    <p class="say">I don't know what our catch rate is on hand-built spreadsheets today. I'd guess
+    it's zero, because nothing checks them.</p>
+  </div>
+</section>
+
+<section class="beat" data-t0="300" data-t1="360" data-cut="1">
+  <div class="tc">5:00<small>1 min</small></div>
+  <div>
+    <h2>The shelf — two more tools, fast</h2>
+    <span class="cue">Switch tabs. Thirty seconds each, no more. Resist demoing these properly.</span>
+    <p class="say">Two more pieces. A hundred and thirty-five equations across nine disciplines —
+    statics, materials, machine design, dynamics, vibration, fluids, thermo, heat transfer, fatigue.</p>
+    <span class="cue">Click any tile. Type a number into the solver.</span>
+    <p class="say">It isn't a reference. It solves. Your numbers, your answer, with the assumptions
+    it rests on written underneath.</p>
+    <span class="cue">Switch to the Converter. Pick Pressure &amp; stress.</span>
+    <p class="say">And a converter built for our units — 31 quantities, 228 units, the exact factors
+    from the standards.</p>
+    <p class="say">These two aren't the product. They're the shelf the product sits on, and they're
+    the proof that this is one system rather than three weekend projects.</p>
+  </div>
+</section>
+
+<section class="beat" data-t0="360" data-t1="420">
+  <div class="tc">6:00<small>1 min</small></div>
+  <div>
+    <h2>The ask</h2>
+    <span class="cue">Stop demoing. Close the laptop lid halfway if you can. Eye contact.</span>
+    <p class="say">An engineer here spends about <span class="fill">[3]</span> hours building a one-off
+    calculation, and does it maybe <span class="fill">[20]</span> times a year. At
+    <span class="fill">[£X]</span> an hour, across <span class="fill">[N]</span> engineers, that's
+    <span class="fill">[£Y]</span> a year spent rebuilding things we've already built.</p>
+    <p class="say">What I want is <span class="fill">[one team, 90 days / X hours a week / a budget
+    line for API access]</span>. I'll take the three calculations that team does most often and turn
+    them into verified tools, and we measure whether it saved them anything.</p>
+    <span class="cue">If they ask what it costs you to run: answer honestly and move on. Don't dwell.</span>
+  </div>
+</section>
+
+<section class="beat" data-t0="420" data-t1="450">
+  <div class="tc">7:00<small>30 sec</small></div>
+  <div>
+    <h2>Close</h2>
+    <p class="say">The pitch isn't these three files. The pitch is that any calculation you do by
+    hand more than twice can become a verified tool in an afternoon.</p>
+    <p class="say">I've shown you one. Tell me which one you want next.</p>
+    <span class="cue">Stop. Don't add anything. Let the silence do the work.</span>
+  </div>
+</section>
+
+<div class="qa">
+  <h2>Questions you will get</h2>
+  <p>Answers kept short on purpose. The long version loses the room.</p>
+
+  <details class="q">
+    <summary>So the AI made six mistakes?</summary>
+    <div class="a">Yes. And we caught all six in under a second, before anyone used them.
+    <strong>Every engineering process produces errors — the question is whether they're caught before
+    release.</strong> This one has a measured catch rate. Our hand-built spreadsheets don't have one at
+    all, because nothing checks them. Say this before they do, in the trust beat, and it never comes up
+    as an attack.</div>
+  </details>
+
+  <details class="q">
+    <summary>Who signs it off? What about liability?</summary>
+    <div class="a">The same engineer who signs today. <strong>This doesn't change who approves
+    anything.</strong> It changes how long the first ninety per cent takes. Every tool says on its face
+    that it's a first-order sizing aid and to check against the governing standard before release.</div>
+  </details>
+
+  <details class="q">
+    <summary>Why not just buy KISSsoft, MITCalc or use Inventor?</summary>
+    <div class="a">We should, for what they're good at — they're mature and validated and I'd rather
+    have them for gearboxes. <strong>They cost per seat and they solve the problems someone else decided
+    were worth solving.</strong> This is for the fifty calculations specific to how we work that nobody
+    will ever sell us software for. It's not either/or.</div>
+  </details>
+
+  <details class="q">
+    <summary>Is it actually accurate?</summary>
+    <div class="a">Press the button yourself — it checks in front of you, every time you open it.
+    Stress areas match the ISO table to within 0.4 per cent across all eleven sizes.
+    <strong>And it's a sizing aid, not a replacement for the standard.</strong> I'd use it to get to a
+    candidate design in an hour instead of a day, then verify the candidate the way we verify anything.</div>
+  </details>
+
+  <details class="q">
+    <summary>What can't it do?</summary>
+    <div class="a">Three things I'd want before trusting it on a real release: transverse load and
+    joint slip, fatigue, and thermal preload loss across a mixed-material stack. It also handles one
+    bolt, not a bolt pattern. <strong>Knowing exactly where the edges are is part of why I trust the
+    middle.</strong></div>
+  </details>
+
+  <details class="q">
+    <summary>Could anyone here do this, or just you?</summary>
+    <div class="a">The describing part, anyone who knows the engineering can do. <strong>The reviewing
+    part is the job</strong> — someone has to know that a nylon washer under a preloaded bolt is a
+    problem, and that's not something the tool teaches you. That's the honest limit, and it's why I'm
+    asking for a pilot team rather than a licence for everyone.</div>
+  </details>
+
+  <details class="q">
+    <summary>What does it cost to run?</summary>
+    <div class="a"><span class="fill">[Fill in your actual figure]</span> — and say it plainly. The
+    comparison that lands is this cost against <span class="fill">[£Y]</span> of engineer time a year,
+    not against zero.</div>
+  </details>
+</div>
+
+<div class="pre">
+  <h2>Before you walk in</h2>
+  <ul>
+    <li><b>Record a backup.</b> Ninety seconds of the add-layer and nylon-washer moments. Live demos die.</li>
+    <li><b>Open all three files in tabs</b> and press Run checks once, so the first load is already warm.</li>
+    <li><b>Load a real joint from a real project</b> instead of the sample. "Here's the bracket from
+    <span class="fill">[project]</span>" beats "here's an example" by a mile.</li>
+    <li><b>Fill in every red blank.</b> Get the hourly rate from someone who knows it rather than estimating on stage.</li>
+    <li><b>Decide your ask in one sentence</b> and be able to say it without looking down.</li>
+    <li><b>Switch to Basic mode</b> if the room is mostly non-technical — fewer fields, same four numbers.</li>
+    <li><b>Don't type live.</b> Click things that already work. Typing on stage always goes wrong.</li>
+  </ul>
+</div>
+
+<footer class="end">
+  Figures quoted in the script — 2,293 checks, 135 equations, 31 quantities, 228 units, the 0.4 % ISO
+  agreement and the six caught errors — are from the tools as built. Everything in red is yours to supply.
+</footer>
+</div>
+
+<script>
+(function () {
+  var beats = Array.prototype.slice.call(document.querySelectorAll(".beat"));
+  var clock = document.getElementById("clock");
+  var go = document.getElementById("go");
+  var now = document.getElementById("now");
+  var t = 0, timer = null, running = false;
+  var TOTAL = 450;
+
+  function mmss(s) {
+    var m = Math.floor(s / 60), r = s % 60;
+    return m + ":" + (r < 10 ? "0" : "") + r;
+  }
+  function paint() {
+    clock.textContent = mmss(t);
+    clock.classList.toggle("over", t > TOTAL);
+    var active = null;
+    beats.forEach(function (b) {
+      var a = +b.dataset.t0, z = +b.dataset.t1;
+      var on = running && t >= a && t < z;
+      b.classList.toggle("active", on);
+      if (on) active = b;
+    });
+    if (!running) { now.innerHTML = "Not started<b>Press start when you begin speaking</b>"; return; }
+    if (active) {
+      var left = +active.dataset.t1 - t;
+      now.innerHTML = "Now &middot; " + left + "s left<b>" + active.querySelector("h2").textContent + "</b>";
+    } else {
+      now.innerHTML = t > TOTAL ? "Over time<b>Questions</b>" : "Running<b>&mdash;</b>";
+    }
+  }
+  function tick() { t++; paint(); }
+  go.addEventListener("click", function () {
+    running = !running;
+    go.textContent = running ? "Pause" : "Start";
+    go.classList.toggle("go", !running);
+    if (running) timer = setInterval(tick, 1000); else clearInterval(timer);
+    paint();
+  });
+  document.getElementById("reset").addEventListener("click", function () {
+    clearInterval(timer); running = false; t = 0;
+    go.textContent = "Start"; go.classList.add("go"); paint();
+  });
+  paint();
+})();
+</script>
+
+</body>
+</html>

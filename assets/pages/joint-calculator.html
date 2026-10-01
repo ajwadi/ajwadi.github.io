@@ -1,0 +1,2553 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Bolted Joint Bench</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;450;500;600&display=swap">
+<style>
+/* Layout: drafting workbench — title block header, KPI rail, then a two-column bench:
+   setup + layer stack on the left, a live section view with results docked on the right. */
+:root{
+  --bg:#e9edf1; --bg-grid:#dde3e9;
+  --surface:#ffffff; --surface-2:#f3f6f9; --surface-3:#e7edf2;
+  --ink:#0e151b; --ink-2:#4a5a67; --ink-3:#78899a;
+  --line:#ccd6de; --line-2:#aebcca; --line-3:#8b9cab;
+  --accent:#0d7c8c; --accent-ink:#ffffff; --accent-soft:#d6ecef; --accent-line:#8fcad3;
+  --blueprint:#2c4f82; --ok:#16764a; --ok-soft:#dbf0e4; --warn:#95610a; --warn-soft:#faedd2;
+  --bad:#af252c; --bad-soft:#fadfe0; --hatch:#5c6b78;
+  --shadow:0 1px 2px rgba(14,21,27,.06), 0 8px 24px -16px rgba(14,21,27,.28);
+  --r:8px; --r-sm:5px;
+  --f-display:"IBM Plex Sans Condensed","Oswald","Arial Narrow",system-ui,sans-serif;
+  --f-body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,"Cascadia Mono","Consolas",monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0c1014; --bg-grid:#151b22;
+  --surface:#141a21; --surface-2:#1a2129; --surface-3:#222b35;
+  --ink:#e7eef4; --ink-2:#9dafbd; --ink-3:#6d7f8e;
+  --line:#25303a; --line-2:#37454f; --line-3:#4d5f6c;
+  --accent:#34bfc7; --accent-ink:#04191c; --accent-soft:#12333a; --accent-line:#1f5a64;
+  --blueprint:#7ea9dc; --ok:#52cb8c; --ok-soft:#0f2e21; --warn:#e2ab46; --warn-soft:#31240c;
+  --bad:#f0787a; --bad-soft:#3a1517; --hatch:#8fa1b0;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 10px 28px -18px rgba(0,0,0,.8);
+  color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --bg:#0c1014; --bg-grid:#151b22;
+  --surface:#141a21; --surface-2:#1a2129; --surface-3:#222b35;
+  --ink:#e7eef4; --ink-2:#9dafbd; --ink-3:#6d7f8e;
+  --line:#25303a; --line-2:#37454f; --line-3:#4d5f6c;
+  --accent:#34bfc7; --accent-ink:#04191c; --accent-soft:#12333a; --accent-line:#1f5a64;
+  --blueprint:#7ea9dc; --ok:#52cb8c; --ok-soft:#0f2e21; --warn:#e2ab46; --warn-soft:#31240c;
+  --bad:#f0787a; --bad-soft:#3a1517; --hatch:#8fa1b0;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 10px 28px -18px rgba(0,0,0,.8);
+  color-scheme:dark;
+}
+
+*{box-sizing:border-box}
+html,body{margin:0}
+body{
+  background:
+    linear-gradient(var(--bg-grid) 1px, transparent 1px) 0 0/100% 28px,
+    linear-gradient(90deg, var(--bg-grid) 1px, transparent 1px) 0 0/28px 100%,
+    var(--bg);
+  color:var(--ink); font-family:var(--f-body); font-size:14px; line-height:1.5;
+  -webkit-text-size-adjust:100%;
+}
+.wrap{max-width:1680px; margin:0 auto; padding-inline:16px; padding-block:0 40px}
+
+/* ── title block ───────────────────────────────────────────── */
+.titleblock{
+  position:sticky; top:0; z-index:40; margin-inline:-16px; padding-inline:16px;
+  background:color-mix(in srgb, var(--surface) 88%, transparent);
+  backdrop-filter:blur(10px) saturate(1.3);
+  border-bottom:1px solid var(--line);
+}
+.tb-row{display:flex; align-items:center; gap:18px; flex-wrap:wrap; padding-block:10px}
+.brand{display:flex; align-items:baseline; gap:10px; min-width:0}
+.brand h1{
+  font-family:var(--f-display); font-size:clamp(17px,2.4vw,23px); font-weight:700;
+  letter-spacing:.055em; text-transform:uppercase; margin:0; white-space:nowrap;
+}
+.brand .std{font:500 10px/1 var(--f-mono); color:var(--ink-3); letter-spacing:.09em; white-space:nowrap}
+.tb-fields{display:flex; gap:0; margin-left:auto; border:1px solid var(--line); border-radius:var(--r-sm); overflow:hidden; background:var(--surface)}
+.tb-field{display:flex; flex-direction:column; padding:4px 9px; border-right:1px solid var(--line); min-width:0}
+.tb-field:last-child{border-right:0}
+.tb-field label{font:600 8.5px/1.3 var(--f-mono); letter-spacing:.11em; color:var(--ink-3); text-transform:uppercase}
+.tb-field input{
+  border:0; background:transparent; color:var(--ink); font:500 12.5px/1.35 var(--f-mono);
+  padding:0; width:var(--w,7ch); min-width:0;
+}
+.tb-field input:focus{outline:none; color:var(--accent)}
+.tb-actions{display:flex; gap:6px; align-items:center}
+.suite{display:flex; gap:2px; align-items:center; border:1px solid var(--line); border-radius:var(--r-sm); padding:2px; background:var(--surface)}
+.suite a{text-decoration:none; color:var(--ink-2); font:500 11.5px/1 var(--f-mono); letter-spacing:.04em; padding:6px 9px; border-radius:3px; white-space:nowrap}
+.suite a:hover{background:var(--surface-2); color:var(--ink)}
+.suite a[aria-current="page"]{background:var(--accent); color:var(--accent-ink); font-weight:600}
+
+/* ── generic controls ──────────────────────────────────────── */
+button,select,input,textarea{font-family:inherit; font-size:inherit; color:inherit}
+.btn{
+  display:inline-flex; align-items:center; gap:6px; cursor:pointer;
+  background:var(--surface); border:1px solid var(--line-2); color:var(--ink);
+  border-radius:var(--r-sm); padding:6px 11px; font-weight:500; font-size:12.5px;
+  transition:background .14s, border-color .14s, transform .08s;
+}
+.btn:hover{background:var(--surface-2); border-color:var(--line-3)}
+.btn:active{transform:translateY(1px)}
+.btn.primary{background:var(--accent); border-color:var(--accent); color:var(--accent-ink); font-weight:600}
+.btn.primary:hover{filter:brightness(1.08)}
+.btn.ghost{background:transparent; border-color:transparent; color:var(--ink-2); padding:6px 8px}
+.btn.ghost:hover{background:var(--surface-2); color:var(--ink)}
+.btn.icon{padding:5px 7px; font:500 12px/1 var(--f-mono)}
+.btn.danger:hover{background:var(--bad-soft); border-color:var(--bad); color:var(--bad)}
+.btn[disabled]{opacity:.45; cursor:not-allowed}
+:where(button,select,input,textarea,summary,[tabindex]):focus-visible{
+  outline:2px solid var(--accent); outline-offset:2px; border-radius:3px;
+}
+.seg{display:inline-flex; border:1px solid var(--line-2); border-radius:var(--r-sm); overflow:hidden; background:var(--surface)}
+.seg button{
+  border:0; background:transparent; padding:5px 10px; cursor:pointer; font-size:12px; font-weight:500;
+  color:var(--ink-2); border-right:1px solid var(--line); white-space:nowrap;
+}
+.seg button:last-child{border-right:0}
+.seg button[aria-pressed="true"]{background:var(--accent); color:var(--accent-ink); font-weight:600}
+.seg button:not([aria-pressed="true"]):hover{background:var(--surface-2); color:var(--ink)}
+
+.field{display:flex; flex-direction:column; gap:3px; min-width:0}
+.field>label,.flab{
+  font:600 9.5px/1.3 var(--f-mono); letter-spacing:.09em; text-transform:uppercase; color:var(--ink-3);
+  display:flex; align-items:center; gap:4px;
+}
+.field input[type=number],.field input[type=text],.field select,.inp{
+  width:100%; min-width:0; background:var(--surface); border:1px solid var(--line-2);
+  border-radius:var(--r-sm); padding:5px 7px; font:450 13px/1.35 var(--f-mono);
+  font-variant-numeric:tabular-nums;
+}
+.field select,select.inp{font-family:var(--f-body); font-weight:450; padding-right:4px}
+.field input:focus,.field select:focus,.inp:focus{border-color:var(--accent); outline:none; box-shadow:0 0 0 2.5px var(--accent-soft)}
+.field input:disabled,.field select:disabled{background:var(--surface-3); color:var(--ink-3)}
+.unit{color:var(--ink-3); font:500 9.5px/1 var(--f-mono); letter-spacing:.04em}
+.grid2{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:9px}
+.grid3{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:9px}
+.grid4{display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:9px}
+@media (max-width:520px){.grid3,.grid4{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* ── KPI rail ──────────────────────────────────────────────── */
+.kpis{display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px; margin-block:14px}
+@media (max-width:1000px){.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:480px){.kpis{grid-template-columns:1fr}}
+.kpi{
+  position:relative; background:var(--surface); border:1px solid var(--line);
+  border-radius:var(--r); padding:11px 13px 12px 15px; box-shadow:var(--shadow); overflow:hidden;
+}
+.kpi::before{content:""; position:absolute; inset:0 auto 0 0; width:3px; background:var(--line-2)}
+.kpi[data-s="ok"]::before{background:var(--ok)} .kpi[data-s="warn"]::before{background:var(--warn)}
+.kpi[data-s="bad"]::before{background:var(--bad)}
+.kpi h3{margin:0 0 5px; font:600 9.5px/1.3 var(--f-mono); letter-spacing:.11em; text-transform:uppercase; color:var(--ink-3)}
+.kpi .v{font:600 clamp(24px,3.1vw,33px)/1 var(--f-mono); font-variant-numeric:tabular-nums; letter-spacing:-.02em; display:flex; align-items:baseline; gap:5px}
+.kpi .v small{font:500 12px/1 var(--f-mono); color:var(--ink-2); letter-spacing:0}
+.kpi .sub{margin-top:6px; font-size:11.5px; color:var(--ink-2); display:flex; align-items:center; gap:6px; flex-wrap:wrap; min-height:18px}
+.chip{
+  display:inline-flex; align-items:center; gap:4px; padding:1.5px 7px; border-radius:99px;
+  font:600 10px/1.6 var(--f-mono); letter-spacing:.05em; border:1px solid transparent; white-space:nowrap;
+}
+.chip.ok{background:var(--ok-soft); color:var(--ok); border-color:color-mix(in srgb,var(--ok) 35%,transparent)}
+.chip.warn{background:var(--warn-soft); color:var(--warn); border-color:color-mix(in srgb,var(--warn) 35%,transparent)}
+.chip.bad{background:var(--bad-soft); color:var(--bad); border-color:color-mix(in srgb,var(--bad) 35%,transparent)}
+.chip.neutral{background:var(--surface-3); color:var(--ink-2); border-color:var(--line)}
+
+/* ── bench ─────────────────────────────────────────────────── */
+.bench{display:grid; grid-template-columns:minmax(0,1.02fr) minmax(0,1fr); gap:14px; align-items:start}
+@media (max-width:1180px){.bench{grid-template-columns:1fr}}
+.col{display:flex; flex-direction:column; gap:14px; min-width:0}
+.col.right{position:sticky; top:62px}
+@media (max-width:1180px){.col.right{position:static}}
+
+.card{background:var(--surface); border:1px solid var(--line); border-radius:var(--r); box-shadow:var(--shadow); overflow:hidden}
+.card>header{
+  display:flex; align-items:center; gap:9px; padding:9px 13px;
+  border-bottom:1px solid var(--line); background:var(--surface-2);
+}
+.card>header h2{
+  margin:0; font-family:var(--f-display); font-size:13px; font-weight:700;
+  letter-spacing:.1em; text-transform:uppercase;
+}
+.card>header .num{
+  font:600 9.5px/1 var(--f-mono); color:var(--ink-3); border:1px solid var(--line-2);
+  border-radius:3px; padding:3px 5px; letter-spacing:.06em;
+}
+.card>header .spacer{margin-left:auto}
+.card .body{padding:13px}
+.hint{font-size:11.5px; color:var(--ink-3); line-height:1.45}
+.subhead{
+  font:600 9.5px/1.3 var(--f-mono); letter-spacing:.11em; text-transform:uppercase; color:var(--ink-3);
+  display:flex; align-items:center; gap:8px; margin:14px 0 8px;
+}
+.subhead::after{content:""; flex:1; height:1px; background:var(--line)}
+.subhead:first-child{margin-top:0}
+.rowsplit{display:flex; gap:9px; align-items:flex-end; flex-wrap:wrap}
+
+/* ── layer stack ───────────────────────────────────────────── */
+.stack{display:flex; flex-direction:column; gap:9px}
+.layer{
+  border:1px solid var(--line); border-radius:var(--r-sm); background:var(--surface-2);
+  overflow:hidden; transition:border-color .15s, box-shadow .15s;
+  animation:layerIn .26s cubic-bezier(.2,.7,.3,1) both;
+}
+@keyframes layerIn{from{opacity:0; transform:translateY(-6px) scaleY(.96)}to{opacity:1; transform:none}}
+.layer.hot{border-color:var(--accent); box-shadow:0 0 0 2.5px var(--accent-soft)}
+.layer>.lhead{display:flex; align-items:center; gap:8px; padding:7px 9px; cursor:default}
+.swatch{width:13px; height:13px; border-radius:3px; border:1px solid rgba(0,0,0,.25); flex:none}
+.lidx{font:600 10px/1 var(--f-mono); color:var(--ink-3); width:2.2ch; text-align:right; flex:none}
+.lname{
+  border:1px solid transparent; background:transparent; font-weight:500; font-size:13px;
+  padding:3px 5px; border-radius:4px; min-width:0; flex:1 1 90px;
+}
+.lname:hover{border-color:var(--line-2)}
+.lname:focus{border-color:var(--accent); background:var(--surface); outline:none}
+.lmeta{font:500 11px/1 var(--f-mono); color:var(--ink-3); white-space:nowrap; flex:none}
+.lbtns{display:flex; gap:2px; flex:none}
+.layer>.lbody{padding:0 9px 11px; display:grid; gap:10px}
+.layer[data-collapsed="1"]>.lbody{display:none}
+.caret{transition:transform .18s}
+.layer[data-collapsed="1"] .caret{transform:rotate(-90deg)}
+
+/* corner matrix */
+.cnr-wrap{border:1px dashed var(--line-2); border-radius:var(--r-sm); padding:9px; background:var(--surface)}
+.cnr-head{display:flex; align-items:center; gap:8px; margin-bottom:8px}
+.cnr-head b{font:600 9.5px/1.3 var(--f-mono); letter-spacing:.1em; text-transform:uppercase; color:var(--ink-2)}
+.cnr-grid{display:grid; grid-template-columns:1fr 1fr; gap:7px}
+@media (max-width:640px){.cnr-grid{grid-template-columns:1fr}}
+.cnr{border:1px solid var(--line); border-radius:4px; padding:6px 7px; background:var(--surface-2); display:grid; gap:5px}
+.cnr .tag{font:600 9px/1 var(--f-mono); letter-spacing:.1em; color:var(--ink-3); display:flex; align-items:center; gap:5px}
+.cnr .tag i{width:12px; height:12px; flex:none; opacity:.85}
+.cnr .ctrls{display:grid; grid-template-columns:1.35fr .8fr .8fr; gap:5px}
+.cnr select,.cnr input{
+  width:100%; min-width:0; border:1px solid var(--line-2); border-radius:4px; background:var(--surface);
+  padding:3px 5px; font:450 12px/1.3 var(--f-mono); font-variant-numeric:tabular-nums;
+}
+.cnr select{font-family:var(--f-body); font-size:11.5px}
+.cnr[data-t="sharp"]{opacity:.62}
+.cnr[data-t="sharp"]:hover{opacity:1}
+
+/* ── section view ──────────────────────────────────────────── */
+.view{position:relative; background:var(--surface-2); border-bottom:1px solid var(--line)}
+.view svg{display:block; width:100%; height:auto; max-width:100%; touch-action:pan-y}
+.viewbar{display:flex; gap:7px; align-items:center; flex-wrap:wrap; padding:8px 13px; border-bottom:1px solid var(--line); background:var(--surface)}
+.tog{
+  display:inline-flex; align-items:center; gap:5px; cursor:pointer; user-select:none;
+  font:500 11px/1 var(--f-mono); letter-spacing:.03em; color:var(--ink-2);
+  border:1px solid var(--line-2); border-radius:99px; padding:4.5px 9px; background:var(--surface);
+}
+.tog input{appearance:none; width:9px; height:9px; margin:0; border-radius:50%; border:1px solid var(--line-3); background:transparent}
+.tog input:checked{background:var(--accent); border-color:var(--accent); box-shadow:0 0 0 2px var(--accent-soft)}
+.tog:has(input:checked){color:var(--ink); border-color:var(--accent-line)}
+
+/* ── tables ────────────────────────────────────────────────── */
+.tablewrap{overflow-x:auto; -webkit-overflow-scrolling:touch}
+table{border-collapse:collapse; width:100%; min-width:460px; font-variant-numeric:tabular-nums}
+th,td{padding:5.5px 9px; text-align:right; border-bottom:1px solid var(--line); white-space:nowrap}
+th{
+  font:600 9px/1.4 var(--f-mono); letter-spacing:.1em; text-transform:uppercase; color:var(--ink-3);
+  background:var(--surface-2); position:sticky; top:0;
+}
+td{font:450 12.5px/1.45 var(--f-mono)}
+th:first-child,td:first-child{text-align:left; font-family:var(--f-body); font-size:12.5px; white-space:normal; min-width:118px}
+tbody tr:hover td{background:var(--surface-2)}
+tbody tr:last-child td{border-bottom:0}
+td.num{font-weight:500}
+table.kv{min-width:0}
+table.kv td:last-child{font-weight:500}
+.rowgroup td{
+  background:var(--surface-3)!important; font:600 9px/1.5 var(--f-mono); letter-spacing:.1em;
+  text-transform:uppercase; color:var(--ink-2); text-align:left;
+}
+
+/* ── flags ─────────────────────────────────────────────────── */
+.flags{display:flex; flex-direction:column; gap:6px}
+.flag{
+  display:flex; gap:8px; align-items:flex-start; padding:7px 9px; border-radius:var(--r-sm);
+  border:1px solid var(--line); background:var(--surface-2); font-size:12.5px; line-height:1.45;
+}
+.flag b{font:600 9.5px/1.5 var(--f-mono); letter-spacing:.08em; flex:none; padding-top:1px}
+.flag[data-s="bad"]{background:var(--bad-soft); border-color:color-mix(in srgb,var(--bad) 30%,transparent)} .flag[data-s="bad"] b{color:var(--bad)}
+.flag[data-s="warn"]{background:var(--warn-soft); border-color:color-mix(in srgb,var(--warn) 30%,transparent)} .flag[data-s="warn"] b{color:var(--warn)}
+.flag[data-s="ok"]{background:var(--ok-soft); border-color:color-mix(in srgb,var(--ok) 28%,transparent)} .flag[data-s="ok"] b{color:var(--ok)}
+
+details.meth{border-top:1px solid var(--line); padding:0 13px}
+details.meth summary{
+  cursor:pointer; padding:10px 0; font:600 9.5px/1.3 var(--f-mono); letter-spacing:.11em;
+  text-transform:uppercase; color:var(--ink-3); list-style:none; display:flex; align-items:center; gap:7px;
+}
+details.meth summary::-webkit-details-marker{display:none}
+details.meth summary::before{content:"+"; font-size:13px; color:var(--accent)}
+details.meth[open] summary::before{content:"\2212"}
+details.meth .inner{padding-bottom:13px; font-size:12.5px; color:var(--ink-2); line-height:1.6; max-width:68ch}
+details.meth code{font:500 11.5px/1 var(--f-mono); background:var(--surface-3); padding:1.5px 4px; border-radius:3px; color:var(--ink)}
+details.meth ul{margin:7px 0 0; padding-left:18px} details.meth li{margin-bottom:5px}
+
+.toast{
+  position:fixed; left:50%; bottom:calc(20px + env(safe-area-inset-bottom,0px)); transform:translateX(-50%) translateY(8px);
+  background:var(--ink); color:var(--bg); padding:9px 15px; border-radius:99px; font-size:12.5px; font-weight:500;
+  box-shadow:0 10px 30px -10px rgba(0,0,0,.5); opacity:0; pointer-events:none; transition:opacity .2s, transform .2s; z-index:90;
+  max-width:calc(100vw - 32px); text-align:center;
+}
+.toast.show{opacity:1; transform:translateX(-50%)}
+footer.credits{
+  margin-top:16px; padding-top:12px; border-top:1px solid var(--line); display:flex; gap:10px;
+  flex-wrap:wrap; align-items:center; font-size:11.5px; color:var(--ink-3);
+}
+.visually-hidden{position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap}
+
+/* ── basic / advanced disclosure ───────────────────────────── */
+[hidden]{display:none!important}
+:root[data-mode="basic"] [data-adv]{display:none!important}
+:root[data-mode="advanced"] [data-basic]{display:none!important}
+.mixed{font:600 9px/1.6 var(--f-mono); letter-spacing:.06em; color:var(--warn); white-space:nowrap}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important; animation-iteration-count:1!important; transition-duration:.01ms!important}
+}
+@media print{body{background:#fff} .titleblock{position:static} .col.right{position:static}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- ══ title block ═══════════════════════════════════════════ -->
+<div class="titleblock">
+  <div class="tb-row">
+    <div class="brand">
+      <h1>Bolted Joint Bench</h1>
+      <span class="std">ISO 261 / 4014 / 4032 &nbsp;·&nbsp; mm · N · MPa</span>
+    </div>
+    <nav class="suite" aria-label="Mech Suite">
+      <a href="joint-calculator.html" aria-current="page">Joint Bench</a>
+      <a href="mech-equations.html">Equations</a>
+      <a href="mech-converter.html">Converter</a>
+    </nav>
+    <div class="tb-fields">
+      <div class="tb-field"><label for="m-id">Joint</label><input id="m-id" style="--w:9ch" value="JT-1042"></div>
+      <div class="tb-field"><label for="m-rev">Rev</label><input id="m-rev" style="--w:3ch" value="A"></div>
+      <div class="tb-field"><label for="m-by">By</label><input id="m-by" style="--w:6ch" value="ENG"></div>
+      <div class="tb-field"><label for="m-date">Date</label><input id="m-date" style="--w:10ch" value=""></div>
+    </div>
+    <div class="tb-actions">
+      <div class="seg" role="group" aria-label="Detail level">
+        <button type="button" id="mode-basic" aria-pressed="false" title="Size, stack, load — the four headline numbers">Basic</button>
+        <button type="button" id="mode-adv" aria-pressed="true" title="Every tolerance, corner, allowable and stiffness term">Advanced</button>
+      </div>
+      <div class="seg" role="group" aria-label="Result units">
+        <button type="button" id="u-si" aria-pressed="true">SI</button>
+        <button type="button" id="u-imp" aria-pressed="false">in·lbf</button>
+      </div>
+      <button class="btn icon" id="theme" title="Switch light / dark" aria-label="Switch light / dark">◐</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ KPI rail ══════════════════════════════════════════════ -->
+<section class="kpis" aria-label="Live results">
+  <div class="kpi" id="k-brg" data-s="ok">
+    <h3>Peak bearing stress</h3>
+    <div class="v"><span id="k-brg-v">—</span><small id="k-brg-u">MPa</small></div>
+    <div class="sub" id="k-brg-s"></div>
+  </div>
+  <div class="kpi" id="k-area" data-s="ok">
+    <h3>Min bearing area</h3>
+    <div class="v"><span id="k-area-v">—</span><small id="k-area-u">mm²</small></div>
+    <div class="sub" id="k-area-s"></div>
+  </div>
+  <div class="kpi" id="k-grip" data-s="ok">
+    <h3>Grip length</h3>
+    <div class="v"><span id="k-grip-v">—</span><small id="k-grip-u">mm</small></div>
+    <div class="sub" id="k-grip-s"></div>
+  </div>
+  <div class="kpi" id="k-thr" data-s="ok">
+    <h3 id="k-thr-h">Min threads past nut</h3>
+    <div class="v"><span id="k-thr-v">—</span><small id="k-thr-u">thr</small></div>
+    <div class="sub" id="k-thr-s"></div>
+  </div>
+</section>
+
+<div class="bench">
+<!-- ══ left column ═══════════════════════════════════════════ -->
+<div class="col left">
+
+  <!-- fastener -->
+  <section class="card">
+    <header><span class="num">01</span><h2>Fastener</h2><span class="spacer"></span>
+      <span class="chip neutral" id="f-tag">M10 × 1.5</span>
+    </header>
+    <div class="body">
+      <div class="grid4">
+        <div class="field"><label for="f-size">Size</label><select id="f-size"></select></div>
+        <div class="field"><label for="f-pitch-mode">Pitch</label><select id="f-pitch-mode"></select></div>
+        <div class="field"><label for="f-pitch">Pitch <span class="unit">mm</span></label><input id="f-pitch" type="number" step="0.01" min="0.2" max="6"></div>
+        <div class="field"><label for="f-class">Grade</label><select id="f-class"></select></div>
+      </div>
+      <div class="grid4" style="margin-top:9px">
+        <div class="field"><label for="f-head">Head</label><select id="f-head">
+          <option value="socket">Socket cap (ISO 4762)</option>
+          <option value="hex">Hex head (ISO 4014)</option>
+          <option value="flange">Hex flange</option>
+          <option value="custom">Custom bearing Ø</option>
+        </select></div>
+        <div class="field" data-adv><label for="f-headdia">Head bearing Ø <span class="unit">mm</span></label><input id="f-headdia" type="number" step="0.1" min="1"></div>
+        <div class="field"><label for="f-lenmode">Bolt length</label><select id="f-lenmode">
+          <option value="auto">Auto (shortest fit)</option><option value="man">Manual</option>
+        </select></div>
+        <div class="field"><label for="f-len">Length L <span class="unit">mm</span></label><input id="f-len" type="number" step="1" min="4"></div>
+      </div>
+      <div class="grid4" style="margin-top:9px">
+        <div class="field" data-adv><label for="f-thrmode">Threading</label><select id="f-thrmode">
+          <option value="full">Fully threaded</option><option value="part">Partial — thread length b</option>
+        </select></div>
+        <div class="field" data-adv><label for="f-thrlen">Thread length b <span class="unit">mm</span></label><input id="f-thrlen" type="number" step="1" min="2"></div>
+        <div class="field"><label for="f-term">Termination</label><select id="f-term">
+          <option value="nut">Nut on far side</option><option value="tap">Tapped into last layer</option>
+        </select></div>
+        <div class="field"><label for="f-minthr">Min threads past nut</label><input id="f-minthr" type="number" step="0.5" min="0" max="10"></div>
+      </div>
+
+      <div class="subhead">Nut, washers &amp; tapped hole</div>
+      <div class="grid4">
+        <div class="field" data-adv><label for="f-nuth">Nut height <span class="unit">mm</span></label><input id="f-nuth" type="number" step="0.1" min="0.5"></div>
+        <div class="field" data-adv><label for="f-nutdw">Nut bearing Ø <span class="unit">mm</span></label><input id="f-nutdw" type="number" step="0.1" min="1"></div>
+        <div class="field"><label for="f-tapd">Tap depth <span class="unit">mm</span></label><input id="f-tapd" type="number" step="0.5" min="0"></div>
+        <div class="field" data-adv><label for="f-tapthr">Tap thread Ø</label><input id="f-tapthr" type="text" disabled value="—"></div>
+      </div>
+      <div class="grid4" style="margin-top:9px">
+        <div class="field"><label for="f-wh">Head washer</label><select id="f-wh"><option value="1">ISO 7089 plain</option><option value="0">None</option></select></div>
+        <div class="field" data-adv><label for="f-whod">Washer Ø / t <span class="unit">mm</span></label>
+          <div style="display:flex;gap:5px"><input id="f-whod" type="number" step="0.1" min="1"><input id="f-wht" type="number" step="0.1" min="0.1"></div></div>
+        <div class="field"><label for="f-wn">Nut washer</label><select id="f-wn"><option value="1">ISO 7089 plain</option><option value="0">None</option></select></div>
+        <div class="field" data-adv><label for="f-wnod">Washer Ø / t <span class="unit">mm</span></label>
+          <div style="display:flex;gap:5px"><input id="f-wnod" type="number" step="0.1" min="1"><input id="f-wnt" type="number" step="0.1" min="0.1"></div></div>
+      </div>
+      <div class="grid2" style="margin-top:9px" data-adv>
+        <div class="field"><label for="f-whmat">Head washer material</label><select id="f-whmat"></select></div>
+        <div class="field"><label for="f-wnmat">Nut washer material</label><select id="f-wnmat"></select></div>
+      </div>
+      <p class="hint" style="margin:10px 0 0">Standard pitches follow the ISO 261 coarse and fine series. Choose <b>Manual</b> to enter any pitch — thread geometry, stress area and thread counts all follow the value you type.</p>
+    </div>
+  </section>
+
+  <!-- loading -->
+  <section class="card">
+    <header><span class="num">02</span><h2>Preload &amp; service load</h2><span class="spacer"></span>
+      <span class="chip neutral" id="l-tag">—</span>
+    </header>
+    <div class="body">
+      <div class="grid4">
+        <div class="field"><label for="l-mode">Preload from</label><select id="l-mode">
+          <option value="torque">Tightening torque</option>
+          <option value="pct">% of proof load</option>
+          <option value="force">Direct axial force</option>
+        </select></div>
+        <div class="field"><label for="l-torque">Torque <span class="unit">N·m</span></label><input id="l-torque" type="number" step="0.5" min="0"></div>
+        <div class="field"><label for="l-k">Nut factor K</label><input id="l-k" type="number" step="0.01" min="0.05" max="0.5"></div>
+        <div class="field"><label for="l-pct">Preload <span class="unit">% proof</span></label><input id="l-pct" type="number" step="1" min="1" max="100"></div>
+      </div>
+      <div class="grid4" style="margin-top:9px">
+        <div class="field"><label for="l-force">Direct preload <span class="unit">kN</span></label><input id="l-force" type="number" step="0.1" min="0"></div>
+        <div class="field"><label for="l-ext">External tension <span class="unit">kN/bolt</span></label><input id="l-ext" type="number" step="0.1"></div>
+        <div class="field" data-adv><label for="l-scatter">Tool scatter <span class="unit">±%</span></label><input id="l-scatter" type="number" step="1" min="0" max="60"></div>
+        <div class="field" data-adv><label for="l-loss">Embedding loss <span class="unit">%</span></label><input id="l-loss" type="number" step="1" min="0" max="40"></div>
+      </div>
+      <div class="tablewrap" style="margin-top:12px">
+        <table class="kv" id="t-load"></table>
+      </div>
+    </div>
+  </section>
+
+  <!-- layers -->
+  <section class="card">
+    <header><span class="num">03</span><h2>Layer stack</h2><span class="spacer"></span>
+      <span class="chip neutral" id="s-tag">0 layers</span>
+      <button class="btn ghost icon" id="l-collapse" title="Collapse or expand every layer">⌄⌃</button>
+      <button class="btn primary" id="l-add">+ Add layer</button>
+    </header>
+    <div class="body">
+      <div class="stack" id="stack"></div>
+      <p class="hint" style="margin:11px 0 0">Layers run <b>head side → nut side</b>. Each one carries its own thickness tolerance, hole fit, outside diameter and four ID plus four OD corner breaks. Corner breaks come out of the contact annulus, so a chamfer under the washer shows up directly in the bearing area.</p>
+    </div>
+  </section>
+
+  <!-- data -->
+  <section class="card">
+    <header><span class="num">04</span><h2>Data exchange</h2><span class="spacer"></span><span class="chip neutral" id="xl-tag">Excel engine: built-in</span></header>
+    <div class="body">
+      <div class="rowsplit">
+        <button class="btn primary" id="x-export">↧ Export Excel (.xlsx)</button>
+        <button class="btn" id="x-import">↥ Import Excel / CSV</button>
+        <button class="btn" id="x-json" data-adv>Save .json</button>
+        <button class="btn" id="x-loadjson" data-adv>Open .json</button>
+        <span style="flex:1"></span>
+        <button class="btn" id="x-sample">Load sample stack</button>
+        <button class="btn danger" id="x-reset">Reset</button>
+      </div>
+      <input type="file" id="x-file" accept=".xlsx,.xls,.csv" class="visually-hidden">
+      <input type="file" id="x-filejson" accept=".json,application/json" class="visually-hidden">
+      <p class="hint" style="margin:11px 0 0">The workbook round-trips: sheets <b>Joint</b>, <b>Layers</b> and <b>Results</b>. Edit thicknesses, materials or corner callouts in Excel, import the file back and every result recomputes. CSV import expects the same header row as the <b>Layers</b> sheet.</p>
+    </div>
+  </section>
+</div>
+
+<!-- ══ right column ══════════════════════════════════════════ -->
+<div class="col right">
+  <section class="card">
+    <header><span class="num">05</span><h2>Section view</h2><span class="spacer"></span>
+      <span class="chip neutral" id="v-tag">—</span>
+    </header>
+    <div class="viewbar">
+      <label class="tog"><input type="checkbox" id="o-dims" checked>Dimensions</label>
+      <label class="tog"><input type="checkbox" id="o-zones" checked>Bearing zones</label>
+      <label class="tog" data-adv><input type="checkbox" id="o-cone" checked>Pressure cone</label>
+      <label class="tog"><input type="checkbox" id="o-hatch" checked>Hatching</label>
+      <label class="tog" data-adv><input type="checkbox" id="o-labels" checked>Callouts</label>
+      <span style="flex:1"></span>
+      <button class="btn ghost icon" id="o-svg" title="Download the section as SVG">↧ SVG</button>
+    </div>
+    <div class="view" id="view"></div>
+    <div class="tablewrap"><table id="t-geom"></table></div>
+  </section>
+
+  <section class="card">
+    <header><span class="num">06</span><h2>Bearing &amp; contact</h2><span class="spacer"></span>
+      <span class="chip neutral">σ = F ÷ A<sub>eff</sub></span>
+    </header>
+    <div class="tablewrap"><table id="t-brg"></table></div>
+    <details class="meth"><summary>Method &amp; assumptions</summary><div class="inner" id="meth-brg"></div></details>
+  </section>
+
+  <section class="card">
+    <header><span class="num">07</span><h2>Length, grip &amp; thread engagement</h2></header>
+    <div class="tablewrap"><table id="t-len"></table></div>
+  </section>
+
+  <section class="card" data-adv>
+    <header><span class="num">08</span><h2>Stiffness &amp; load sharing</h2></header>
+    <div class="tablewrap"><table id="t-stiff"></table></div>
+  </section>
+
+  <section class="card">
+    <header><span class="num">09</span><h2>Checks</h2><span class="spacer"></span><span class="chip neutral" id="w-tag">—</span></header>
+    <div class="body"><div class="flags" id="flags"></div></div>
+  </section>
+
+  <section class="card">
+    <header><span class="num">10</span><h2>Validation</h2><span class="spacer"></span>
+      <span class="chip neutral" id="v-sum">not run</span>
+      <button class="btn primary" id="v-run">Run checks</button>
+    </header>
+    <div class="body">
+      <p class="hint" style="margin:0 0 11px">These are assertions against published data and against the engine's own internal
+      consistency. They run here, in this page, on the code you are using — nothing is quoted from a previous run.</p>
+      <div class="flags" id="v-out"></div>
+    </div>
+  </section>
+</div>
+</div>
+
+<footer class="credits">
+  <span>Bolted Joint Bench · first-order sizing aid</span><span>·</span>
+  <span>Check every result against the governing design standard before release. The stack autosaves in this browser.</span>
+</footer>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+"use strict";
+/* ═══════════════════════════════════════════════════════════════════════
+   1 — REFERENCE DATA
+   Metric fastener dimensions: ISO 261 (pitch series), ISO 4762 (socket head
+   dk), ISO 4014 (hex s, dw), ISO 4032 (nut m, dw), ISO 7089 (washer),
+   ISO 273 (hole series). All dimensions in mm.
+   ═══════════════════════════════════════════════════════════════════════ */
+const FAST = {
+  M3 : {d:3 , pitches:[0.5 ,0.35], dk:5.5, s:5.5, dwHex:4.6 , nutH:2.4 , nutDw:4.6 , wOD:7 , wT:0.5, wID:3.2 , flange:7.6 , holes:{close:3.2 ,normal:3.4 ,coarse:3.6 }},
+  M4 : {d:4 , pitches:[0.7 ,0.5 ], dk:7  , s:7  , dwHex:5.9 , nutH:3.2 , nutDw:5.9 , wOD:9 , wT:0.8, wID:4.3 , flange:9.4 , holes:{close:4.3 ,normal:4.5 ,coarse:4.8 }},
+  M5 : {d:5 , pitches:[0.8 ,0.5 ], dk:8.5, s:8  , dwHex:6.9 , nutH:4.7 , nutDw:6.9 , wOD:10, wT:1  , wID:5.3 , flange:11.8, holes:{close:5.3 ,normal:5.5 ,coarse:5.8 }},
+  M6 : {d:6 , pitches:[1   ,0.75], dk:10 , s:10 , dwHex:8.9 , nutH:5.2 , nutDw:8.9 , wOD:12, wT:1.6, wID:6.4 , flange:13.5, holes:{close:6.4 ,normal:6.6 ,coarse:7   }},
+  M8 : {d:8 , pitches:[1.25,1,0.75], dk:13, s:13, dwHex:11.6, nutH:6.8 , nutDw:11.6, wOD:16, wT:1.6, wID:8.4 , flange:16.7, holes:{close:8.4 ,normal:9   ,coarse:10  }},
+  M10: {d:10, pitches:[1.5 ,1.25,1,0.75], dk:16, s:16, dwHex:14.6, nutH:8.4, nutDw:14.6, wOD:20, wT:2, wID:10.5, flange:20.5, holes:{close:10.5,normal:11  ,coarse:12  }},
+  M12: {d:12, pitches:[1.75,1.5,1.25,1], dk:18, s:18, dwHex:16.6, nutH:10.8, nutDw:16.6, wOD:24, wT:2.5, wID:13, flange:24.7, holes:{close:13  ,normal:13.5,coarse:14.5}},
+  M14: {d:14, pitches:[2   ,1.5,1.25], dk:21, s:21, dwHex:19.6, nutH:12.8, nutDw:19.6, wOD:28, wT:2.5, wID:15 , flange:28  , holes:{close:15  ,normal:15.5,coarse:16.5}},
+  M16: {d:16, pitches:[2   ,1.5,1   ], dk:24, s:24, dwHex:22.5, nutH:14.8, nutDw:22.5, wOD:30, wT:3  , wID:17 , flange:30  , holes:{close:17  ,normal:17.5,coarse:18.5}},
+  M18: {d:18, pitches:[2.5 ,2,1.5,1], dk:27, s:27, dwHex:25.3, nutH:15.8, nutDw:24.9, wOD:34, wT:3  , wID:19 , flange:34  , holes:{close:19  ,normal:20  ,coarse:21  }},
+  M20: {d:20, pitches:[2.5 ,2,1.5,1], dk:30, s:30, dwHex:28.2, nutH:18  , nutDw:27.7, wOD:37, wT:3  , wID:21 , flange:37  , holes:{close:21  ,normal:22  ,coarse:24  }}
+};
+const SIZES = Object.keys(FAST);
+const STD_LEN = [6,8,10,12,14,16,18,20,22,25,30,35,40,45,50,55,60,65,70,75,80,85,90,95,100,110,120,130,140,150,160,180,200,220,240];
+
+/* Bolt property classes — ISO 898-1 / ISO 3506-1. Sp = proof stress. */
+const CLASSES = {
+  "4.6"   : {Ftu:400 , Fty:240 , Sp:225, E:205000, name:"Class 4.6 steel"},
+  "4.8"   : {Ftu:400 , Fty:320 , Sp:310, E:205000, name:"Class 4.8 steel"},
+  "5.8"   : {Ftu:500 , Fty:400 , Sp:380, E:205000, name:"Class 5.8 steel"},
+  "8.8"   : {Ftu:800 , Fty:640 , Sp:600, E:205000, name:"Class 8.8 steel"},
+  "9.8"   : {Ftu:900 , Fty:720 , Sp:650, E:205000, name:"Class 9.8 steel"},
+  "10.9"  : {Ftu:1040, Fty:940 , Sp:830, E:205000, name:"Class 10.9 steel"},
+  "12.9"  : {Ftu:1220, Fty:1100, Sp:970, E:205000, name:"Class 12.9 steel"},
+  "A2-70" : {Ftu:700 , Fty:450 , Sp:405, E:193000, name:"A2-70 stainless"},
+  "A4-80" : {Ftu:800 , Fty:600 , Sp:540, E:193000, name:"A4-80 stainless"},
+  "Ti-64" : {Ftu:950 , Fty:880 , Sp:790, E:113800, name:"Ti-6Al-4V bolt"},
+  "custom": {Ftu:800 , Fty:640 , Sp:600, E:205000, name:"Custom"}
+};
+
+/* Layer materials. Fbry (bearing yield allowable) = k · Fty, with k after
+   MMPDS-style e/D = 2.0 values for wrought metals and 1.0 where bearing is
+   governed by the matrix or by creep. */
+const MATS = {
+  AL6061   : {n:"Aluminium 6061-T6"   , Fty:276 , Ftu:310 , E:68900 , k:1.5, c:"#8fa3b8"},
+  AL7075   : {n:"Aluminium 7075-T6"   , Fty:503 , Ftu:572 , E:71700 , k:1.5, c:"#7d94ad"},
+  AL2024   : {n:"Aluminium 2024-T3"   , Fty:324 , Ftu:469 , E:73100 , k:1.5, c:"#9aabbd"},
+  AL5052   : {n:"Aluminium 5052-H32"  , Fty:193 , Ftu:228 , E:70300 , k:1.5, c:"#a7b6c4"},
+  ST1018   : {n:"Steel 1018 CR"       , Fty:370 , Ftu:440 , E:200000, k:1.5, c:"#5d6a76"},
+  STHARD   : {n:"Steel, hardened 200 HV", Fty:400, Ftu:500, E:205000, k:1.5, c:"#6a7682"},
+  STSOFT   : {n:"Steel, soft 140 HV"  , Fty:260 , Ftu:380 , E:205000, k:1.5, c:"#7a858f"},
+  ST4140   : {n:"Steel 4140 Q&T"      , Fty:655 , Ftu:1020, E:205000, k:1.5, c:"#4d5963"},
+  SS304    : {n:"Stainless 304"       , Fty:215 , Ftu:505 , E:193000, k:1.5, c:"#77848f"},
+  SS316    : {n:"Stainless 316"       , Fty:290 , Ftu:580 , E:193000, k:1.5, c:"#6e7c88"},
+  SS174    : {n:"Stainless 17-4PH H900",Fty:1170, Ftu:1310, E:196000, k:1.5, c:"#5f6d79"},
+  TI64     : {n:"Titanium 6Al-4V"     , Fty:880 , Ftu:950 , E:113800, k:1.5, c:"#8b8f96"},
+  MGAZ31   : {n:"Magnesium AZ31B"     , Fty:200 , Ftu:260 , E:45000 , k:1.3, c:"#b0b3ac"},
+  BRASS    : {n:"Brass C36000"        , Fty:310 , Ftu:400 , E:97000 , k:1.4, c:"#b79a5d"},
+  BRONZE   : {n:"Bronze C93200"       , Fty:125 , Ftu:240 , E:100000, k:1.4, c:"#a8814f"},
+  CI250    : {n:"Cast iron EN-GJL-250", Fty:165 , Ftu:250 , E:110000, k:1.2, c:"#6b6b6b"},
+  CFRP     : {n:"CFRP quasi-iso laminate",Fty:450,Ftu:600 , E:55000 , k:1.0, c:"#3c4147"},
+  GFRPG10  : {n:"G10 / FR4 glass-epoxy", Fty:240, Ftu:262 , E:18000 , k:1.0, c:"#8f9c63"},
+  PEEK     : {n:"PEEK unfilled"       , Fty:100 , Ftu:100 , E:3800  , k:1.0, c:"#c2a878"},
+  NYLON66  : {n:"Nylon 6/6"           , Fty:82  , Ftu:82  , E:2900  , k:1.0, c:"#cfc3a8"},
+  POM      : {n:"Acetal POM-C"        , Fty:70  , Ftu:70  , E:3100  , k:1.0, c:"#d6d3cb"},
+  PTFE     : {n:"PTFE"                , Fty:23  , Ftu:25  , E:500   , k:1.0, c:"#e2e2e2"},
+  EPDM     : {n:"EPDM gasket 70 Sh A" , Fty:7   , Ftu:10  , E:12    , k:1.0, c:"#3a3f45"},
+  CORKCOMP : {n:"Cork-composite gasket", Fty:15 , Ftu:18  , E:120   , k:1.0, c:"#9c7a53"},
+  CUSTOM   : {n:"Custom material"     , Fty:250 , Ftu:350 , E:100000, k:1.5, c:"#7f8c99"}
+};
+
+const HOLE_SERIES = {close:"Close (H12)", normal:"Normal (H13)", coarse:"Coarse (H14)", custom:"Custom"};
+const CNR_KEYS = ["tl","tr","bl","br"];
+const CNR_LABEL = {tl:"Top-left", tr:"Top-right", bl:"Bottom-left", br:"Bottom-right"};
+
+/* ═══════════════════════════════════════════════════════════════════════
+   2 — HELPERS
+   ═══════════════════════════════════════════════════════════════════════ */
+const $  = (s, r) => (r || document).querySelector(s);
+const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
+const PI = Math.PI, T30 = Math.tan(Math.PI / 6);
+const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+const num = (v, d) => { const n = parseFloat(v); return Number.isFinite(n) ? n : (d === undefined ? 0 : d); };
+let UID = 0; const uid = () => "L" + (++UID) + "-" + Math.random().toString(36).slice(2, 6);
+
+function fx(v, dp) {
+  if (v === null || v === undefined || !Number.isFinite(v)) return "—";
+  return v.toLocaleString(undefined, {minimumFractionDigits: dp, maximumFractionDigits: dp});
+}
+function esc(s) {
+  return String(s == null ? "" : s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+function statusOf(ms) { return ms == null ? "neutral" : ms < 0 ? "bad" : ms < 0.25 ? "warn" : "ok"; }
+
+/* result-display units (inputs always stay mm / N·m / MPa) */
+const UN = {
+  si: {sT:"MPa", sF:"N",   sL:"mm",  sA:"mm²", sK:"N/mm", cT:1, cF:1, cL:1, cA:1, cK:1},
+  im: {sT:"ksi", sF:"lbf", sL:"in",  sA:"in²", sK:"lbf/in", cT:0.14503774, cF:0.22480894, cL:1/25.4, cA:1/645.16, cK:0.22480894*25.4}
+};
+let UNITS = "si";
+const U = () => UN[UNITS];
+const vT = (v, dp) => fx(v * U().cT, dp === undefined ? (UNITS === "si" ? 1 : 2) : dp);
+const vF = (v, dp) => fx(v * U().cF, dp === undefined ? 0 : dp);
+const vL = (v, dp) => fx(v * U().cL, dp === undefined ? (UNITS === "si" ? 2 : 3) : dp);
+const vA = (v, dp) => fx(v * U().cA, dp === undefined ? (UNITS === "si" ? 1 : 4) : dp);
+
+function toast(msg) {
+  const t = $("#toast"); t.textContent = msg; t.classList.add("show");
+  clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove("show"), 2600);
+}
+function download(name, blob) {
+  const a = document.createElement("a"), url = URL.createObjectURL(blob);
+  a.href = url; a.download = name; document.body.appendChild(a); a.click();
+  setTimeout(() => { URL.revokeObjectURL(url); a.remove(); }, 200);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   3 — STATE
+   ═══════════════════════════════════════════════════════════════════════ */
+function newCorner(type, s, a) { return {t: type || "sharp", s: s === undefined ? 0.5 : s, a: a === undefined ? 45 : a}; }
+function cornerSet(type, s, a) {
+  const o = {}; CNR_KEYS.forEach(k => o[k] = newCorner(type, s, a)); return o;
+}
+function newLayer(over) {
+  const L = {
+    id: uid(), name: "Layer", mat: "AL6061", t: 6, tp: 0.1, tm: 0.1,
+    od: 26, holeMode: "normal", hole: 11, holeTol: 0.2,
+    Fty: MATS.AL6061.Fty, Ftu: MATS.AL6061.Ftu, E: MATS.AL6061.E,
+    kBrg: MATS.AL6061.k, brgAuto: true, brgAllow: MATS.AL6061.Fty * MATS.AL6061.k,
+    idC: cornerSet("chamfer", 0.5, 45), odC: cornerSet("chamfer", 0.5, 45),
+    idLock: true, odLock: true, collapsed: false
+  };
+  return Object.assign(L, over || {});
+}
+function sampleState() {
+  const mk = (name, mat, t, od, idc, odc, over) => {
+    const m = MATS[mat];
+    return newLayer(Object.assign({
+      name, mat, t, od, Fty: m.Fty, Ftu: m.Ftu, E: m.E, kBrg: m.k,
+      brgAuto: true, brgAllow: m.Fty * m.k, hole: 11, holeMode: "normal",
+      idC: idc, odC: odc
+    }, over || {}));
+  };
+  return {
+    meta: {id: "JT-1042", rev: "A", by: "ENG", date: new Date().toISOString().slice(0, 10)},
+    mode: "advanced",
+    size: "M10", pitchMode: "std", pitch: 1.5,
+    cls: "10.9", head: "socket", headDia: FAST.M10.dk,
+    lenMode: "auto", len: 40, thrMode: "full", thrLen: 40,
+    term: "nut", minThr: 2, tapD: 15,
+    nutH: FAST.M10.nutH, nutDw: FAST.M10.nutDw,
+    wh: 1, whOD: FAST.M10.wOD, whT: FAST.M10.wT, whMat: "STHARD",
+    wn: 1, wnOD: FAST.M10.wOD, wnT: FAST.M10.wT, wnMat: "STHARD",
+    loadMode: "torque", torque: 45, K: 0.20, pct: 65, force: 22.5,
+    ext: 4, scatter: 25, loss: 8,
+    opts: {dims: true, zones: true, cone: true, hatch: true, labels: true},
+    layers: [
+      mk("Cover plate", "AL6061", 6, 28, cornerSet("chamfer", 0.6, 45), cornerSet("radius", 1.5, 45)),
+      mk("Shim / spacer", "SS304", 3, 24, cornerSet("radius", 0.4, 45), cornerSet("chamfer", 0.4, 45)),
+      mk("Housing flange", "AL6061", 10, 30, cornerSet("chamfer", 0.8, 45), cornerSet("chamfer", 1, 45), {tp: 0.2, tm: 0.2})
+    ]
+  };
+}
+let S = sampleState();
+let R = null;      /* last computed results */
+
+/* ═══════════════════════════════════════════════════════════════════════
+   4 — GEOMETRY OF CORNER BREAKS
+   A corner break removes material from the face it sits on. `size` is the
+   radial leg (chamfer) or the radius (fillet), so the radial loss out of a
+   contact annulus is the size itself. The axial leg of a chamfer follows the
+   angle measured from the face.
+   ═══════════════════════════════════════════════════════════════════════ */
+function cnrLimit(L, c) {
+  const wall = Math.max(0.01, (L.od - L.hole) / 2);
+  return Math.max(0, Math.min(c.s, 0.45 * L.t, 0.45 * wall));
+}
+function radialLoss(L, c) { return c.t === "sharp" ? 0 : cnrLimit(L, c); }
+function axialLoss(L, c) {
+  const s = cnrLimit(L, c);
+  if (c.t === "sharp") return 0;
+  if (c.t === "radius") return s;
+  return s * Math.tan(clamp(c.a, 5, 85) * PI / 180);
+}
+/* worst-case radial loss on one face (left / right corners of the section) */
+const faceLossID = (L, face) => Math.max(radialLoss(L, L.idC[face === "top" ? "tl" : "bl"]), radialLoss(L, L.idC[face === "top" ? "tr" : "br"]));
+const faceLossOD = (L, face) => Math.max(radialLoss(L, L.odC[face === "top" ? "tl" : "bl"]), radialLoss(L, L.odC[face === "top" ? "tr" : "br"]));
+function cnrText(set) {
+  const uniq = {};
+  CNR_KEYS.forEach(k => {
+    const c = set[k];
+    const key = c.t === "sharp" ? "sharp" : c.t === "radius" ? "R" + fx(c.s, 2) : "C" + fx(c.s, 2) + "×" + fx(c.a, 0) + "°";
+    uniq[key] = (uniq[key] || 0) + 1;
+  });
+  const parts = Object.keys(uniq);
+  if (parts.length === 1) return parts[0] === "sharp" ? "sharp ×4" : parts[0] + " ×4";
+  return parts.map(p => p + "×" + uniq[p]).join(" / ");
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   5 — CALCULATION ENGINE
+   ═══════════════════════════════════════════════════════════════════════ */
+const WASHER_MAT = {n: "Steel washer 200 HV", Fty: 400, Ftu: 500, E: 205000, k: 1.5, c: "#6a7682"};
+
+/* Edge-distance knock-down.
+   The default allowable k·Fty is an MMPDS-style bearing value tabulated at
+   e/D = 2.0. Closer to a free edge the part shears out before it crushes, so
+   the allowable is interpolated down to the e/D = 1.5 value (≈78 %) and
+   flagged as unsupported below that. e is measured from the hole centre. */
+function edgeRatio(L) {
+  return (Math.max(0.1, num(L.od, 20)) / 2) / Math.max(0.01, num(L.hole, 1));
+}
+function edgeKnock(eD) {
+  if (eD >= 2) return 1;
+  if (eD <= 1.5) return 0.78;
+  return 0.78 + (eD - 1.5) / 0.5 * 0.22;
+}
+
+function compute() {
+  const F = FAST[S.size] || FAST.M10, d = F.d;
+  const P = clamp(num(S.pitch, 1), 0.05, 8);
+  const flags = [];
+  const add = (s, t, m) => flags.push({s, t, m});
+
+  /* — thread geometry, ISO 68-1 60° profile — */
+  const H = 0.8660254 * P;
+  const d2 = d - 0.649519 * P;          /* pitch diameter               */
+  const d3 = d - 1.226869 * P;          /* bolt minor dia, rounded root */
+  const D1 = d - 1.082532 * P;          /* nut minor diameter           */
+  const As = PI / 4 * Math.pow((d2 + d3) / 2, 2);
+  const Ash = PI / 4 * d * d;
+  const cls = CLASSES[S.cls] || CLASSES["8.8"];
+
+  /* — bearing diameters — */
+  const dwHead = Math.max(d + 0.2, num(S.headDia, F.dk));
+  const dwNut  = Math.max(d + 0.2, num(S.nutDw, F.nutDw));
+  const nutH   = Math.max(0.2, num(S.nutH, F.nutH));
+
+  /* — contact chain: what actually stacks up under the head — */
+  const layers = S.layers;
+  const tapped = S.term === "tap" ? layers[layers.length - 1] : null;
+  const asElem = (L, i) => ({
+    kind: "layer", ref: L, i, name: L.name || ("Layer " + (i + 1)),
+    t: Math.max(0.01, num(L.t, 1)), tp: Math.max(0, num(L.tp, 0)), tm: Math.max(0, num(L.tm, 0)),
+    od: Math.max(0.1, num(L.od, 10)), hole: Math.max(0.01, num(L.hole, d + 1)),
+    E: Math.max(1, num(L.E, 70000)), Fty: num(L.Fty, 200), Ftu: num(L.Ftu, 250),
+    eD: edgeRatio(L), knock: L.brgAuto ? edgeKnock(edgeRatio(L)) : 1,
+    brg: L.brgAuto ? num(L.Fty, 200) * num(L.kBrg, 1.5) * edgeKnock(edgeRatio(L)) : num(L.brgAllow, 300),
+    col: (MATS[L.mat] || MATS.CUSTOM).c,
+    lossIDtop: faceLossID(L, "top"), lossIDbot: faceLossID(L, "bot"),
+    lossODtop: faceLossOD(L, "top"), lossODbot: faceLossOD(L, "bot")
+  });
+  const washerElem = (side) => {
+    const od = Math.max(d + 0.5, num(side === "h" ? S.whOD : S.wnOD, F.wOD));
+    const t  = Math.max(0.05, num(side === "h" ? S.whT : S.wnT, F.wT));
+    /* a washer is a confined compression member, not a plate loaded by a pin,
+       so it takes its material's allowable with no edge-distance knock-down */
+    const m  = MATS[side === "h" ? S.whMat : S.wnMat] || MATS.STHARD;
+    return {
+      kind: "washer", ref: null, i: -1, name: side === "h" ? "Washer (head)" : "Washer (nut)",
+      t, tp: 0, tm: 0, od, hole: F.wID, E: m.E, Fty: m.Fty, Ftu: m.Ftu,
+      eD: null, knock: 1, mat: m.n,
+      brg: m.Fty * m.k, col: m.c,
+      lossIDtop: 0, lossIDbot: 0, lossODtop: 0.2, lossODbot: 0.2
+    };
+  };
+
+  const grip = [];                                    /* elements inside the grip */
+  if (S.wh === 1 || S.wh === "1") grip.push(washerElem("h"));
+  const nClamped = tapped ? layers.length - 1 : layers.length;
+  for (let i = 0; i < nClamped; i++) grip.push(asElem(layers[i], i));
+  if (!tapped && (S.wn === 1 || S.wn === "1")) grip.push(washerElem("n"));
+
+  const tapElem = tapped ? asElem(tapped, layers.length - 1) : null;
+  const chain = tapElem ? grip.concat([tapElem]) : grip;   /* everything that bears */
+
+  const Lg  = grip.reduce((a, e) => a + e.t, 0);
+  const Lmx = grip.reduce((a, e) => a + e.t + e.tp, 0);
+  const Lmn = grip.reduce((a, e) => a + Math.max(0.01, e.t - e.tm), 0);
+  const stackT = layers.reduce((a, L) => a + Math.max(0, num(L.t, 0)), 0);
+
+  /* — preload — */
+  const Sp = num(cls.Sp, 600);
+  let Fi;
+  if (S.loadMode === "torque")     Fi = num(S.torque, 0) * 1000 / (clamp(num(S.K, 0.2), 0.02, 1) * d);
+  else if (S.loadMode === "pct")   Fi = clamp(num(S.pct, 65), 0, 200) / 100 * Sp * As;
+  else                             Fi = num(S.force, 0) * 1000;
+  Fi = Math.max(0, Fi);
+  const sc = clamp(num(S.scatter, 0), 0, 80) / 100, ls = clamp(num(S.loss, 0), 0, 60) / 100;
+  const FiMax = Fi * (1 + sc), FiMin = Fi * (1 - sc) * (1 - ls);
+  const Fext = num(S.ext, 0) * 1000;
+  const torqueEq = Fi * clamp(num(S.K, 0.2), 0.02, 1) * d / 1000;
+
+  /* — member stiffness: cone-frustum compliance integrated through the grip — */
+  const dwFar = tapped ? dwHead : dwNut;
+  const elemAt = (z) => {
+    let a = 0;
+    for (const e of grip) { if (z <= a + e.t) return e; a += e.t; }
+    return grip[grip.length - 1];
+  };
+  let km = 0, kmOK = grip.length > 0 && Lg > 0.05;
+  if (kmOK) {
+    const N = 600, dz = Lg / N; let comp = 0;
+    for (let i = 0; i < N; i++) {
+      const z = (i + 0.5) * dz, e = elemAt(z);
+      let Dc = z <= Lg / 2 ? dwHead + 2 * z * T30 : dwFar + 2 * (Lg - z) * T30;
+      Dc = Math.min(Dc, e.od);
+      const dh = Math.min(e.hole, Dc - 0.05);
+      const A = Math.max(0.05, PI / 4 * (Dc * Dc - dh * dh));
+      comp += dz / (e.E * A);
+    }
+    km = 1 / comp;
+  }
+  const Leff = Lg + (tapped ? 0.4 : 0.5) * d;
+  const kb = As * cls.E / Math.max(0.5, Leff);
+  const C  = kmOK ? kb / (kb + km) : 1;
+  const Fb = FiMax + C * Fext;                 /* bolt tension, worst case      */
+  const Fm = FiMin - (1 - C) * Fext;           /* residual clamp, worst case    */
+  const FmBrg = FiMax - (1 - C) * Math.max(0, Fext);
+  const Fsep = C < 1 ? FiMin / (1 - C) : Infinity;
+
+  /* — bearing / contact chain — */
+  const contacts = [];
+  const annulus = (idE, odE) => PI / 4 * (Math.max(odE, idE + 0.01) ** 2 - idE * idE);
+  const mkContact = (label, idE, odE, force, allow, govern, note, coneCap) => {
+    const odUse = Math.max(idE + 0.02, odE);
+    const A = annulus(idE, odUse);
+    const sig = A > 0 ? force / A : Infinity;
+    const ms = allow > 0 && sig > 0 ? allow / sig - 1 : null;
+    contacts.push({label, idE, odE: odUse, A, force, sig, allow, ms, govern, note, coneCap, s: statusOf(ms)});
+  };
+
+  if (chain.length) {
+    const e0 = chain[0];
+    const id0 = Math.max(e0.hole + 2 * e0.lossIDtop, e0.kind === "washer" ? F.wID : d + 0.1);
+    const od0 = Math.min(dwHead, e0.od - 2 * e0.lossODtop);
+    mkContact("Under head → " + e0.name, id0, od0, Fb, e0.brg, e0.name,
+      od0 >= e0.od - 2 * e0.lossODtop - 1e-6 && dwHead > e0.od - 2 * e0.lossODtop ? "head overhangs part face" : "", false);
+
+    let z = 0;
+    for (let i = 0; i < chain.length - 1; i++) {
+      const a = chain[i], b = chain[i + 1];
+      z += a.t;
+      const idE = Math.max(a.hole + 2 * a.lossIDbot, b.hole + 2 * b.lossIDtop);
+      const geoOD = Math.min(a.od - 2 * a.lossODbot, b.od - 2 * b.lossODtop);
+      let Dc = z <= Lg / 2 ? dwHead + 2 * z * T30 : dwFar + 2 * Math.max(0, Lg - z) * T30;
+      const capped = Dc < geoOD;
+      const odE = Math.min(geoOD, Dc);
+      const allow = Math.min(a.brg, b.brg);
+      const govName = a.brg <= b.brg ? a.name : b.name;
+      mkContact(a.name + " → " + b.name, idE, odE, FmBrg, allow, govName,
+        capped ? "load spread limited by Ø" + fx(Dc, 1) + " cone" : "full annulus in contact", capped);
+    }
+    if (!tapped) {
+      const eN = chain[chain.length - 1];
+      const idN = Math.max(eN.hole + 2 * eN.lossIDbot, eN.kind === "washer" ? F.wID : d + 0.1);
+      const odN = Math.min(dwNut, eN.od - 2 * eN.lossODbot);
+      mkContact(eN.name + " → under nut", idN, odN, Fb, eN.brg, eN.name,
+        dwNut > eN.od - 2 * eN.lossODbot ? "nut overhangs part face" : "", false);
+    }
+  }
+  const peak = contacts.reduce((p, c) => (!p || c.sig > p.sig ? c : p), null);
+  const worst = contacts.reduce((p, c) => (!p || (c.ms !== null && (p.ms === null || c.ms < p.ms)) ? c : p), null);
+  const minA = contacts.reduce((p, c) => (!p || c.A < p.A ? c : p), null);
+
+  /* — bolt tension — */
+  const sigB = As > 0 ? Fb / As : 0;
+  const pctProof = Sp > 0 ? sigB / Sp * 100 : 0;
+  const msProof = sigB > 0 ? Sp / sigB - 1 : null;
+  const Fproof = Sp * As, Futs = cls.Ftu * As;
+
+  /* — length, grip, threads — */
+  const len = {};
+  const boltLenManual = Math.max(2, num(S.len, 30));
+  const minThr = Math.max(0, num(S.minThr, 2));
+  let Lreq, Lrec, Lbolt;
+  if (!tapped) {
+    Lreq = Lmx + nutH + minThr * P;
+    Lrec = STD_LEN.find(x => x >= Lreq - 1e-9) || Math.ceil(Lreq / 10) * 10;
+    Lbolt = S.lenMode === "auto" ? Lrec : boltLenManual;
+    len.protNom = Lbolt - Lg - nutH;
+    len.protMin = Lbolt - Lmx - nutH;
+    len.protMax = Lbolt - Lmn - nutH;
+    len.nMin = len.protMin / P; len.nNom = len.protNom / P; len.nMax = len.protMax / P;
+    len.mode = "nut";
+  } else {
+    const LeRule = tapElem ? (tapElem.E > 150000 ? 1.0 : tapElem.E > 60000 ? 1.5 : 2.5) * d : 1.5 * d;
+    const FtuL = tapElem ? tapElem.Ftu : 300;
+    const LeStr = FtuL > 0 ? Futs / (0.577 * FtuL * 0.5 * PI * d2) : 0;
+    len.LeRule = LeRule; len.LeStr = LeStr;
+    len.LeNeed = Math.max(LeRule, LeStr);
+    Lreq = Lmx + len.LeNeed;
+    Lrec = STD_LEN.find(x => x >= Lreq - 1e-9) || Math.ceil(Lreq / 10) * 10;
+    Lbolt = S.lenMode === "auto" ? Lrec : boltLenManual;
+    const tapD = Math.max(0, num(S.tapD, 15));
+    len.tapD = tapD;
+    len.LeAvail = Math.max(0, Math.min(Lbolt - Lmx, tapD));
+    len.LeNom = Math.max(0, Math.min(Lbolt - Lg, tapD));
+    len.LeMax = Math.max(0, Math.min(Lbolt - Lmn, tapD));
+    len.nEng = len.LeAvail / P;
+    len.LeRatio = len.LeAvail / d;
+    len.bottom = Lbolt - Lmn > tapD;
+    len.thruDepth = tapElem ? tapElem.t : 0;
+    len.mode = "tap";
+    /* thread stripping at the engaged length actually available */
+    const AtsInt = 0.5 * PI * d2 * len.LeAvail;
+    const AtsExt = 0.5 * PI * d3 * len.LeAvail;
+    len.stripInt = 0.577 * FtuL * AtsInt;
+    len.stripExt = 0.577 * cls.Ftu * AtsExt;
+    len.msStrip = Futs > 0 ? Math.min(len.stripInt, len.stripExt) / Futs - 1 : null;
+  }
+  const thrLen = S.thrMode === "full" ? Lbolt : clamp(num(S.thrLen, Lbolt), 0, Lbolt);
+  const shank = Math.max(0, Lbolt - thrLen);
+  len.Lbolt = Lbolt; len.Lreq = Lreq; len.Lrec = Lrec; len.thrLen = thrLen; len.shank = shank;
+  len.Lg = Lg; len.Lmn = Lmn; len.Lmx = Lmx; len.stackT = stackT; len.P = P;
+
+  /* ── checks ───────────────────────────────────────────────── */
+  if (!layers.length) add("warn", "Empty stack", "Add at least one layer to size the joint.");
+  layers.forEach((L, i) => {
+    const n = "L" + (i + 1) + " " + (L.name || "");
+    if (num(L.hole) < d) add("bad", n, "Hole Ø" + fx(num(L.hole), 2) + " is smaller than the Ø" + fx(d, 0) + " shank — the bolt will not pass.");
+    if (num(L.od) <= num(L.hole)) add("bad", n, "Outside Ø must be larger than the hole.");
+    const wall = (num(L.od) - num(L.hole)) / 2;
+    CNR_KEYS.forEach(k => {
+      ["idC", "odC"].forEach(g => {
+        const c = L[g][k];
+        if (c.t !== "sharp" && c.s > 0.45 * num(L.t, 1) + 1e-9)
+          add("warn", n, (g === "idC" ? "ID " : "OD ") + CNR_LABEL[k].toLowerCase() + " break " + fx(c.s, 2) + " mm exceeds 45% of the " + fx(num(L.t), 2) + " mm thickness — clipped in the model.");
+        if (c.t !== "sharp" && c.s > 0.45 * wall + 1e-9)
+          add("warn", n, (g === "idC" ? "ID " : "OD ") + CNR_LABEL[k].toLowerCase() + " break eats more than 45% of the " + fx(wall, 2) + " mm wall — clipped in the model.");
+      });
+    });
+  });
+  chain.forEach(e => {
+    if (e.kind !== "layer") return;
+    if (e.ref && e.ref.brgAuto) {
+      if (e.eD < 1.5)
+        add("warn", e.name, "Edge distance e/D = " + fx(e.eD, 2) + ", below the 1.5 limit of the tabulated bearing allowables. The allowable was cut to 78% (" + fx(e.brg, 0) + " MPa) and should be treated as indicative — this close to a free edge the basis is extrapolated. It still governs crushing under clamp load; if this joint also carries shear, check tear-out separately or take the outside Ø to " + fx(4 * e.hole, 1) + " mm.");
+      else if (e.eD < 2)
+        add("warn", e.name, "Edge distance e/D = " + fx(e.eD, 2) + ". The k·F<sub>ty</sub> allowable is tabulated at e/D = 2.0, so it was reduced to " + fx(e.knock * 100, 0) + "% (" + fx(e.brg, 0) + " MPa). An outside Ø of " + fx(4 * e.hole, 1) + " mm would clear it.");
+    }
+    const inner = e.hole + 2 * Math.max(e.lossIDtop, e.lossIDbot);
+    if (inner >= e.od - 2 * Math.max(e.lossODtop, e.lossODbot))
+      add("bad", e.name, "Corner breaks consume the whole annular face — no bearing land left.");
+  });
+  if (grip.length && dwHead > grip[0].od - 2 * grip[0].lossODtop + 1e-6)
+    add("warn", "Head footprint", "Head/washer Ø" + fx(dwHead, 1) + " overhangs " + grip[0].name + " (Ø" + fx(grip[0].od - 2 * grip[0].lossODtop, 1) + " land). Bearing area was truncated to the part.");
+  if (!tapped && grip.length) {
+    const eN = grip[grip.length - 1];
+    if (dwNut > eN.od - 2 * eN.lossODbot + 1e-6)
+      add("warn", "Nut footprint", "Nut/washer Ø" + fx(dwNut, 1) + " overhangs " + eN.name + ". Bearing area was truncated to the part.");
+  }
+  contacts.forEach(c => {
+    if (c.odE <= c.idE + 0.06)
+      add("bad", "No bearing land", c.label + ": the Ø" + fx(c.odE, 2) + " land sits inside the Ø" + fx(c.idE, 2) + " hole edge. Use a washer, a larger head or a tighter hole.");
+    if (c.ms !== null && c.ms < 0) add("bad", "Bearing", c.label + ": σ = " + fx(c.sig, 1) + " MPa against a " + fx(c.allow, 0) + " MPa allowable on " + c.govern + " (MS " + fx(c.ms, 2) + ").");
+    else if (c.ms !== null && c.ms < 0.25) add("warn", "Bearing", c.label + ": MS " + fx(c.ms, 2) + " on " + c.govern + " — thin margin.");
+  });
+  if (msProof !== null && msProof < 0) add("bad", "Bolt tension", "σ = " + fx(sigB, 0) + " MPa exceeds the " + fx(Sp, 0) + " MPa proof stress of " + cls.name + ".");
+  else if (pctProof > 90) add("warn", "Bolt tension", fx(pctProof, 0) + "% of proof load — very little reserve for the external load.");
+  if (Fext > 0 && Number.isFinite(Fsep) && Fsep < Fext) add("bad", "Separation", "The joint separates at " + fx(Fsep / 1000, 1) + " kN, below the " + fx(Fext / 1000, 1) + " kN service load.");
+  if (Fm < 0) add("bad", "Clamp lost", "Residual clamp goes negative at minimum preload — the faces lift.");
+  else if (Fi > 0 && Fm < 0.15 * Fi) add("warn", "Clamp margin", "Only " + fx(Fm / 1000, 1) + " kN residual clamp at minimum preload.");
+  if (!tapped) {
+    if (len.nMin < minThr) add("bad", "Thread protrusion", "Worst case " + fx(len.nMin, 1) + " threads past the nut against a " + fx(minThr, 1) + " minimum — use " + fx(Lrec, 0) + " mm.");
+    else add("ok", "Thread protrusion", fx(len.nMin, 1) + " threads clear the nut at maximum grip (" + fx(minThr, 1) + " required).");
+    if (S.thrMode === "part" && shank > Lmn) add("bad", "Thread run-out", "Unthreaded shank " + fx(shank, 1) + " mm is longer than the " + fx(Lmn, 2) + " mm minimum grip — the nut runs onto plain shank.");
+    if (S.thrMode === "part" && thrLen < nutH + Math.max(0, len.protMax)) add("warn", "Thread length", "Thread length b = " + fx(thrLen, 0) + " mm barely covers the nut plus protrusion.");
+  } else {
+    if (len.nEng * P < len.LeNeed) add("bad", "Thread engagement", "Engagement " + fx(len.LeAvail, 1) + " mm is below the " + fx(len.LeNeed, 1) + " mm needed (" + fx(len.LeNeed / d, 2) + "×d) for " + (tapElem ? tapElem.name : "the tapped part") + ".");
+    else add("ok", "Thread engagement", fx(len.nEng, 1) + " threads engaged over " + fx(len.LeAvail, 1) + " mm (" + fx(len.LeRatio, 2) + "×d).");
+    if (len.bottom) add("bad", "Bottoming", "At minimum grip the bolt reaches " + fx(Lbolt - Lmn, 1) + " mm into a " + fx(len.tapD, 1) + " mm tapped hole.");
+    if (tapElem && len.tapD > tapElem.t) add("warn", "Tap depth", "Tap depth " + fx(len.tapD, 1) + " mm exceeds the " + fx(tapElem.t, 1) + " mm layer thickness — through-hole assumed.");
+  }
+  if (S.pitchMode === "man") {
+    const std = (FAST[S.size] || {}).pitches || [];
+    if (!std.some(p => Math.abs(p - P) < 1e-6)) add("warn", "Non-standard pitch", "P = " + fx(P, 3) + " mm is outside the ISO 261 series for " + S.size + " (" + std.join(" / ") + ").");
+  }
+  if (S.lenMode === "man" && Lbolt < Lreq) add("warn", "Bolt length", "Manual length " + fx(Lbolt, 0) + " mm is below the " + fx(Lreq, 1) + " mm needed; " + fx(Lrec, 0) + " mm is the next standard size.");
+  chain.forEach(e => {
+    if (e.kind === "layer" && e.E < 500 && e.t > 0)
+      add("warn", e.name, "Very low modulus (" + fx(e.E, 0) + " MPa) — creep and relaxation will dominate; re-torque or use a compression limiter.");
+  });
+
+  R = {F, d, P, H, d2, d3, D1, As, Ash, cls, Sp, Fproof, Futs, dwHead, dwNut, nutH,
+       grip, chain, tapElem, layers, Lg, Lmn, Lmx, stackT, Fi, FiMax, FiMin, Fext, torqueEq,
+       km, kb, C, Fb, Fm, FmBrg, Fsep, kmOK, contacts, peak, worst, minA,
+       sigB, pctProof, msProof, len, flags, tapped: !!tapped};
+  return R;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   6 — ANIMATED SECTION VIEW
+   Geometry is built in millimetres, then mapped to pixels so strokes and
+   type stay the same weight at any zoom. Layer thickness, outside diameter
+   and hole diameter are tweened, so adding or removing a layer opens and
+   closes the stack instead of snapping.
+   ═══════════════════════════════════════════════════════════════════════ */
+const AN = new Map();
+let activeLayer = null, rafOn = false, lastT = 0, needSync = true;
+const reduced = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+function syncAnim() {
+  const seen = new Set();
+  S.layers.forEach((L, i) => {
+    seen.add(L.id);
+    let a = AN.get(L.id);
+    if (!a) { a = {t: 0, od: num(L.od, 20), hole: num(L.hole, 10)}; AN.set(L.id, a); }
+    a.idx = i; a.ref = L; a.dying = false;
+    a.tt = Math.max(0.01, num(L.t, 1)); a.tod = Math.max(0.2, num(L.od, 20)); a.thole = Math.max(0.05, num(L.hole, 10));
+  });
+  AN.forEach((a, id) => { if (!seen.has(id)) { a.dying = true; a.tt = 0; } });
+  needSync = false;
+}
+function stepAnim(dt) {
+  const f = reduced() ? 1 : 1 - Math.pow(0.0015, Math.min(0.05, dt) / 0.28);
+  let moving = false;
+  AN.forEach((a, id) => {
+    [["t", "tt"], ["od", "tod"], ["hole", "thole"]].forEach(([k, tk]) => {
+      const g = a[tk];
+      if (Math.abs(a[k] - g) > 0.003) { a[k] += (g - a[k]) * f; moving = true; } else a[k] = g;
+    });
+    if (a.dying && a.t <= 0.02) AN.delete(id);
+  });
+  return moving;
+}
+function tick(ts) {
+  const dt = lastT ? (ts - lastT) / 1000 : 0.016; lastT = ts;
+  if (needSync) syncAnim();
+  const moving = stepAnim(dt);
+  drawSection();
+  if (moving) requestAnimationFrame(tick); else { rafOn = false; lastT = 0; }
+}
+function animate() { needSync = true; if (!rafOn) { rafOn = true; lastT = 0; requestAnimationFrame(tick); } }
+
+/* ── path builder: rectangle with four independent corner breaks ───── */
+function facePath(xI, xO, yT, yB, brk, sc) {
+  /* brk: {it,ot,ob,ib} each {t,s,a} already limited, sizes in mm  */
+  const sgn = Math.sign(xO - xI) || 1;
+  const wIn = Math.abs(xO - xI), hIn = Math.abs(yB - yT);
+  const C = [
+    {p: [xI, yT], toPrev: [0, 1], toNext: [sgn, 0], k: "it"},   /* inner-top    */
+    {p: [xO, yT], toPrev: [-sgn, 0], toNext: [0, 1], k: "ot"},  /* outer-top    */
+    {p: [xO, yB], toPrev: [0, -1], toNext: [-sgn, 0], k: "ob"}, /* outer-bottom */
+    {p: [xI, yB], toPrev: [sgn, 0], toNext: [0, -1], k: "ib"}   /* inner-bottom */
+  ];
+  const pts = C.map(c => {
+    const b = brk[c.k] || {t: "sharp"};
+    let legR = 0, legA = 0, r = 0;
+    if (b.t === "radius") { legR = legA = r = b.s * sc; }
+    else if (b.t === "chamfer") { legR = b.rad * sc; legA = b.ax * sc; }
+    legR = Math.min(legR, wIn * 0.48); legA = Math.min(legA, hIn * 0.48);
+    if (b.t === "radius") { r = Math.min(legR, legA); legR = legA = r; }
+    const horiz = (v) => Math.abs(v[0]) > 0.5;
+    const lp = horiz(c.toPrev) ? legR : legA, ln = horiz(c.toNext) ? legR : legA;
+    return {
+      in: [c.p[0] + c.toPrev[0] * lp, c.p[1] + c.toPrev[1] * lp],
+      out: [c.p[0] + c.toNext[0] * ln, c.p[1] + c.toNext[1] * ln],
+      c: c.p, type: b.t === "sharp" ? "sharp" : b.t, r
+    };
+  });
+  const sweep = sgn > 0 ? 1 : 0;
+  const n2 = (v) => v[0].toFixed(2) + "," + v[1].toFixed(2);
+  let p = "M" + n2(pts[0].in);
+  for (let i = 0; i < 4; i++) {
+    const q = pts[i];
+    if (q.type === "sharp") p += "L" + n2(q.c);
+    else if (q.type === "radius" && q.r > 0.4) p += "A" + q.r.toFixed(2) + "," + q.r.toFixed(2) + " 0 0 " + sweep + " " + n2(q.out);
+    else p += "L" + n2(q.out);
+    p += "L" + n2(pts[(i + 1) % 4].in);
+  }
+  return p + "Z";
+}
+/* break descriptors in px-scaled mm for one layer face set */
+function brkSet(L, group, side) {
+  /* side "R" uses tr/br, "L" uses tl/bl */
+  const g = group === "id" ? L.idC : L.odC;
+  const kT = side === "R" ? "tr" : "tl", kB = side === "R" ? "br" : "bl";
+  const mk = (c) => ({t: c.t, s: cnrLimit(L, c), rad: radialLoss(L, c), ax: axialLoss(L, c)});
+  return {t: mk(g[kT]), b: mk(g[kB])};
+}
+
+function drawSection() {
+  const host = $("#view"); if (!host || !R) return;
+  /* Basic hides the toggles for the cone and callouts, so hide what they draw too */
+  const O = S.mode === "basic" ? Object.assign({}, S.opts, {cone: false, labels: false}) : S.opts;
+  const Wpx = Math.max(300, host.clientWidth || 560);
+  const F = R.F, d = R.d, P = R.P;
+  const headH = S.head === "socket" ? d : 0.68 * d;
+  const nutMode = !R.tapped;
+
+  /* element strip in draw order */
+  const strip = [];
+  if (S.wh === 1 || S.wh === "1") strip.push({kind: "washer", t: Math.max(0.05, num(S.whT, F.wT)), od: Math.max(d + 0.5, num(S.whOD, F.wOD)), hole: F.wID, col: WASHER_MAT.c, name: "Washer"});
+  const live = [...AN.values()].sort((a, b) => a.idx - b.idx);
+  live.forEach(a => {
+    const L = a.ref;
+    strip.push({kind: "layer", an: a, L, t: a.t, od: a.od, hole: a.hole, col: (MATS[L.mat] || MATS.CUSTOM).c, name: L.name, tapped: R.tapped && a.idx === S.layers.length - 1});
+  });
+  if (nutMode && (S.wn === 1 || S.wn === "1")) strip.push({kind: "washer", t: Math.max(0.05, num(S.wnT, F.wT)), od: Math.max(d + 0.5, num(S.wnOD, F.wOD)), hole: F.wID, col: WASHER_MAT.c, name: "Washer"});
+
+  /* y layout (mm) */
+  let y = headH;
+  strip.forEach(e => { e.y0 = y; e.y1 = y + e.t; y = e.y1; });
+  const yGripTop = headH;
+  const gripLen = strip.reduce((s, e) => s + (e.tapped ? 0 : e.t), 0);
+  const yGripBot = yGripTop + gripLen;
+  const yNutTop = yGripBot, nutH = R.nutH;
+  const Lb = R.len.Lbolt;
+  const boltEnd = nutMode ? headH + Lb : Math.min(headH + Lb, yGripBot + (R.len.LeNom || 0));
+  const yStripEnd = strip.length ? strip[strip.length - 1].y1 : headH;
+  const yBot = nutMode ? Math.max(yNutTop + nutH, boltEnd) : Math.max(yStripEnd, boltEnd);
+  const Htot = yBot + 1.5;
+
+  let maxR = Math.max(R.dwHead / 2, nutMode ? F.s / 2 : 0, d / 2 + 1);
+  strip.forEach(e => maxR = Math.max(maxR, e.od / 2));
+  const padL = 78, padR = 104, padT = 16, padB = 16;
+  const sc = clamp(Math.min((Wpx - padL - padR) / (2 * maxR), 540 / Htot), 0.6, 26);
+  const svgH = Math.round(Htot * sc + padT + padB);
+  const cx = padL + maxR * sc, y0 = padT;
+  const X = (mm) => cx + mm * sc, Y = (mm) => y0 + mm * sc;
+  const xR = cx + maxR * sc, xL = cx - maxR * sc;
+
+  const o = [];
+  o.push('<svg viewBox="0 0 ' + Wpx + " " + svgH + '" width="' + Wpx + '" height="' + svgH + '" role="img" aria-label="Animated cross-section of the bolted joint">');
+  /* hatch patterns */
+  o.push("<defs>");
+  strip.forEach((e, i) => {
+    const ang = i % 2 ? -45 : 45, sp = 4 + (i % 3);
+    o.push('<pattern id="hx' + i + '" width="' + sp + '" height="' + sp + '" patternUnits="userSpaceOnUse" patternTransform="rotate(' + ang + ')">' +
+      '<rect width="' + sp + '" height="' + sp + '" fill="' + e.col + '" fill-opacity="' + (e.kind === "washer" ? 0.18 : 0.26) + '"/>' +
+      '<line x1="0" y1="0" x2="0" y2="' + sp + '" stroke="' + e.col + '" stroke-width="0.9" stroke-opacity="0.85"/></pattern>');
+  });
+  o.push('<marker id="ar" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0.6 L7.4,4 L0,7.4 Z" fill="var(--blueprint)"/></marker>');
+  o.push('<marker id="arS" viewBox="0 0 8 8" refX="1" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M8,0.6 L0.6,4 L8,7.4 Z" fill="var(--blueprint)"/></marker>');
+  o.push("</defs>");
+  o.push('<style>text{font-family:var(--f-mono);fill:var(--ink-2)}.dim{stroke:var(--blueprint);stroke-width:1;fill:none}.dimt{fill:var(--blueprint);font-size:9.5px;font-weight:500}' +
+    '.pe{stroke:var(--ink-2);stroke-width:1.15;vector-effect:non-scaling-stroke}.bolt{fill:var(--surface-3);stroke:var(--ink-2);stroke-width:1.15}' +
+    '.thr{stroke:var(--ink-3);stroke-width:.8;fill:none}.cl{stroke:var(--blueprint);stroke-width:.9;stroke-dasharray:14 3 2.5 3;opacity:.8;fill:none}' +
+    '.zn{stroke-linecap:butt}.pulse{animation:zp 2.4s ease-in-out infinite}@keyframes zp{0%,100%{opacity:.95}50%{opacity:.45}}' +
+    '.cone{fill:var(--accent);fill-opacity:.07;stroke:var(--accent);stroke-width:1;stroke-dasharray:5 4;opacity:.75}' +
+    '.idx{fill:var(--surface);stroke:var(--line-3);stroke-width:1}.idxt{fill:var(--ink-2);font-size:8.5px;font-weight:600}' +
+    '.hot{stroke:var(--accent);stroke-width:2.2;fill:none;vector-effect:non-scaling-stroke}' +
+    '@media (prefers-reduced-motion:reduce){.pulse{animation:none}}</style>');
+
+  /* pressure cone */
+  if (O.cone && R.kmOK && gripLen > 0.2) {
+    const dwF = R.tapped ? R.dwHead : R.dwNut, mid = yGripTop + gripLen / 2;
+    const rMid = Math.min(maxR, R.dwHead / 2 + (gripLen / 2) * T30);
+    const rA = Math.min(maxR, R.dwHead / 2), rB = Math.min(maxR, dwF / 2);
+    [1, -1].forEach(s2 => {
+      o.push('<path class="cone" d="M' + X(s2 * rA) + "," + Y(yGripTop) + "L" + X(s2 * rMid) + "," + Y(mid) + "L" + X(s2 * rB) + "," + Y(yGripBot) +
+        "L" + X(s2 * d / 2) + "," + Y(yGripBot) + "L" + X(s2 * d / 2) + "," + Y(yGripTop) + 'Z"/>');
+    });
+  }
+
+  /* parts */
+  strip.forEach((e, i) => {
+    if (e.t < 0.02) return;
+    const yT = Y(e.y0), yB = Y(e.y1), rH = (e.hole / 2) * sc, rO = (e.od / 2) * sc;
+    const fill = O.hatch ? "url(#hx" + i + ")" : e.col;
+    const op = O.hatch ? "1" : "0.34";
+    const isHot = e.kind === "layer" && activeLayer === e.L.id;
+    ["R", "L"].forEach(side => {
+      const s2 = side === "R" ? 1 : -1;
+      const xI = cx + s2 * rH, xO = cx + s2 * rO;
+      let brk;
+      if (e.kind === "layer") {
+        const bi = brkSet(e.L, "id", side), bo = brkSet(e.L, "od", side);
+        brk = {it: bi.t, ib: bi.b, ot: bo.t, ob: bo.b};
+      } else {
+        const sm = {t: "chamfer", s: 0.2, rad: 0.2, ax: 0.2};
+        brk = {it: {t: "sharp"}, ib: {t: "sharp"}, ot: sm, ob: sm};
+      }
+      const dpath = facePath(xI, xO, yT, yB, brk, sc);
+      o.push('<path d="' + dpath + '" fill="' + fill + '" fill-opacity="' + op + '" class="pe"' + (isHot ? ' stroke="var(--accent)" stroke-width="2"' : "") + "/>");
+      if (isHot) o.push('<path d="' + dpath + '" class="hot" opacity=".9"/>');
+    });
+    if (O.labels && e.kind === "layer" && (e.y1 - e.y0) * sc > 11) {
+      const ym = (yT + yB) / 2, bx = xL - 14;
+      o.push('<circle class="idx" cx="' + bx.toFixed(1) + '" cy="' + ym.toFixed(1) + '" r="7"/>' +
+        '<text class="idxt" x="' + bx.toFixed(1) + '" y="' + (ym + 3).toFixed(1) + '" text-anchor="middle">' + (e.an.idx + 1) + "</text>");
+    }
+  });
+
+  /* bolt: head, shank, thread, nut */
+  const rk = (S.head === "socket" ? F.dk : S.head === "flange" ? F.flange : F.s) / 2 * sc;
+  const rs = d / 2 * sc, r3 = Math.max(1, (R.d3 / 2) * sc);
+  o.push('<path class="bolt" d="M' + (cx - rk) + "," + Y(0) + "H" + (cx + rk) + "V" + Y(headH) + "H" + (cx - rk) + 'Z"/>');
+  if (S.head === "socket") {
+    const rw = rk * 0.55, hd = (headH * sc) * 0.62;
+    o.push('<path d="M' + (cx - rw) + "," + Y(0) + "V" + (Y(0) + hd) + "H" + (cx + rw) + "V" + Y(0) + '" fill="var(--surface)" stroke="var(--ink-3)" stroke-width="1"/>');
+  }
+  o.push('<path class="bolt" d="M' + (cx - rs) + "," + Y(headH) + "H" + (cx + rs) + "V" + Y(boltEnd) + "H" + (cx - rs) + 'Z"/>');
+  const thrTop = Math.max(headH, headH + Lb - R.len.thrLen);
+  if (P * sc > 2.4) {
+    const step = P * sc;
+    let ty = Y(Math.max(thrTop, headH));
+    const tEnd = Y(boltEnd);
+    let g = "";
+    for (; ty < tEnd - 0.5; ty += step) {
+      g += "M" + (cx - rs) + "," + ty.toFixed(1) + "L" + (cx - r3) + "," + Math.min(tEnd, ty + step * 0.5).toFixed(1);
+      g += "M" + (cx + rs) + "," + ty.toFixed(1) + "L" + (cx + r3) + "," + Math.min(tEnd, ty + step * 0.5).toFixed(1);
+    }
+    o.push('<path class="thr" d="' + g + '"/>');
+  }
+  o.push('<path class="thr" d="M' + (cx - r3) + "," + Y(thrTop) + "V" + Y(boltEnd) + "M" + (cx + r3) + "," + Y(thrTop) + "V" + Y(boltEnd) + '"/>');
+  if (nutMode) {
+    const rn = F.s / 2 * sc, ch = Math.min(nutH * sc * 0.28, rn * 0.3);
+    o.push('<path class="bolt" d="M' + (cx - rn + ch) + "," + Y(yNutTop) + "H" + (cx + rn - ch) + "L" + (cx + rn) + "," + (Y(yNutTop) + ch) +
+      "V" + (Y(yNutTop + nutH) - ch) + "L" + (cx + rn - ch) + "," + Y(yNutTop + nutH) + "H" + (cx - rn + ch) +
+      "L" + (cx - rn) + "," + (Y(yNutTop + nutH) - ch) + "V" + (Y(yNutTop) + ch) + 'Z" fill="var(--surface-2)"/>');
+    const rD1 = (R.D1 / 2) * sc;
+    o.push('<path class="thr" d="M' + (cx - rD1) + "," + Y(yNutTop) + "V" + Y(yNutTop + nutH) + "M" + (cx + rD1) + "," + Y(yNutTop) + "V" + Y(yNutTop + nutH) + '"/>');
+  }
+  /* centre line */
+  o.push('<path class="cl" d="M' + cx + "," + (Y(0) - 10) + "V" + (Y(yBot) + 10) + '"/>');
+
+  /* bearing zones */
+  if (O.zones && R.contacts.length) {
+    /* contact i sits at: 0 → head face, 1..n-1 → between strip elements, last → nut face */
+    const yOf = [strip.length ? strip[0].y0 : yGripTop].concat(strip.map(e => e.y1));
+    R.contacts.forEach((c, i) => {
+      const yy = Y(Math.min(yOf[i] !== undefined ? yOf[i] : yGripBot, yBot));
+      const col = c.s === "bad" ? "var(--bad)" : c.s === "warn" ? "var(--warn)" : "var(--ok)";
+      [1, -1].forEach(s2 => {
+        const a = cx + s2 * (c.idE / 2) * sc, b = cx + s2 * (c.odE / 2) * sc;
+        o.push('<line class="zn pulse" x1="' + a.toFixed(1) + '" y1="' + yy.toFixed(1) + '" x2="' + b.toFixed(1) + '" y2="' + yy.toFixed(1) +
+          '" stroke="' + col + '" stroke-width="3.2" stroke-opacity=".85"/>');
+      });
+    });
+  }
+
+  /* dimensions */
+  if (O.dims) {
+    const dimV = (x, ya, yb, label, anchor) => {
+      if (Math.abs(yb - ya) < 1.5) return;
+      const a = Math.min(ya, yb), b = Math.max(ya, yb);
+      o.push('<path class="dim" d="M' + x + "," + (a + 1) + "V" + (b - 1) + '" marker-start="url(#arS)" marker-end="url(#ar)"/>');
+      o.push('<text class="dimt" x="' + (x + (anchor === "end" ? -4 : 4)) + '" y="' + ((a + b) / 2 + 3.2) + '" text-anchor="' + (anchor || "start") + '">' + esc(label) + "</text>");
+    };
+    const xg = xR + 20, xb = xR + 58;
+    o.push('<path class="dim" opacity=".45" d="M' + (xR + 3) + "," + Y(yGripTop) + "H" + (xg + 5) + "M" + (xR + 3) + "," + Y(yGripBot) + "H" + (xg + 5) + '"/>');
+    dimV(xg, Y(yGripTop), Y(yGripBot), "GRIP " + fx(R.Lg, 2));
+    o.push('<path class="dim" opacity=".45" d="M' + (cx + rk + 3) + "," + Y(headH) + "H" + (xb + 5) + "M" + (cx + rs + 3) + "," + Y(headH + Lb) + "H" + (xb + 5) + '"/>');
+    dimV(xb, Y(headH), Y(headH + Lb), "L " + fx(Lb, 0));
+    if (nutMode && R.len.protNom > 0.2) dimV(xg, Y(yNutTop + nutH), Y(headH + Lb), fx(R.len.protNom, 1) + " → " + fx(R.len.nNom, 1) + " thr");
+    if (!nutMode && R.len.LeNom > 0.2) dimV(xg, Y(yGripBot), Y(yGripBot + R.len.LeNom), "Le " + fx(R.len.LeNom, 1));
+    /* thickness chain on the left */
+    let lastLab = -99;
+    const xt = xL - 30;
+    strip.forEach(e => {
+      if (e.t * sc < 9) return;
+      const ym = (Y(e.y0) + Y(e.y1)) / 2;
+      if (ym - lastLab < 10) return; lastLab = ym;
+      o.push('<path class="dim" opacity=".5" d="M' + xt + "," + Y(e.y0) + "H" + (xL - 4) + '"/>');
+      /* label the specified thickness, not the frame's tweened value */
+      o.push('<text class="dimt" x="' + (xt - 3) + '" y="' + (ym + 3.2) + '" text-anchor="end">' + fx(e.L ? num(e.L.t) : e.t, 2) + "</text>");
+    });
+    const eL = strip[strip.length - 1];
+    if (eL) o.push('<path class="dim" opacity=".5" d="M' + xt + "," + Y(eL.y1) + "H" + (xL - 4) + '"/>');
+    o.push('<text class="dimt" x="' + (xt - 3) + '" y="' + (Y(yBot) + 12) + '" text-anchor="start" opacity=".7">Ø' + fx(R.dwHead, 1) + " head land</text>");
+  }
+  o.push("</svg>");
+  host.innerHTML = o.join("");
+  host.onpointermove = (ev) => {
+    const rect = host.getBoundingClientRect();
+    const my = (ev.clientY - rect.top - y0) / sc;
+    const hit = strip.find(e => e.kind === "layer" && my >= e.y0 - 0.2 && my <= e.y1 + 0.2);
+    setActive(hit ? hit.L.id : null, false);
+  };
+  host.onpointerleave = () => setActive(null, false);
+  renderCornerOverlay(host);
+}
+
+/* overlay card describing the highlighted layer's eight corner breaks */
+function renderCornerOverlay(host) {
+  const old = $("#cnr-ov"); if (old) old.remove();
+  if (!S.opts.labels || S.mode === "basic" || !activeLayer) return;
+  const L = S.layers.find(x => x.id === activeLayer); if (!L) return;
+  const glyph = (c, pos) => {
+    const sharp = c.t === "sharp";
+    const txt = sharp ? "sharp" : (c.t === "radius" ? "R" + fx(c.s, 2) : "C" + fx(c.s, 2) + "×" + fx(c.a, 0) + "°");
+    return '<div style="display:flex;gap:5px;align-items:center;min-width:0"><span style="font:600 8px/1 var(--f-mono);color:var(--ink-3);width:2.1ch">' +
+      pos.toUpperCase() + '</span><span style="font:500 10.5px/1 var(--f-mono);color:' + (sharp ? "var(--ink-3)" : "var(--accent)") + '">' + txt + "</span></div>";
+  };
+  const box = document.createElement("div");
+  box.id = "cnr-ov";
+  box.style.cssText = "position:absolute;left:8px;bottom:8px;background:color-mix(in srgb,var(--surface) 94%,transparent);border:1px solid var(--line-2);" +
+    "border-radius:6px;padding:7px 9px;box-shadow:var(--shadow);pointer-events:none;max-width:min(260px,calc(100% - 16px));backdrop-filter:blur(6px)";
+  box.innerHTML = '<div style="font:600 9px/1.4 var(--f-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);margin-bottom:5px">' +
+    esc(L.name || "Layer") + " · corner breaks</div>" +
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:3px 12px">' +
+    '<div style="font:600 8.5px/1.4 var(--f-mono);color:var(--ink-2);grid-column:1/-1">ID</div>' +
+    CNR_KEYS.map(k => glyph(L.idC[k], k)).join("") +
+    '<div style="font:600 8.5px/1.4 var(--f-mono);color:var(--ink-2);grid-column:1/-1;margin-top:3px">OD</div>' +
+    CNR_KEYS.map(k => glyph(L.odC[k], k)).join("") + "</div>";
+  host.style.position = "relative";
+  host.appendChild(box);
+}
+function setActive(id, fromCard) {
+  if (activeLayer === id) return;
+  activeLayer = id;
+  $$(".layer").forEach(el => el.classList.toggle("hot", el.dataset.id === id));
+  if (!rafOn) drawSection();
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   7 — LAYER CARDS
+   ═══════════════════════════════════════════════════════════════════════ */
+const MAT_OPTS = Object.keys(MATS).map(k => '<option value="' + k + '">' + esc(MATS[k].n) + "</option>").join("");
+const CNR_GLYPH = {
+  tl: "M2,11 V4 Q2,2 4,2 H11", tr: "M11,11 V4 Q11,2 9,2 H2",
+  bl: "M2,2 V9 Q2,11 4,11 H11", br: "M11,2 V9 Q11,11 9,11 H2"
+};
+function cornerBlock(L, group, k) {
+  const c = L[group === "id" ? "idC" : "odC"][k];
+  const base = "data-id=\"" + L.id + "\" data-cnr=\"" + group + "." + k + "\"";
+  return '<div class="cnr" data-t="' + c.t + '">' +
+    '<span class="tag"><i><svg viewBox="0 0 13 13" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.4"><path d="' + CNR_GLYPH[k] + '"/></svg></i>' + k.toUpperCase() + "</span>" +
+    '<span class="ctrls">' +
+    '<select ' + base + ' data-p="t" aria-label="' + CNR_LABEL[k] + " " + group.toUpperCase() + ' corner type">' +
+      '<option value="sharp"' + (c.t === "sharp" ? " selected" : "") + ">Sharp</option>" +
+      '<option value="chamfer"' + (c.t === "chamfer" ? " selected" : "") + ">Chamfer</option>" +
+      '<option value="radius"' + (c.t === "radius" ? " selected" : "") + ">Radius</option></select>" +
+    '<input type="number" step="0.05" min="0" value="' + c.s + '" ' + base + ' data-p="s" title="Chamfer radial leg or fillet radius, mm"' + (c.t === "sharp" ? " disabled" : "") + ">" +
+    '<input type="number" step="1" min="5" max="85" value="' + c.a + '" ' + base + ' data-p="a" title="Chamfer angle from the face, degrees"' + (c.t === "chamfer" ? "" : " disabled") + ">" +
+    "</span></div>";
+}
+/* Basic mode: one break spec driving all four corners of a group. */
+function cornerSimple(L, group) {
+  const g = group === "id" ? L.idC : L.odC, c = g.tl;
+  const same = CNR_KEYS.every(k => g[k].t === c.t && Math.abs(g[k].s - c.s) < 1e-9 && Math.abs(g[k].a - c.a) < 1e-9);
+  const base = 'data-id="' + L.id + '" data-simple="' + group + '"';
+  return '<div class="cnr-wrap" data-basic>' +
+    '<div class="cnr-head"><b>' + (group === "id" ? "ID corner break" : "OD corner break") + "</b>" +
+      '<span class="unit">all four corners</span><span style="flex:1"></span>' +
+      (same ? "" : '<span class="mixed">4 corners differ — Advanced shows each</span>') +
+    "</div>" +
+    '<div class="cnr" data-t="' + c.t + '" style="background:var(--surface)"><span class="ctrls">' +
+      "<select " + base + ' data-p="t" aria-label="' + group.toUpperCase() + ' corner break type">' +
+        '<option value="sharp"' + (c.t === "sharp" ? " selected" : "") + ">Sharp / no break</option>" +
+        '<option value="chamfer"' + (c.t === "chamfer" ? " selected" : "") + ">Chamfer</option>" +
+        '<option value="radius"' + (c.t === "radius" ? " selected" : "") + ">Radius</option></select>" +
+      '<input type="number" step="0.05" min="0" value="' + c.s + '" ' + base + ' data-p="s" title="Chamfer radial leg or fillet radius, mm"' + (c.t === "sharp" ? " disabled" : "") + ">" +
+      '<input type="number" step="1" min="5" max="85" value="' + c.a + '" ' + base + ' data-p="a" title="Chamfer angle from the face, degrees"' + (c.t === "chamfer" ? "" : " disabled") + ">" +
+    "</span></div></div>";
+}
+function cornerGroup(L, group) {
+  const lock = group === "id" ? L.idLock : L.odLock;
+  return '<div class="cnr-wrap" data-adv>' +
+    '<div class="cnr-head"><b>' + (group === "id" ? "ID corner breaks" : "OD corner breaks") + "</b>" +
+      '<span class="unit">size mm · angle from face</span><span style="flex:1"></span>' +
+      '<label class="tog" title="Keep left and right corners identical"><input type="checkbox" data-id="' + L.id + '" data-lock="' + group + '"' + (lock ? " checked" : "") + ">mirror L/R</label>" +
+      '<button class="btn ghost icon" data-id="' + L.id + '" data-act="all-' + group + '" title="Apply the top-left break to all four corners">×4</button>' +
+    "</div><div class=\"cnr-grid\">" +
+    CNR_KEYS.map(k => cornerBlock(L, group, k)).join("") + "</div></div>";
+}
+function layerCard(L, i, n) {
+  const m = MATS[L.mat] || MATS.CUSTOM;
+  return '<div class="layer" data-id="' + L.id + '" data-collapsed="' + (L.collapsed ? 1 : 0) + '">' +
+    '<div class="lhead">' +
+      '<button class="btn ghost icon caret" data-id="' + L.id + '" data-act="toggle" aria-label="Expand or collapse layer">▾</button>' +
+      '<span class="swatch" style="background:' + m.c + '"></span>' +
+      '<span class="lidx">' + (i + 1) + "</span>" +
+      '<input class="lname" data-id="' + L.id + '" data-f="name" value="' + esc(L.name) + '" aria-label="Layer name">' +
+      '<span class="lmeta" data-meta="' + L.id + '"></span>' +
+      '<span class="lbtns">' +
+        '<button class="btn ghost icon" data-id="' + L.id + '" data-act="up" title="Move up"' + (i === 0 ? " disabled" : "") + ">↑</button>" +
+        '<button class="btn ghost icon" data-id="' + L.id + '" data-act="dn" title="Move down"' + (i === n - 1 ? " disabled" : "") + ">↓</button>" +
+        '<button class="btn ghost icon" data-id="' + L.id + '" data-act="dup" title="Duplicate">⧉</button>' +
+        '<button class="btn ghost icon danger" data-id="' + L.id + '" data-act="del" title="Delete layer">✕</button>' +
+      "</span></div>" +
+    '<div class="lbody">' +
+      '<div class="grid4">' +
+        '<div class="field"><label>Material</label><select data-id="' + L.id + '" data-f="mat">' + MAT_OPTS + "</select></div>" +
+        '<div class="field"><label>Thickness <span class="unit">mm</span></label><input type="number" step="0.1" min="0.01" data-id="' + L.id + '" data-f="t" value="' + L.t + '"></div>' +
+        '<div class="field" data-adv><label>Tol + <span class="unit">mm</span></label><input type="number" step="0.01" min="0" data-id="' + L.id + '" data-f="tp" value="' + L.tp + '"></div>' +
+        '<div class="field" data-adv><label>Tol − <span class="unit">mm</span></label><input type="number" step="0.01" min="0" data-id="' + L.id + '" data-f="tm" value="' + L.tm + '"></div>' +
+      "</div>" +
+      '<div class="grid4">' +
+        '<div class="field"><label>Outside Ø <span class="unit">mm</span></label><input type="number" step="0.5" min="0.2" data-id="' + L.id + '" data-f="od" value="' + L.od + '"></div>' +
+        '<div class="field"><label>Hole series</label><select data-id="' + L.id + '" data-f="holeMode">' +
+          Object.keys(HOLE_SERIES).map(k => '<option value="' + k + '">' + HOLE_SERIES[k] + "</option>").join("") + "</select></div>" +
+        '<div class="field"><label>Hole Ø <span class="unit">mm</span></label><input type="number" step="0.1" min="0.05" data-id="' + L.id + '" data-f="hole" value="' + L.hole + '"' + (L.holeMode === "custom" ? "" : " disabled") + "></div>" +
+        '<div class="field" data-adv><label>Hole tol + <span class="unit">mm</span></label><input type="number" step="0.01" min="0" data-id="' + L.id + '" data-f="holeTol" value="' + L.holeTol + '"></div>' +
+      "</div>" +
+      '<div class="grid4" data-adv>' +
+        '<div class="field"><label>F<sub>ty</sub> <span class="unit">MPa</span></label><input type="number" step="1" min="0.1" data-id="' + L.id + '" data-f="Fty" value="' + L.Fty + '"></div>' +
+        '<div class="field"><label>F<sub>tu</sub> <span class="unit">MPa</span></label><input type="number" step="1" min="0.1" data-id="' + L.id + '" data-f="Ftu" value="' + L.Ftu + '"></div>' +
+        '<div class="field"><label>E <span class="unit">MPa</span></label><input type="number" step="100" min="1" data-id="' + L.id + '" data-f="E" value="' + L.E + '"></div>' +
+        '<div class="field"><span class="flab">Bearing allow. <span class="unit">MPa</span>' +
+          '<label class="tog" style="padding:1px 6px;margin-left:auto" title="Bearing allowable = k × Fty"><input type="checkbox" data-id="' + L.id + '" data-f="brgAuto"' + (L.brgAuto ? " checked" : "") + ">k×F<sub>ty</sub></label></span>" +
+          '<div style="display:flex;gap:5px"><input type="number" step="0.05" min="0.2" max="4" data-id="' + L.id + '" data-f="kBrg" value="' + L.kBrg + '" title="Bearing factor k"' + (L.brgAuto ? "" : " disabled") + ">" +
+          '<input type="number" step="5" min="0.1" data-id="' + L.id + '" data-f="brgAllow" value="' + fx(L.brgAuto ? L.Fty * L.kBrg : L.brgAllow, 0) + '"' + (L.brgAuto ? " disabled" : "") + "></div></div>" +
+      "</div>" +
+      cornerSimple(L, "id") + cornerGroup(L, "id") +
+      cornerSimple(L, "od") + cornerGroup(L, "od") +
+    "</div></div>";
+}
+function renderStack() {
+  const host = $("#stack");
+  host.innerHTML = S.layers.map((L, i) => layerCard(L, i, S.layers.length)).join("");
+  S.layers.forEach(L => {
+    const card = host.querySelector('.layer[data-id="' + L.id + '"]');
+    if (!card) return;
+    card.querySelector('[data-f="mat"]').value = L.mat;
+    card.querySelector('[data-f="holeMode"]').value = L.holeMode;
+    card.addEventListener("pointerenter", () => setActive(L.id, true));
+    card.addEventListener("focusin", () => setActive(L.id, true));
+  });
+  updateMeta();
+}
+function updateMeta() {
+  S.layers.forEach((L, i) => {
+    const el = $('[data-meta="' + L.id + '"]');
+    if (!el) return;
+    const tol = (L.tp === L.tm) ? "±" + fx(num(L.tp), 2) : "+" + fx(num(L.tp), 2) + "/−" + fx(num(L.tm), 2);
+    el.textContent = fx(num(L.t), 2) + " " + tol + " · Ø" + fx(num(L.hole), 1) + " · Ø" + fx(num(L.od), 1);
+    const sw = $('.layer[data-id="' + L.id + '"] .swatch');
+    if (sw) sw.style.background = (MATS[L.mat] || MATS.CUSTOM).c;
+    if (R && R.tapped && i === S.layers.length - 1) el.textContent += " · tapped";
+  });
+  $("#s-tag").textContent = S.layers.length + (S.layers.length === 1 ? " layer" : " layers") + " · " + fx(S.layers.reduce((a, L) => a + num(L.t), 0), 2) + " mm";
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   8 — RESULT PAINTING
+   ═══════════════════════════════════════════════════════════════════════ */
+function chip(s, txt) { return '<span class="chip ' + s + '">' + esc(txt) + "</span>"; }
+function grp(t) { return '<tr class="rowgroup"><td colspan="3">' + t + "</td></tr>"; }
+function kvRow(k, v, u, adv) { return "<tr" + (adv ? " data-adv" : "") + "><td>" + k + '</td><td class="num">' + v + '</td><td style="width:1%;color:var(--ink-3)">' + (u || "") + "</td></tr>"; }
+
+function paintKPIs() {
+  const u = U();
+  const pk = R.peak, wt = R.worst, mn = R.minA;
+  const setK = (id, v, un, sub, st) => {
+    $("#" + id + "-v").textContent = v;
+    $("#" + id + "-u").textContent = un;
+    $("#" + id + "-s").innerHTML = sub;
+    $("#" + id).dataset.s = st;
+  };
+  /* peak bearing stress */
+  if (pk) setK("k-brg", vT(pk.sig), u.sT,
+    chip(pk.s, "MS " + fx(pk.ms, 2)) + "<span>" + esc(pk.label.length > 34 ? pk.label.slice(0, 33) + "…" : pk.label) + "</span>",
+    pk.s);
+  else setK("k-brg", "—", u.sT, "<span>No contact defined</span>", "neutral");
+  /* min bearing area */
+  if (mn) setK("k-area", vA(mn.A), u.sA,
+    "<span>Ø" + vL(mn.idE, 1) + " → Ø" + vL(mn.odE, 1) + " · " + esc(mn.govern) + "</span>", "ok");
+  else setK("k-area", "—", u.sA, "", "neutral");
+  /* grip */
+  setK("k-grip", vL(R.Lg), u.sL,
+    '<span style="font-family:var(--f-mono)">' + vL(R.Lmn) + " … " + vL(R.Lmx) + "</span>" + chip("neutral", R.grip.length + " in grip"), "ok");
+  /* threads */
+  if (!R.tapped) {
+    const need = num(S.minThr, 2), ok = R.len.nMin >= need;
+    $("#k-thr-h").textContent = "Min threads past nut";
+    setK("k-thr", fx(R.len.nMin, 1), "thr",
+      chip(ok ? "ok" : "bad", ok ? "≥ " + fx(need, 1) + " ok" : "needs " + fx(need, 1)) +
+      "<span>at max grip · L = " + fx(R.len.Lbolt, 0) + " mm</span>", ok ? "ok" : "bad");
+  } else {
+    const ok = R.len.LeAvail >= R.len.LeNeed;
+    $("#k-thr-h").textContent = "Threads engaged in tap";
+    setK("k-thr", fx(R.len.nEng, 1), "thr",
+      chip(ok ? "ok" : "bad", fx(R.len.LeRatio, 2) + "×d") +
+      "<span>needs " + vL(R.len.LeNeed, 1) + " " + u.sL + "</span>", ok ? "ok" : "bad");
+  }
+}
+function paintLoad() {
+  const u = U();
+  $("#t-load").innerHTML =
+    kvRow("Preload F<sub>i</sub> nominal", vF(R.Fi), u.sF) +
+    kvRow("Preload window (scatter + loss)", vF(R.FiMin) + " … " + vF(R.FiMax), u.sF, true) +
+    kvRow("Equivalent torque", fx(R.torqueEq, 1), "N·m", true) +
+    kvRow("Bolt tension F<sub>b</sub> worst case", vF(R.Fb), u.sF) +
+    kvRow("Bolt tensile stress", vT(R.sigB, 0), u.sT) +
+    kvRow("Utilisation of proof load", fx(R.pctProof, 0) + " %", chip(statusOf(R.msProof), "MS " + fx(R.msProof, 2))) +
+    kvRow("Proof / ultimate capacity", vF(R.Fproof) + " / " + vF(R.Futs), u.sF, true) +
+    kvRow("Residual clamp F<sub>m</sub> at min preload", vF(R.Fm), u.sF) +
+    kvRow("Separation load", Number.isFinite(R.Fsep) ? vF(R.Fsep) : "—", u.sF);
+  $("#l-tag").textContent = fx(R.Fi / 1000, 1) + " kN · " + fx(R.pctProof, 0) + "% proof";
+}
+function paintGeom() {
+  const u = U();
+  let h = "<thead><tr><th>Layer</th><th>Material</th><th>t " + u.sL + "</th><th>Hole Ø</th><th>OD Ø</th><th data-adv>e/D</th><th>ID breaks</th><th>OD breaks</th><th>F<sub>ty</sub></th><th>Brg allow</th></tr></thead><tbody>";
+  S.layers.forEach((L, i) => {
+    const m = MATS[L.mat] || MATS.CUSTOM;
+    const tol = (num(L.tp) === num(L.tm) ? "±" + fx(num(L.tp), 2) : "+" + fx(num(L.tp), 2) + "/−" + fx(num(L.tm), 2));
+    const tagged = R.tapped && i === S.layers.length - 1 ? " " + chip("neutral", "tapped") : "";
+    h += "<tr data-hl=\"" + L.id + "\"><td><b>" + (i + 1) + "</b> " + esc(L.name) + tagged + "</td><td>" + esc(m.n) + "</td>" +
+      '<td class="num">' + vL(num(L.t)) + " <span style=\"color:var(--ink-3)\">" + tol + "</span></td>" +
+      '<td class="num">' + vL(num(L.hole), 2) + "</td><td class=\"num\">" + vL(num(L.od), 2) + "</td>";
+    const eD = edgeRatio(L), kn = L.brgAuto ? edgeKnock(eD) : 1;
+    h += '<td class="num" data-adv>' + fx(eD, 2) + (kn < 1 ? " " + chip(eD < 1.5 ? "bad" : "warn", "×" + fx(kn, 2)) : "") + "</td>" +
+      "<td>" + esc(cnrText(L.idC)) + "</td><td>" + esc(cnrText(L.odC)) + "</td>" +
+      '<td class="num">' + vT(num(L.Fty), 0) + "</td>" +
+      '<td class="num">' + vT(L.brgAuto ? num(L.Fty) * num(L.kBrg) * kn : num(L.brgAllow), 0) + "</td></tr>";
+  });
+  h += "</tbody>";
+  $("#t-geom").innerHTML = h;
+  $$("#t-geom tr[data-hl]").forEach(tr => {
+    tr.addEventListener("pointerenter", () => setActive(tr.dataset.hl, true));
+    tr.addEventListener("pointerleave", () => setActive(null, false));
+  });
+  $("#v-tag").textContent = S.size + " × " + fx(R.P, 2) + " · " + fx(R.Lg, 2) + " mm grip";
+}
+function paintBrg() {
+  const u = U();
+  let h = "<thead><tr><th>Contact</th><th data-adv>Ø inner</th><th data-adv>Ø outer</th><th>Area " + u.sA + "</th><th data-adv>Force " + u.sF + "</th><th>σ " + u.sT + "</th><th>Allow</th><th>MS</th></tr></thead><tbody>";
+  R.contacts.forEach(c => {
+    h += "<tr><td>" + esc(c.label) + (c.note ? '<br><span style="font-size:10.5px;color:var(--ink-3)" data-adv>' + esc(c.note) + "</span>" : "") + "</td>" +
+      '<td class="num" data-adv>' + vL(c.idE, 2) + "</td><td class=\"num\" data-adv>" + vL(c.odE, 2) + (c.coneCap ? ' <span style="color:var(--accent)">▲</span>' : "") + "</td>" +
+      '<td class="num">' + vA(c.A) + "</td><td class=\"num\" data-adv>" + vF(c.force) + "</td>" +
+      '<td class="num"><b>' + vT(c.sig) + "</b></td><td class=\"num\">" + vT(c.allow, 0) + "</td>" +
+      "<td>" + chip(c.s, fx(c.ms, 2)) + "</td></tr>";
+  });
+  if (!R.contacts.length) h += "<tr><td>No contacts — add a layer.</td><td data-adv></td><td data-adv></td><td></td><td data-adv></td><td></td><td></td><td></td></tr>";
+  h += "</tbody>";
+  $("#t-brg").innerHTML = h;
+  $("#meth-brg").innerHTML =
+    "<p>Bearing area is the true annular land left after the corner breaks: " +
+    "<code>A = π/4 · (Ø<sub>outer</sub>² − Ø<sub>inner</sub>²)</code>, where the inner diameter is the hole opened up by " +
+    "twice the corner break on that face and the outer diameter is the smaller of the head, nut or washer land and the part face after its OD break. " +
+    "Where two parts meet, the load spread is also capped by the Rötscher pressure cone at 30° from each bearing face, " +
+    "which is the <span style=\"color:var(--accent)\">▲</span> marker in the table.</p><ul>" +
+    "<li>Under the head and under the nut the transmitted force is the bolt tension <code>F<sub>b</sub> = F<sub>i,max</sub> + C·F<sub>ext</sub></code>.</li>" +
+    "<li>Between parts it is the residual clamp <code>F<sub>m</sub> = F<sub>i,max</sub> − (1−C)·F<sub>ext</sub></code>.</li>" +
+    "<li>The bearing allowable defaults to <code>k · F<sub>ty</sub></code> with k = 1.5 for wrought metals (MMPDS-style e/D = 2) and k = 1.0 where the matrix or creep governs. Override either value per layer.</li>" +
+    "<li>That allowable is tabulated at an edge distance of <code>e/D = 2.0</code>, measured from the hole centre. Each layer's own e/D is checked, and where it falls short the automatic allowable is interpolated down to the e/D = 1.5 value (78 %) and flagged. Below e/D = 1.5 the part tears out rather than crushes, and this method no longer applies. Washers are exempt — they are confined in compression, not loaded by a pin.</li>" +
+    "<li>Washers carry their own material, so a nylon or aluminium washer is no longer treated as hardened steel. In the default stack the peak stress is under the nut, which is a washer face.</li>" +
+    "<li>Where left and right corner breaks differ, the larger one sizes the annulus, so the reported area is the conservative one.</li>" +
+    "<li>Thread geometry follows the ISO 68-1 60° profile: <code>d₂ = d − 0.649519·P</code>, <code>d₃ = d − 1.226869·P</code>, " +
+    "<code>A<sub>s</sub> = π/4·((d₂+d₃)/2)²</code>.</li></ul>";
+}
+function paintLen() {
+  const u = U();
+  let h = "<tbody>" +
+    grp("Stack") +
+    kvRow("Layer thickness total", vL(R.stackT), u.sL) +
+    kvRow("Grip length (nominal)", "<b>" + vL(R.Lg) + "</b>", u.sL) +
+    kvRow("Grip at max material", vL(R.Lmx), u.sL, true) +
+    kvRow("Grip at min material", vL(R.Lmn), u.sL, true) +
+    kvRow("Elements inside grip", R.grip.map(e => esc(e.name)).join(" · "), "", true) +
+    grp("Fastener length") +
+    kvRow("Bolt length used", "<b>" + vL(R.len.Lbolt, 1) + "</b>" + (S.lenMode === "auto" ? " " + chip("neutral", "auto") : ""), u.sL) +
+    kvRow("Length required", vL(R.len.Lreq), u.sL, true) +
+    kvRow("Next standard length", vL(R.len.Lrec, 1), u.sL) +
+    kvRow("Thread length b", vL(R.len.thrLen, 1) + (S.thrMode === "full" ? " " + chip("neutral", "full") : ""), u.sL, true) +
+    kvRow("Unthreaded shank", vL(R.len.shank, 1), u.sL, true);
+  if (!R.tapped) {
+    const need = num(S.minThr, 2);
+    h += grp("Threads past the nut") +
+      kvRow("Nut height", vL(R.nutH, 1), u.sL, true) +
+      kvRow("Protrusion beyond nut (nominal)", vL(R.len.protNom), u.sL) +
+      kvRow("Protrusion at max grip", vL(R.len.protMin), u.sL, true) +
+      kvRow("Threads past nut — minimum", "<b>" + fx(R.len.nMin, 2) + "</b>", chip(R.len.nMin >= need ? "ok" : "bad", "req " + fx(need, 1))) +
+      kvRow("Threads past nut — nominal / max", fx(R.len.nNom, 2) + " / " + fx(R.len.nMax, 2), "thr", true);
+  } else {
+    h += grp("Tapped engagement") +
+      kvRow("Tapped part", esc(R.tapElem ? R.tapElem.name : "—"), "") +
+      kvRow("Tap depth", vL(R.len.tapD, 1), u.sL) +
+      kvRow("Engagement at max grip", "<b>" + vL(R.len.LeAvail) + "</b>", u.sL) +
+      kvRow("Engagement nominal / min grip", vL(R.len.LeNom) + " / " + vL(R.len.LeMax), u.sL, true) +
+      kvRow("Threads engaged", fx(R.len.nEng, 2), "thr") +
+      kvRow("Engagement ratio L<sub>e</sub>/d", fx(R.len.LeRatio, 2), chip(R.len.LeAvail >= R.len.LeNeed ? "ok" : "bad", "need " + fx(R.len.LeNeed / R.d, 2) + "×d")) +
+      kvRow("Required by strength / rule of thumb", vL(R.len.LeStr) + " / " + vL(R.len.LeRule), u.sL, true) +
+      kvRow("Stripping capacity internal / external", vF(R.len.stripInt) + " / " + vF(R.len.stripExt), u.sF, true) +
+      kvRow("Stripping margin vs bolt UTS", fx(R.len.msStrip, 2), chip(statusOf(R.len.msStrip), R.len.msStrip >= 0 ? "bolt fails first" : "thread strips first"), true);
+  }
+  h += grp("Thread geometry") +
+    kvRow("Designation", "<b>" + S.size + " × " + fx(R.P, 2) + "</b>" + (S.pitchMode === "man" ? " " + chip("warn", "manual") : " " + chip("neutral", "ISO 261")), "") +
+    kvRow("Pitch diameter d₂", vL(R.d2), u.sL, true) +
+    kvRow("Minor diameter d₃ / D₁", vL(R.d3) + " / " + vL(R.D1), u.sL, true) +
+    kvRow("Tensile stress area A<sub>s</sub>", vA(R.As), u.sA) +
+    kvRow("Shank area A<sub>d</sub>", vA(R.Ash), u.sA, true) +
+    kvRow("Thread height H", vL(R.H), u.sL, true) +
+    "</tbody>";
+  $("#t-len").innerHTML = h;
+}
+function paintStiff() {
+  const u = U();
+  $("#t-stiff").innerHTML = "<tbody>" +
+    kvRow("Bolt stiffness k<sub>b</sub>", fx(R.kb * u.cK / 1000, 1), "k" + u.sK) +
+    kvRow("Member stiffness k<sub>m</sub>", R.kmOK ? fx(R.km * u.cK / 1000, 1) : "—", "k" + u.sK) +
+    kvRow("Load factor C = k<sub>b</sub>/(k<sub>b</sub>+k<sub>m</sub>)", fx(R.C, 3), chip("neutral", fx(R.C * 100, 1) + "% to bolt")) +
+    kvRow("External load per bolt", vF(R.Fext), u.sF) +
+    kvRow("Goes into the bolt", vF(R.C * R.Fext), u.sF) +
+    kvRow("Comes out of the clamp", vF((1 - R.C) * R.Fext), u.sF) +
+    kvRow("Separation load", Number.isFinite(R.Fsep) ? vF(R.Fsep) : "—", chip(R.Fext > 0 && R.Fsep < R.Fext ? "bad" : "ok", R.Fext > 0 ? fx(R.Fsep / Math.max(1, R.Fext), 2) + "× service" : "no service load")) +
+    '<tr><td colspan="3" style="text-align:left;white-space:normal;font-family:var(--f-body);font-size:11.5px;color:var(--ink-3);line-height:1.5">' +
+    "Member compliance is integrated slice by slice through the grip, so each layer contributes with its own modulus and hole. " +
+    "The compressed section grows at 30° from each bearing face to the mid-plane and is capped by each part's outside diameter." +
+    "</td></tr></tbody>";
+}
+function paintFlags() {
+  const order = {bad: 0, warn: 1, ok: 2};
+  const f = R.flags.slice().sort((a, b) => order[a.s] - order[b.s]);
+  $("#flags").innerHTML = f.length
+    ? f.map(x => '<div class="flag" data-s="' + x.s + '"><b>' + esc(x.t) + "</b><span>" + x.m + "</span></div>").join("")
+    : '<div class="flag" data-s="ok"><b>Clear</b><span>Every check passed.</span></div>';
+  const nb = f.filter(x => x.s === "bad").length, nw = f.filter(x => x.s === "warn").length;
+  const tag = $("#w-tag");
+  tag.className = "chip " + (nb ? "bad" : nw ? "warn" : "ok");
+  tag.textContent = nb ? nb + " fail · " + nw + " watch" : nw ? nw + " to watch" : "all clear";
+}
+function paintAll() {
+  paintKPIs(); paintLoad(); paintGeom(); paintBrg(); paintLen(); paintStiff(); paintFlags();
+  $("#f-tag").textContent = S.size + " × " + fx(R.P, 2) + " · " + (CLASSES[S.cls] || {}).name;
+  if (S.lenMode === "auto") { S.len = R.len.Lbolt; const el = $("#f-len"); if (el) el.value = R.len.Lbolt; }
+  $("#f-tapthr").value = S.term === "tap" ? S.size + " × " + fx(R.P, 2) + " (Ø" + fx(R.D1, 2) + " drill min)" : "—";
+  updateMeta();
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   9 — WORKBOOK SCHEMA (shared by export and import)
+   ═══════════════════════════════════════════════════════════════════════ */
+const JF = [
+  ["Joint ID",              () => S.meta.id,   v => S.meta.id = String(v), "s"],
+  ["Revision",              () => S.meta.rev,  v => S.meta.rev = String(v), "s"],
+  ["Prepared by",           () => S.meta.by,   v => S.meta.by = String(v), "s"],
+  ["Date",                  () => S.meta.date, v => S.meta.date = String(v), "s"],
+  ["Thread size",           () => S.size,      v => { if (FAST[String(v).toUpperCase()]) S.size = String(v).toUpperCase(); }, "s"],
+  ["Pitch mode",            () => S.pitchMode === "man" ? "manual" : "standard", v => S.pitchMode = /man/i.test(v) ? "man" : "std", "s"],
+  ["Pitch",                 () => S.pitch,     v => S.pitch = num(v, 1.5), "n"],
+  ["Bolt grade",            () => S.cls,       v => { if (CLASSES[v]) S.cls = v; }, "s"],
+  ["Head type",             () => S.head,      v => S.head = String(v), "s"],
+  ["Head bearing dia",      () => S.headDia,   v => S.headDia = num(v, 16), "n"],
+  ["Length mode",           () => S.lenMode,   v => S.lenMode = /man/i.test(v) ? "man" : "auto", "s"],
+  ["Bolt length",           () => S.len,       v => S.len = num(v, 40), "n"],
+  ["Threading",             () => S.thrMode,   v => S.thrMode = /part/i.test(v) ? "part" : "full", "s"],
+  ["Thread length b",       () => S.thrLen,    v => S.thrLen = num(v, 40), "n"],
+  ["Termination",           () => S.term,      v => S.term = /tap/i.test(v) ? "tap" : "nut", "s"],
+  ["Min threads past nut",  () => S.minThr,    v => S.minThr = num(v, 2), "n"],
+  ["Tap depth",             () => S.tapD,      v => S.tapD = num(v, 15), "n"],
+  ["Nut height",            () => S.nutH,      v => S.nutH = num(v, 8.4), "n"],
+  ["Nut bearing dia",       () => S.nutDw,     v => S.nutDw = num(v, 14.6), "n"],
+  ["Head washer",           () => (S.wh == 1 ? "yes" : "no"), v => S.wh = /y|1|true/i.test(String(v)) ? 1 : 0, "s"],
+  ["Head washer OD",        () => S.whOD,      v => S.whOD = num(v, 20), "n"],
+  ["Head washer t",         () => S.whT,       v => S.whT = num(v, 2), "n"],
+  ["Nut washer",            () => (S.wn == 1 ? "yes" : "no"), v => S.wn = /y|1|true/i.test(String(v)) ? 1 : 0, "s"],
+  ["Nut washer OD",         () => S.wnOD,      v => S.wnOD = num(v, 20), "n"],
+  ["Nut washer t",          () => S.wnT,       v => S.wnT = num(v, 2), "n"],
+  ["Preload mode",          () => S.loadMode,  v => S.loadMode = /pct|%/i.test(v) ? "pct" : /force|direct/i.test(v) ? "force" : "torque", "s"],
+  ["Torque",                () => S.torque,    v => S.torque = num(v, 45), "n"],
+  ["Nut factor K",          () => S.K,         v => S.K = num(v, 0.2), "n"],
+  ["Preload percent proof", () => S.pct,       v => S.pct = num(v, 65), "n"],
+  ["Direct preload kN",     () => S.force,     v => S.force = num(v, 20), "n"],
+  ["External tension kN",   () => S.ext,       v => S.ext = num(v, 0), "n"],
+  ["Tool scatter percent",  () => S.scatter,   v => S.scatter = num(v, 25), "n"],
+  ["Embedding loss percent",() => S.loss,      v => S.loss = num(v, 8), "n"]
+];
+const LC = (() => {
+  const a = [
+    ["Name",            (L) => L.name,     (L, v) => L.name = String(v), "s"],
+    ["Material key",    (L) => L.mat,      (L, v) => { const k = String(v).trim(); if (MATS[k]) L.mat = k; }, "s"],
+    ["Material",        (L) => (MATS[L.mat] || MATS.CUSTOM).n, null, "s"],
+    ["Thickness",       (L) => L.t,        (L, v) => L.t = num(v, 1), "n"],
+    ["Tol plus",        (L) => L.tp,       (L, v) => L.tp = num(v, 0), "n"],
+    ["Tol minus",       (L) => L.tm,       (L, v) => L.tm = num(v, 0), "n"],
+    ["Outside dia",     (L) => L.od,       (L, v) => L.od = num(v, 20), "n"],
+    ["Hole series",     (L) => L.holeMode, (L, v) => { const k = String(v).trim(); if (HOLE_SERIES[k]) L.holeMode = k; }, "s"],
+    ["Hole dia",        (L) => L.hole,     (L, v) => L.hole = num(v, 10), "n"],
+    ["Hole tol plus",   (L) => L.holeTol,  (L, v) => L.holeTol = num(v, 0), "n"],
+    ["Fty",             (L) => L.Fty,      (L, v) => L.Fty = num(v, 200), "n"],
+    ["Ftu",             (L) => L.Ftu,      (L, v) => L.Ftu = num(v, 250), "n"],
+    ["E",               (L) => L.E,        (L, v) => L.E = num(v, 70000), "n"],
+    ["Bearing factor k",(L) => L.kBrg,     (L, v) => L.kBrg = num(v, 1.5), "n"],
+    ["Bearing auto",    (L) => L.brgAuto ? "yes" : "no", (L, v) => L.brgAuto = /y|1|true/i.test(String(v)), "s"],
+    ["Bearing allowable",(L) => L.brgAuto ? num(L.Fty) * num(L.kBrg) : L.brgAllow, (L, v) => L.brgAllow = num(v, 300), "n"],
+    ["Mirror ID",       (L) => L.idLock ? "yes" : "no", (L, v) => L.idLock = /y|1|true/i.test(String(v)), "s"],
+    ["Mirror OD",       (L) => L.odLock ? "yes" : "no", (L, v) => L.odLock = /y|1|true/i.test(String(v)), "s"]
+  ];
+  [["ID", "idC"], ["OD", "odC"]].forEach(([tag, g]) => {
+    CNR_KEYS.forEach(k => {
+      const K = k.toUpperCase();
+      a.push([tag + " " + K + " type",  (L) => L[g][k].t, (L, v) => { const s = String(v).toLowerCase().trim(); L[g][k].t = (s === "chamfer" || s === "radius") ? s : "sharp"; }, "s"]);
+      a.push([tag + " " + K + " size",  (L) => L[g][k].s, (L, v) => L[g][k].s = num(v, 0), "n"]);
+      a.push([tag + " " + K + " angle", (L) => L[g][k].a, (L, v) => L[g][k].a = clamp(num(v, 45), 5, 85), "n"]);
+    });
+  });
+  return a;
+})();
+
+function jointAOA() {
+  const r = [["Bolted Joint Bench — joint definition", ""], ["Parameter", "Value"]];
+  JF.forEach(f => r.push([f[0], f[1]()]));
+  r.push(["", ""], ["Units", "mm · N · MPa · N·m"]);
+  return r;
+}
+function layersAOA() {
+  const head = ["#"].concat(LC.map(c => c[0]));
+  const rows = S.layers.map((L, i) => [i + 1].concat(LC.map(c => c[1](L))));
+  return [head].concat(rows);
+}
+function resultsAOA() {
+  const r = [["Bolted Joint Bench — results", "", ""], ["Quantity", "Value", "Unit"]];
+  const p = (k, v, u) => r.push([k, v, u]);
+  p("Designation", S.size + " x " + fx(R.P, 2), "");
+  p("Grade", (CLASSES[S.cls] || {}).name, "");
+  p("Tensile stress area As", R.As, "mm2");
+  p("Pitch diameter d2", R.d2, "mm");
+  p("Minor diameter d3", R.d3, "mm");
+  p("Nut minor diameter D1", R.D1, "mm");
+  p("Preload Fi", R.Fi, "N");
+  p("Preload max / min", R.FiMax, "N");
+  p("Preload min", R.FiMin, "N");
+  p("Bolt tension Fb", R.Fb, "N");
+  p("Bolt tensile stress", R.sigB, "MPa");
+  p("Percent of proof", R.pctProof, "%");
+  p("Residual clamp Fm", R.Fm, "N");
+  p("Separation load", Number.isFinite(R.Fsep) ? R.Fsep : "", "N");
+  p("Bolt stiffness kb", R.kb, "N/mm");
+  p("Member stiffness km", R.km, "N/mm");
+  p("Load factor C", R.C, "");
+  p("Grip length nominal", R.Lg, "mm");
+  p("Grip length min", R.Lmn, "mm");
+  p("Grip length max", R.Lmx, "mm");
+  p("Total layer thickness", R.stackT, "mm");
+  p("Bolt length used", R.len.Lbolt, "mm");
+  p("Bolt length required", R.len.Lreq, "mm");
+  p("Next standard length", R.len.Lrec, "mm");
+  if (!R.tapped) {
+    p("Nut height", R.nutH, "mm");
+    p("Protrusion past nut nominal", R.len.protNom, "mm");
+    p("Threads past nut minimum", R.len.nMin, "threads");
+    p("Threads past nut nominal", R.len.nNom, "threads");
+    p("Threads past nut maximum", R.len.nMax, "threads");
+    p("Minimum threads required", num(S.minThr, 2), "threads");
+  } else {
+    p("Tapped part", R.tapElem ? R.tapElem.name : "", "");
+    p("Engagement at max grip Le", R.len.LeAvail, "mm");
+    p("Threads engaged", R.len.nEng, "threads");
+    p("Le/d ratio", R.len.LeRatio, "");
+    p("Le required", R.len.LeNeed, "mm");
+    p("Stripping capacity internal", R.len.stripInt, "N");
+  }
+  p("Peak bearing stress", R.peak ? R.peak.sig : "", "MPa");
+  p("Minimum bearing area", R.minA ? R.minA.A : "", "mm2");
+  r.push(["", "", ""], ["Contact", "", ""],
+    ["Contact", "Inner dia mm", "Outer dia mm", "Area mm2", "Force N", "Stress MPa", "Allowable MPa", "Margin of safety", "Governing part"]);
+  R.contacts.forEach(c => r.push([c.label, c.idE, c.odE, c.A, c.force, c.sig, c.allow, c.ms, c.govern]));
+  r.push(["", "", ""], ["Checks", "", ""], ["Level", "Item", "Note"]);
+  R.flags.forEach(f => r.push([f.s === "bad" ? "FAIL" : f.s === "warn" ? "WATCH" : "OK", f.t, String(f.m).replace(/<[^>]+>/g, "")]));
+  return r;
+}
+
+/* ── minimal XLSX writer (stored-zip, no dependency) ───────────────── */
+const CRCT = (() => { const t = new Uint32Array(256); for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })();
+function crc32(u8) { let c = 0xFFFFFFFF; for (let i = 0; i < u8.length; i++) c = CRCT[(c ^ u8[i]) & 0xFF] ^ (c >>> 8); return (c ^ 0xFFFFFFFF) >>> 0; }
+const ENC = new TextEncoder();
+function zipStore(files) {
+  const parts = [], central = []; let off = 0;
+  const dt = new Date(), dosT = ((dt.getHours() << 11) | (dt.getMinutes() << 5) | (dt.getSeconds() >> 1)) & 0xFFFF;
+  const dosD = (((dt.getFullYear() - 1980) << 9) | ((dt.getMonth() + 1) << 5) | dt.getDate()) & 0xFFFF;
+  files.forEach(f => {
+    const name = ENC.encode(f.name), data = f.data, crc = crc32(data);
+    const lh = new Uint8Array(30 + name.length), v = new DataView(lh.buffer);
+    v.setUint32(0, 0x04034b50, true); v.setUint16(4, 20, true); v.setUint16(6, 0, true); v.setUint16(8, 0, true);
+    v.setUint16(10, dosT, true); v.setUint16(12, dosD, true); v.setUint32(14, crc, true);
+    v.setUint32(18, data.length, true); v.setUint32(22, data.length, true);
+    v.setUint16(26, name.length, true); v.setUint16(28, 0, true);
+    lh.set(name, 30);
+    parts.push(lh, data);
+    const ch = new Uint8Array(46 + name.length), w = new DataView(ch.buffer);
+    w.setUint32(0, 0x02014b50, true); w.setUint16(4, 20, true); w.setUint16(6, 20, true); w.setUint16(8, 0, true);
+    w.setUint16(10, 0, true); w.setUint16(12, dosT, true); w.setUint16(14, dosD, true); w.setUint32(16, crc, true);
+    w.setUint32(20, data.length, true); w.setUint32(24, data.length, true);
+    w.setUint16(28, name.length, true); w.setUint16(30, 0, true); w.setUint16(32, 0, true);
+    w.setUint16(34, 0, true); w.setUint16(36, 0, true); w.setUint32(38, 0, true); w.setUint32(42, off, true);
+    ch.set(name, 46);
+    central.push(ch);
+    off += lh.length + data.length;
+  });
+  const cdSize = central.reduce((a, c) => a + c.length, 0);
+  const eo = new Uint8Array(22), e = new DataView(eo.buffer);
+  e.setUint32(0, 0x06054b50, true); e.setUint16(8, files.length, true); e.setUint16(10, files.length, true);
+  e.setUint32(12, cdSize, true); e.setUint32(16, off, true);
+  return new Blob(parts.concat(central, [eo]), {type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"});
+}
+function colName(i) { let s = ""; i++; while (i > 0) { const m = (i - 1) % 26; s = String.fromCharCode(65 + m) + s; i = (i - 1 - m) / 26; } return s; }
+function xEsc(s) { return String(s).replace(/[&<>]/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;"}[c])).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, ""); }
+function sheetXml(aoa) {
+  let x = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetData>';
+  aoa.forEach((r, ri) => {
+    x += '<row r="' + (ri + 1) + '">';
+    r.forEach((cell, ci) => {
+      if (cell === null || cell === undefined || cell === "") return;
+      const ref = colName(ci) + (ri + 1);
+      if (typeof cell === "number" && Number.isFinite(cell)) x += '<c r="' + ref + '"><v>' + (Math.round(cell * 1e6) / 1e6) + "</v></c>";
+      else x += '<c r="' + ref + '" t="inlineStr"><is><t xml:space="preserve">' + xEsc(cell) + "</t></is></c>";
+    });
+    x += "</row>";
+  });
+  return x + "</sheetData></worksheet>";
+}
+function buildXlsx(sheets) {
+  const files = [];
+  const P = (n, s) => files.push({name: n, data: ENC.encode(s)});
+  P("[Content_Types].xml", '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">' +
+    '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/>' +
+    '<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>' +
+    sheets.map((s, i) => '<Override PartName="/xl/worksheets/sheet' + (i + 1) + '.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>').join("") + "</Types>");
+  P("_rels/.rels", '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' +
+    '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>');
+  P("xl/workbook.xml", '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets>' +
+    sheets.map((s, i) => '<sheet name="' + xEsc(s.name) + '" sheetId="' + (i + 1) + '" r:id="rId' + (i + 1) + '"/>').join("") + "</sheets></workbook>");
+  P("xl/_rels/workbook.xml.rels", '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' +
+    sheets.map((s, i) => '<Relationship Id="rId' + (i + 1) + '" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet' + (i + 1) + '.xml"/>').join("") + "</Relationships>");
+  sheets.forEach((s, i) => P("xl/worksheets/sheet" + (i + 1) + ".xml", sheetXml(s.aoa)));
+  return zipStore(files);
+}
+function exportExcel() {
+  const sheets = [{name: "Joint", aoa: jointAOA()}, {name: "Layers", aoa: layersAOA()}, {name: "Results", aoa: resultsAOA()}];
+  const fname = (S.meta.id || "joint").replace(/[^\w.-]+/g, "_") + "_rev" + (S.meta.rev || "A") + ".xlsx";
+  if (window.XLSX && XLSX.utils) {
+    const wb = XLSX.utils.book_new();
+    sheets.forEach(s => {
+      const ws = XLSX.utils.aoa_to_sheet(s.aoa);
+      ws["!cols"] = (s.aoa[1] || s.aoa[0] || []).map((_, i) => ({wch: i === 0 ? 34 : 15}));
+      XLSX.utils.book_append_sheet(wb, ws, s.name);
+    });
+    const out = XLSX.write(wb, {bookType: "xlsx", type: "array"});
+    download(fname, new Blob([out], {type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"}));
+  } else {
+    download(fname, buildXlsx(sheets));
+  }
+  toast("Exported " + fname);
+}
+
+/* ── import ─────────────────────────────────────────────────────────── */
+function parseCSV(text) {
+  const rows = []; let row = [], cur = "", q = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (q) {
+      if (c === '"') { if (text[i + 1] === '"') { cur += '"'; i++; } else q = false; }
+      else cur += c;
+    } else if (c === '"') q = true;
+    else if (c === "," || c === ";" || c === "\t") { row.push(cur); cur = ""; }
+    else if (c === "\n") { row.push(cur); rows.push(row); row = []; cur = ""; }
+    else if (c !== "\r") cur += c;
+  }
+  if (cur !== "" || row.length) { row.push(cur); rows.push(row); }
+  return rows.filter(r => r.some(x => String(x).trim() !== ""));
+}
+const norm = (s) => String(s == null ? "" : s).toLowerCase().replace(/[^a-z0-9]+/g, "");
+function applyJointRows(rows) {
+  const map = {}; JF.forEach(f => map[norm(f[0])] = f);
+  let hit = 0;
+  rows.forEach(r => {
+    if (!r || r.length < 2) return;
+    const f = map[norm(r[0])];
+    if (f && r[1] !== "" && r[1] !== null && r[1] !== undefined) { f[2](r[1]); hit++; }
+  });
+  return hit;
+}
+function applyLayerRows(rows) {
+  if (!rows.length) return 0;
+  let hi = rows.findIndex(r => r.some(c => norm(c) === "thickness"));
+  if (hi < 0) hi = 0;
+  const head = rows[hi].map(norm);
+  const idx = {}; LC.forEach(c => { const j = head.indexOf(norm(c[0])); if (j >= 0) idx[c[0]] = j; });
+  if (idx["Thickness"] === undefined) return 0;
+  const out = [];
+  for (let i = hi + 1; i < rows.length; i++) {
+    const r = rows[i];
+    if (!r || r.every(c => String(c).trim() === "")) continue;
+    if (String(r[idx["Thickness"]]).trim() === "" && String(r[idx["Name"]] || "").trim() === "") continue;
+    const L = newLayer();
+    LC.forEach(c => { const j = idx[c[0]]; if (j !== undefined && c[2] && r[j] !== undefined && r[j] !== "") c[2](L, r[j]); });
+    L.id = uid();
+    if (L.holeMode !== "custom") { const F = FAST[S.size] || FAST.M10; L.hole = F.holes[L.holeMode] || L.hole; }
+    out.push(L);
+  }
+  if (!out.length) return 0;
+  S.layers = out;
+  return out.length;
+}
+function importWorkbook(file) {
+  const isCSV = /\.csv$/i.test(file.name);
+  const rd = new FileReader();
+  rd.onerror = () => toast("Could not read that file.");
+  rd.onload = () => {
+    try {
+      let nJ = 0, nL = 0;
+      if (isCSV) {
+        nL = applyLayerRows(parseCSV(String(rd.result)));
+        if (!nL) { toast("No Layers header found in that CSV — expected a row containing “Thickness”."); return; }
+      } else if (window.XLSX) {
+        const wb = XLSX.read(new Uint8Array(rd.result), {type: "array"});
+        const get = (want) => {
+          const nm = wb.SheetNames.find(n => norm(n) === want);
+          return nm ? XLSX.utils.sheet_to_json(wb.Sheets[nm], {header: 1, raw: true, defval: ""}) : null;
+        };
+        const j = get("joint"), l = get("layers");
+        if (j) nJ = applyJointRows(j);
+        if (l) nL = applyLayerRows(l);
+        if (!j && !l) {
+          const first = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], {header: 1, raw: true, defval: ""});
+          nL = applyLayerRows(first); nJ = applyJointRows(first);
+        }
+        if (!nJ && !nL) { toast("That workbook has no Joint or Layers sheet to read."); return; }
+      } else {
+        toast("Excel import needs the SheetJS library, which could not load. Save the sheet as CSV and import that.");
+        return;
+      }
+      if (S.pitchMode === "std") {
+        const ps = (FAST[S.size] || FAST.M10).pitches;
+        if (!ps.some(p => Math.abs(p - num(S.pitch)) < 1e-6)) S.pitch = ps[0];
+      }
+      syncSizeDefaults(false);
+      applyStateToInputs(); renderStack(); refresh(true);
+      toast("Imported " + nL + " layer" + (nL === 1 ? "" : "s") + (nJ ? " and " + nJ + " joint settings" : ""));
+    } catch (err) {
+      toast("Import failed: " + (err && err.message ? err.message : "unreadable file"));
+    }
+  };
+  if (isCSV) rd.readAsText(file); else rd.readAsArrayBuffer(file);
+}
+
+/* ── JSON + SVG ─────────────────────────────────────────────────────── */
+function exportJSON() {
+  const name = (S.meta.id || "joint").replace(/[^\w.-]+/g, "_") + "_rev" + (S.meta.rev || "A") + ".json";
+  download(name, new Blob([JSON.stringify({app: "bolted-joint-bench", v: 1, state: S}, null, 2)], {type: "application/json"}));
+  toast("Saved " + name);
+}
+function importJSON(file) {
+  const rd = new FileReader();
+  rd.onload = () => {
+    try {
+      const o = JSON.parse(String(rd.result));
+      const st = o && o.state ? o.state : o;
+      if (!st || !Array.isArray(st.layers)) throw new Error("no layer list in that file");
+      S = mergeState(st);
+      AN.clear(); applyStateToInputs(); renderStack(); refresh(true);
+      toast("Loaded " + (S.meta.id || "joint"));
+    } catch (e) { toast("Could not read that JSON: " + e.message); }
+  };
+  rd.readAsText(file);
+}
+function exportSVG() {
+  const svg = $("#view svg"); if (!svg) return;
+  const cs = getComputedStyle(document.documentElement);
+  const toks = ["--ink", "--ink-2", "--ink-3", "--line", "--line-2", "--line-3", "--surface", "--surface-2", "--surface-3", "--accent", "--blueprint", "--ok", "--warn", "--bad", "--f-mono"];
+  const decl = toks.map(t => t + ":" + cs.getPropertyValue(t).trim()).join(";");
+  const clone = svg.cloneNode(true);
+  clone.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+  const st = document.createElementNS("http://www.w3.org/2000/svg", "style");
+  st.textContent = "svg{" + decl + ";background:" + cs.getPropertyValue("--surface-2").trim() + "}";
+  clone.insertBefore(st, clone.firstChild);
+  download((S.meta.id || "joint") + "_section.svg", new Blob([clone.outerHTML], {type: "image/svg+xml"}));
+  toast("Section exported as SVG");
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   9b — SELF-VALIDATION
+   Assertions against published data and against the engine's own internal
+   consistency. They run in the page, against the same functions the results
+   come from, so a regression here is a regression the user can see.
+   ═══════════════════════════════════════════════════════════════════════ */
+/* ISO 898-1 nominal tensile stress areas, mm² — coarse pitch */
+const AS_TABLE = {M3: 5.03, M4: 8.78, M5: 14.2, M6: 20.1, M8: 36.6, M10: 58.0,
+                  M12: 84.3, M14: 115, M16: 157, M18: 193, M20: 245};
+
+function runValidation() {
+  const suites = [];
+  const near = (a, b, tol) => Math.abs(a - b) <= Math.abs(b) * (tol === undefined ? 1e-9 : tol) + 1e-12;
+  const keep = S, keepU = UNITS;
+  UNITS = "si";
+
+  /* 1 — thread geometry against the standard's own table */
+  (function () {
+    const fails = [];
+    let n = 0;
+    Object.keys(AS_TABLE).forEach(sz => {
+      S = sampleState(); S.size = sz; S.pitch = FAST[sz].pitches[0];
+      const r = compute(); n++;
+      if (!near(r.As, AS_TABLE[sz], 0.004)) fails.push(sz + ": As = " + fx(r.As, 2) + " vs " + AS_TABLE[sz] + " tabulated");
+      /* ISO 68-1 profile identities */
+      if (!near(r.d2, r.d - 0.649519 * r.P)) fails.push(sz + ": pitch diameter");
+      if (!near(r.H, 0.8660254 * r.P)) fails.push(sz + ": thread height");
+    });
+    suites.push({n: "Thread geometry vs ISO 898-1 / ISO 68-1", c: n, u: "sizes", fails,
+      d: "Tensile stress area for every coarse-pitch size from M3 to M20, within 0.4 % of the tabulated value, plus the pitch- and minor-diameter identities."});
+  })();
+
+  /* 2 — bearing areas are true annuli and respond to corner breaks */
+  (function () {
+    const fails = []; let n = 0;
+    S = sampleState(); S.layers.forEach(L => { L.idC = cornerSet("sharp", 0, 45); L.odC = cornerSet("sharp", 0, 45); });
+    const r0 = compute();
+    r0.contacts.forEach(c => {
+      n++;
+      const geo = PI / 4 * (c.odE * c.odE - c.idE * c.idE);
+      if (!near(c.A, geo, 1e-9)) fails.push(c.label + ": area is not π/4·(D²−d²)");
+      if (!near(c.sig, c.force / c.A, 1e-9)) fails.push(c.label + ": σ ≠ F/A");
+    });
+    /* adding a 1 mm ID chamfer must open the inner diameter by exactly 2 mm */
+    S.layers[0].idC = cornerSet("chamfer", 1, 45);
+    const r1 = compute();
+    n++;
+    const before = r0.contacts[1].idE, after = r1.contacts[1].idE;
+    if (!near(after - before, 2, 1e-6)) fails.push("a 1 mm ID chamfer moved the inner Ø by " + fx(after - before, 3) + " mm, expected 2.000");
+    suites.push({n: "Bearing geometry", c: n, u: "contacts", fails,
+      d: "Every contact area equals π/4·(Ø outer² − Ø inner²), every stress equals force over that area, and a 1 mm corner break opens the annulus by exactly 2 mm."});
+  })();
+
+  /* 3 — grip, length and thread count arithmetic */
+  (function () {
+    const fails = []; let n = 0;
+    S = sampleState();
+    const r = compute(); n++;
+    const sum = r.grip.reduce((a, e) => a + e.t, 0);
+    if (!near(r.Lg, sum, 1e-9)) fails.push("grip ≠ sum of the elements inside it");
+    if (!(r.Lmn <= r.Lg && r.Lg <= r.Lmx)) fails.push("nominal grip outside the tolerance band");
+    const nThr = (r.len.Lbolt - r.Lmx - r.nutH) / r.P;
+    if (!near(r.len.nMin, nThr, 1e-9)) fails.push("threads past nut ≠ (L − grip_max − nut height) / pitch");
+    n++;
+    /* auto length must be the shortest standard length that still passes */
+    S.lenMode = "auto"; const ra = compute(); n++;
+    if (ra.len.nMin < num(S.minThr, 2) - 1e-9) fails.push("auto length does not meet the required thread protrusion");
+    const smaller = STD_LEN.filter(x => x < ra.len.Lbolt).pop();
+    if (smaller && (smaller - ra.Lmx - ra.nutH) / ra.P >= num(S.minThr, 2)) fails.push("auto length is not the shortest that passes");
+    suites.push({n: "Grip and length arithmetic", c: n, u: "cases", fails,
+      d: "Grip is the sum of the clamped elements and sits inside its own tolerance band; thread protrusion follows from maximum grip; the automatic length is the shortest standard size that still clears the nut."});
+  })();
+
+  /* 4 — stiffness, load sharing and equilibrium */
+  (function () {
+    const fails = []; let n = 0;
+    S = sampleState(); const r = compute(); n++;
+    if (!(r.C > 0 && r.C < 1)) fails.push("load factor C outside 0…1");
+    if (!near(r.C, r.kb / (r.kb + r.km), 1e-9)) fails.push("C ≠ kb/(kb+km)");
+    /* the external load must split exactly between bolt and joint */
+    const toBolt = r.C * r.Fext, offClamp = (1 - r.C) * r.Fext;
+    if (!near(toBolt + offClamp, r.Fext, 1e-9)) fails.push("external load does not split to unity");
+    n++;
+    /* a stiffer stack must send less load into the bolt */
+    S = sampleState(); S.layers.forEach(L => { L.mat = "ST4140"; L.E = MATS.ST4140.E; });
+    const rs = compute(); n++;
+    if (!(rs.C < r.C)) fails.push("steel members did not lower the bolt load factor (" + fx(rs.C, 3) + " vs " + fx(r.C, 3) + ")");
+    suites.push({n: "Stiffness and load sharing", c: n, u: "cases", fails,
+      d: "The load factor equals kb/(kb+km) and lies between 0 and 1, the external load splits exactly between bolt and members, and stiffer members demonstrably take load off the bolt."});
+  })();
+
+  /* 5 — the workbook round-trips */
+  (function () {
+    const fails = []; let n = 0;
+    S = sampleState();
+    const before = JSON.parse(JSON.stringify(S));
+    const j = jointAOA(), l = layersAOA();
+    S = sampleState(); S.size = "M16"; S.torque = 999; S.layers = [newLayer({name: "scratch", t: 99})];
+    applyJointRows(j); applyLayerRows(l);
+    n++;
+    if (S.size !== before.size || !near(S.torque, before.torque)) fails.push("joint settings did not survive the round-trip");
+    if (S.layers.length !== before.layers.length) fails.push("layer count changed");
+    before.layers.forEach((L0, i) => {
+      const L = S.layers[i]; if (!L) return;
+      n++;
+      if (L.name !== L0.name || !near(L.t, L0.t) || !near(L.od, L0.od)) fails.push("layer " + (i + 1) + " basic fields differ");
+      CNR_KEYS.forEach(k => ["idC", "odC"].forEach(g => {
+        if (L[g][k].t !== L0[g][k].t || !near(L[g][k].s, L0[g][k].s, 1e-9)) fails.push("layer " + (i + 1) + " " + g + "." + k + " differs");
+      }));
+    });
+    suites.push({n: "Excel round-trip", c: n, u: "records", fails,
+      d: "The Joint and Layers sheets are written, the state is wiped, and the sheets are read back. Every field returns, including all eight corner callouts on every layer."});
+  })();
+
+  /* 6 — the edge-distance rule behaves at its own boundaries */
+  (function () {
+    const fails = []; let n = 0;
+    [[2.0, 1], [1.5, 0.78], [1.75, 0.89], [3, 1], [1.0, 0.78]].forEach(([eD, want]) => {
+      n++;
+      if (!near(edgeKnock(eD), want, 1e-9)) fails.push("e/D " + eD + " gave " + fx(edgeKnock(eD), 3) + ", expected " + want);
+    });
+    S = sampleState(); S.layers.forEach(L => L.od = 4 * L.hole);
+    const r = compute(); n++;
+    if (r.chain.some(e => e.kind === "layer" && e.knock < 1)) fails.push("a knock-down was applied at e/D = 2.0");
+    if (r.chain.some(e => e.kind === "washer" && e.knock !== 1)) fails.push("a washer was given an edge-distance knock-down");
+    suites.push({n: "Edge-distance rule", c: n, u: "points", fails,
+      d: "The allowable is untouched at e/D ≥ 2.0, interpolates to 78 % at e/D = 1.5, holds there below it, and is never applied to a washer."});
+  })();
+
+  S = keep; UNITS = keepU;
+  return suites;
+}
+function paintValidation() {
+  const suites = runValidation();
+  const tot = suites.reduce((a, s) => a + s.c, 0);
+  const bad = suites.reduce((a, s) => a + s.fails.length, 0);
+  $("#v-out").innerHTML = suites.map(s =>
+    '<div class="flag" data-s="' + (s.fails.length ? "bad" : "ok") + '"><b>' + (s.fails.length ? "FAIL" : "PASS") + "</b><span>" +
+    "<b>" + esc(s.n) + "</b> — " + s.c + " " + esc(s.u) + " checked<br>" +
+    '<span style="color:var(--ink-3)">' + esc(s.d) + "</span>" +
+    (s.fails.length ? '<br><span style="color:var(--bad)">' + s.fails.map(esc).join("<br>") + "</span>" : "") +
+    "</span></div>").join("");
+  const tag = $("#v-sum");
+  tag.className = "chip " + (bad ? "bad" : "ok");
+  tag.textContent = bad ? bad + " failed of " + tot : tot + " checks passed";
+  refresh();
+  return {tot, bad};
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   10 — STATE PLUMBING
+   ═══════════════════════════════════════════════════════════════════════ */
+function mergeState(raw) {
+  const d = sampleState(), out = Object.assign({}, d, raw || {});
+  out.meta = Object.assign({}, d.meta, raw && raw.meta);
+  out.opts = Object.assign({}, d.opts, raw && raw.opts);
+  out.layers = (Array.isArray(raw && raw.layers) ? raw.layers : d.layers).map(L => {
+    const base = newLayer();
+    const m = Object.assign(base, L);
+    m.id = L && L.id ? L.id : uid();
+    ["idC", "odC"].forEach(g => {
+      const src = (L && L[g]) || {};
+      m[g] = {};
+      CNR_KEYS.forEach(k => {
+        const c = src[k] || {};
+        m[g][k] = {t: c.t === "chamfer" || c.t === "radius" ? c.t : "sharp", s: num(c.s, 0.5), a: clamp(num(c.a, 45), 5, 85)};
+      });
+    });
+    return m;
+  });
+  if (!FAST[out.size]) out.size = "M10";
+  return out;
+}
+function syncSizeDefaults(alsoPitch) {
+  const F = FAST[S.size] || FAST.M10;
+  if (alsoPitch !== false && S.pitchMode === "std") {
+    if (!F.pitches.some(p => Math.abs(p - num(S.pitch)) < 1e-6)) S.pitch = F.pitches[0];
+  }
+  S.headDia = S.head === "socket" ? F.dk : S.head === "hex" ? F.dwHex : S.head === "flange" ? F.flange : num(S.headDia, F.dk);
+  S.nutH = F.nutH; S.nutDw = F.nutDw;
+  S.whOD = F.wOD; S.whT = F.wT; S.wnOD = F.wOD; S.wnT = F.wT;
+  S.layers.forEach(L => { if (L.holeMode !== "custom") L.hole = F.holes[L.holeMode] || L.hole; });
+}
+function buildSelects() {
+  $("#f-size").innerHTML = SIZES.map(s => '<option value="' + s + '">' + s + " (Ø" + FAST[s].d + ")</option>").join("");
+  $("#f-class").innerHTML = Object.keys(CLASSES).map(k => '<option value="' + k + '">' + esc(CLASSES[k].name) + "</option>").join("");
+  const mopts = Object.keys(MATS).map(k => '<option value="' + k + '">' + esc(MATS[k].n) + "</option>").join("");
+  $("#f-whmat").innerHTML = mopts; $("#f-wnmat").innerHTML = mopts;
+  buildPitchOpts();
+}
+function buildPitchOpts() {
+  const F = FAST[S.size] || FAST.M10;
+  $("#f-pitch-mode").innerHTML = F.pitches.map((p, i) =>
+    '<option value="' + p + '">' + (i === 0 ? "Coarse" : "Fine") + " " + p + "</option>").join("") +
+    '<option value="man">Manual entry</option>';
+  $("#f-pitch-mode").value = S.pitchMode === "man" ? "man" : String(S.pitch);
+  if ($("#f-pitch-mode").value === "" || $("#f-pitch-mode").selectedIndex < 0) {
+    $("#f-pitch-mode").value = String(F.pitches[0]); S.pitch = F.pitches[0];
+  }
+}
+function applyStateToInputs() {
+  const set = (id, v) => { const el = $(id); if (el) el.value = v; };
+  set("#m-id", S.meta.id); set("#m-rev", S.meta.rev); set("#m-by", S.meta.by); set("#m-date", S.meta.date);
+  set("#f-size", S.size); buildPitchOpts(); set("#f-pitch", S.pitch); set("#f-class", S.cls);
+  set("#f-head", S.head); set("#f-headdia", fx(num(S.headDia), 2).replace(/,/g, ""));
+  set("#f-lenmode", S.lenMode); set("#f-len", S.len);
+  set("#f-thrmode", S.thrMode); set("#f-thrlen", S.thrLen);
+  set("#f-term", S.term); set("#f-minthr", S.minThr);
+  set("#f-nuth", S.nutH); set("#f-nutdw", S.nutDw); set("#f-tapd", S.tapD);
+  set("#f-wh", String(S.wh)); set("#f-whod", S.whOD); set("#f-wht", S.whT); set("#f-whmat", S.whMat || "STHARD");
+  set("#f-wn", String(S.wn)); set("#f-wnod", S.wnOD); set("#f-wnt", S.wnT); set("#f-wnmat", S.wnMat || "STHARD");
+  set("#l-mode", S.loadMode); set("#l-torque", S.torque); set("#l-k", S.K); set("#l-pct", S.pct);
+  set("#l-force", S.force); set("#l-ext", S.ext); set("#l-scatter", S.scatter); set("#l-loss", S.loss);
+  ["dims", "zones", "cone", "hatch", "labels"].forEach(k => { const el = $("#o-" + k); if (el) el.checked = !!S.opts[k]; });
+  const m = S.mode === "basic" ? "basic" : "advanced";
+  S.mode = m;
+  document.documentElement.dataset.mode = m;
+  $("#mode-basic").setAttribute("aria-pressed", String(m === "basic"));
+  $("#mode-adv").setAttribute("aria-pressed", String(m === "advanced"));
+  gateInputs();
+}
+function gateInputs() {
+  const man = S.pitchMode === "man", tap = S.term === "tap";
+  /* show only the fields the chosen termination actually uses */
+  const showIf = (sel, on) => { const el = $(sel); if (el) { const w = el.closest(".field"); if (w) w.hidden = !on; } };
+  showIf("#f-tapd", tap); showIf("#f-tapthr", tap);
+  showIf("#f-nuth", !tap); showIf("#f-nutdw", !tap); showIf("#f-minthr", !tap);
+  showIf("#f-wn", !tap); showIf("#f-wnod", !tap);
+  $("#f-pitch").disabled = !man;
+  $("#f-len").disabled = S.lenMode !== "man";
+  $("#f-thrlen").disabled = S.thrMode !== "part";
+  $("#f-tapd").disabled = !tap;
+  $("#f-nuth").disabled = tap; $("#f-nutdw").disabled = tap;
+  $("#f-wn").disabled = tap; $("#f-wnod").disabled = tap || S.wn != 1; $("#f-wnt").disabled = tap || S.wn != 1;
+  $("#f-whod").disabled = S.wh != 1; $("#f-wht").disabled = S.wh != 1;
+  $("#f-minthr").disabled = tap;
+  $("#l-torque").disabled = S.loadMode !== "torque"; $("#l-k").disabled = S.loadMode !== "torque";
+  $("#l-pct").disabled = S.loadMode !== "pct";
+  $("#l-force").disabled = S.loadMode !== "force";
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   11 — REFRESH + PERSISTENCE
+   ═══════════════════════════════════════════════════════════════════════ */
+const KEY = "boltedJointBench.v1";
+let saveT = 0;
+function save() {
+  clearTimeout(saveT);
+  saveT = setTimeout(() => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { /* private mode */ } }, 400);
+}
+function load() {
+  try { const raw = localStorage.getItem(KEY); if (raw) return mergeState(JSON.parse(raw)); } catch (e) { }
+  return null;
+}
+function refresh(reanimate) {
+  compute();
+  paintAll();
+  if (reanimate) { AN.forEach(a => { a.t = Math.min(a.t, a.tt); }); }
+  animate();
+  save();
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   12 — EVENTS
+   ═══════════════════════════════════════════════════════════════════════ */
+function bindFastener() {
+  const on = (id, ev, fn) => { const el = $(id); if (el) el.addEventListener(ev, fn); };
+  ["#m-id", "#m-rev", "#m-by", "#m-date"].forEach(id => on(id, "input", e => {
+    S.meta[id.slice(3)] = e.target.value; save();
+  }));
+  on("#f-size", "change", e => {
+    S.size = e.target.value; syncSizeDefaults(true); applyStateToInputs(); renderStack(); refresh();
+  });
+  on("#f-pitch-mode", "change", e => {
+    if (e.target.value === "man") S.pitchMode = "man";
+    else { S.pitchMode = "std"; S.pitch = num(e.target.value, 1.5); $("#f-pitch").value = S.pitch; }
+    gateInputs(); refresh();
+  });
+  on("#f-pitch", "input", e => { S.pitch = clamp(num(e.target.value, 1), 0.05, 8); refresh(); });
+  on("#f-class", "change", e => { S.cls = e.target.value; refresh(); });
+  on("#f-head", "change", e => {
+    S.head = e.target.value; const F = FAST[S.size];
+    if (S.head !== "custom") S.headDia = S.head === "socket" ? F.dk : S.head === "hex" ? F.dwHex : F.flange;
+    $("#f-headdia").value = S.headDia; refresh();
+  });
+  on("#f-headdia", "input", e => { S.headDia = num(e.target.value, 16); refresh(); });
+  on("#f-lenmode", "change", e => { S.lenMode = e.target.value; gateInputs(); if (S.lenMode === "man" && R) { S.len = R.len.Lrec; $("#f-len").value = S.len; } refresh(); });
+  on("#f-len", "input", e => { S.len = num(e.target.value, 40); refresh(); });
+  on("#f-thrmode", "change", e => { S.thrMode = e.target.value; gateInputs(); refresh(); });
+  on("#f-thrlen", "input", e => { S.thrLen = num(e.target.value, 30); refresh(); });
+  on("#f-term", "change", e => {
+    S.term = e.target.value;
+    if (S.term === "tap") {
+      const last = S.layers[S.layers.length - 1];
+      if (last) S.tapD = Math.round(Math.max(1, num(last.t, 10)) * 10) / 10;
+      $("#f-tapd").value = S.tapD;
+    }
+    gateInputs(); refresh();
+  });
+  on("#f-minthr", "input", e => { S.minThr = num(e.target.value, 2); refresh(); });
+  on("#f-nuth", "input", e => { S.nutH = num(e.target.value, 8); refresh(); });
+  on("#f-nutdw", "input", e => { S.nutDw = num(e.target.value, 14); refresh(); });
+  on("#f-tapd", "input", e => { S.tapD = num(e.target.value, 15); refresh(); });
+  on("#f-wh", "change", e => { S.wh = num(e.target.value, 1); gateInputs(); refresh(); });
+  on("#f-wn", "change", e => { S.wn = num(e.target.value, 1); gateInputs(); refresh(); });
+  [["#f-whod", "whOD"], ["#f-wht", "whT"], ["#f-wnod", "wnOD"], ["#f-wnt", "wnT"]].forEach(([id, k]) =>
+    on(id, "input", e => { S[k] = num(e.target.value, 2); refresh(); }));
+  [["#f-whmat", "whMat"], ["#f-wnmat", "wnMat"]].forEach(([id, k]) =>
+    on(id, "change", e => { S[k] = e.target.value; refresh(); }));
+  on("#l-mode", "change", e => { S.loadMode = e.target.value; gateInputs(); refresh(); });
+  [["#l-torque", "torque"], ["#l-k", "K"], ["#l-pct", "pct"], ["#l-force", "force"], ["#l-ext", "ext"], ["#l-scatter", "scatter"], ["#l-loss", "loss"]]
+    .forEach(([id, k]) => on(id, "input", e => { S[k] = num(e.target.value, 0); refresh(); }));
+  ["dims", "zones", "cone", "hatch", "labels"].forEach(k =>
+    on("#o-" + k, "change", e => { S.opts[k] = e.target.checked; drawSection(); save(); }));
+  on("#o-svg", "click", exportSVG);
+}
+
+function bindStack() {
+  const host = $("#stack");
+  const findL = (id) => S.layers.find(x => x.id === id);
+  const mirrorPartner = (k) => ({tl: "tr", tr: "tl", bl: "br", br: "bl"}[k]);
+
+  host.addEventListener("input", e => {
+    const t = e.target, id = t.dataset.id; if (!id) return;
+    const L = findL(id); if (!L) return;
+    if (t.dataset.simple) {
+      const g = t.dataset.simple === "id" ? L.idC : L.odC, p = t.dataset.p, box = t.closest(".cnr");
+      const ref = {t: g.tl.t, s: g.tl.s, a: g.tl.a};
+      if (p === "t") ref.t = t.value;
+      else if (p === "s") ref.s = Math.max(0, num(t.value, 0));
+      else ref.a = clamp(num(t.value, 45), 5, 85);
+      CNR_KEYS.forEach(k => g[k] = {t: ref.t, s: ref.s, a: ref.a});
+      box.dataset.t = ref.t;
+      $$("input", box).forEach(el => {
+        if (el.dataset.p === "s") el.disabled = ref.t === "sharp";
+        if (el.dataset.p === "a") el.disabled = ref.t !== "chamfer";
+      });
+      const note = box.parentElement.querySelector(".mixed"); if (note) note.remove();
+      refresh(); return;
+    }
+    if (t.dataset.cnr) {
+      const [g, k] = t.dataset.cnr.split(".");
+      const grp = g === "id" ? L.idC : L.odC, p = t.dataset.p;
+      const c = grp[k];
+      if (p === "t") c.t = t.value;
+      else if (p === "s") c.s = Math.max(0, num(t.value, 0));
+      else c.a = clamp(num(t.value, 45), 5, 85);
+      const locked = g === "id" ? L.idLock : L.odLock;
+      if (locked) {
+        const pk = mirrorPartner(k);
+        grp[pk] = {t: c.t, s: c.s, a: c.a};
+        const sel = '[data-id="' + id + '"][data-cnr="' + g + "." + pk + '"]';
+        $$(sel, host).forEach(el => {
+          const pp = el.dataset.p;
+          el.value = pp === "t" ? grp[pk].t : pp === "s" ? grp[pk].s : grp[pk].a;
+          if (pp === "s") el.disabled = grp[pk].t === "sharp";
+          if (pp === "a") el.disabled = grp[pk].t !== "chamfer";
+        });
+        const box = $$(sel, host)[0]; if (box) box.closest(".cnr").dataset.t = grp[pk].t;
+      }
+      if (p === "t") {
+        const wrap = t.closest(".cnr"); wrap.dataset.t = c.t;
+        $$("input", wrap).forEach(el => {
+          if (el.dataset.p === "s") el.disabled = c.t === "sharp";
+          if (el.dataset.p === "a") el.disabled = c.t !== "chamfer";
+        });
+      }
+      refresh(); return;
+    }
+    if (t.dataset.lock) { L[t.dataset.lock + "Lock"] = t.checked; save(); return; }
+    const f = t.dataset.f; if (!f) return;
+    if (f === "name") { L.name = t.value; updateMeta(); paintGeom(); save(); return; }
+    if (f === "mat") {
+      const m = MATS[t.value] || MATS.CUSTOM;
+      L.mat = t.value; L.Fty = m.Fty; L.Ftu = m.Ftu; L.E = m.E; L.kBrg = m.k;
+      const card = t.closest(".layer");
+      card.querySelector('[data-f="Fty"]').value = m.Fty;
+      card.querySelector('[data-f="Ftu"]').value = m.Ftu;
+      card.querySelector('[data-f="E"]').value = m.E;
+      card.querySelector('[data-f="kBrg"]').value = m.k;
+      if (L.brgAuto) card.querySelector('[data-f="brgAllow"]').value = fx(m.Fty * m.k, 0);
+      card.querySelector(".swatch").style.background = m.c;
+      refresh(); return;
+    }
+    if (f === "holeMode") {
+      L.holeMode = t.value;
+      const F = FAST[S.size] || FAST.M10;
+      const inp = t.closest(".layer").querySelector('[data-f="hole"]');
+      if (L.holeMode !== "custom") { L.hole = F.holes[L.holeMode]; inp.value = L.hole; }
+      inp.disabled = L.holeMode !== "custom";
+      refresh(); return;
+    }
+    if (f === "brgAuto") {
+      L.brgAuto = t.checked;
+      const card = t.closest(".layer");
+      card.querySelector('[data-f="kBrg"]').disabled = !L.brgAuto;
+      const ba = card.querySelector('[data-f="brgAllow"]');
+      ba.disabled = L.brgAuto;
+      if (L.brgAuto) ba.value = fx(num(L.Fty) * num(L.kBrg), 0); else L.brgAllow = num(ba.value, 300);
+      refresh(); return;
+    }
+    L[f] = num(t.value, 0);
+    if (f === "Fty" || f === "kBrg") {
+      const card = t.closest(".layer"), ba = card.querySelector('[data-f="brgAllow"]');
+      if (L.brgAuto && ba) ba.value = fx(num(L.Fty) * num(L.kBrg), 0);
+    }
+    updateMeta(); refresh();
+  });
+
+  host.addEventListener("click", e => {
+    const b = e.target.closest("button[data-act]"); if (!b) return;
+    const id = b.dataset.id, act = b.dataset.act;
+    const i = S.layers.findIndex(x => x.id === id); if (i < 0) return;
+    const L = S.layers[i];
+    if (act === "toggle") { L.collapsed = !L.collapsed; b.closest(".layer").dataset.collapsed = L.collapsed ? 1 : 0; save(); return; }
+    if (act === "up" && i > 0) { S.layers.splice(i - 1, 0, S.layers.splice(i, 1)[0]); }
+    else if (act === "dn" && i < S.layers.length - 1) { S.layers.splice(i + 1, 0, S.layers.splice(i, 1)[0]); }
+    else if (act === "dup") {
+      const copy = mergeState({layers: [JSON.parse(JSON.stringify(L))]}).layers[0];
+      copy.id = uid(); copy.name = L.name + " copy";
+      S.layers.splice(i + 1, 0, copy);
+    }
+    else if (act === "del") {
+      if (S.layers.length <= 1) { toast("Keep at least one layer in the stack."); return; }
+      S.layers.splice(i, 1);
+    }
+    else if (act === "all-id" || act === "all-od") {
+      const g = act === "all-id" ? "idC" : "odC", src = L[g].tl;
+      CNR_KEYS.forEach(k => L[g][k] = {t: src.t, s: src.s, a: src.a});
+    }
+    renderStack(); refresh();
+  });
+
+  $("#l-add").addEventListener("click", () => {
+    const F = FAST[S.size] || FAST.M10;
+    const prev = S.layers[S.layers.length - 1];
+    const L = newLayer({
+      name: "Layer " + (S.layers.length + 1),
+      mat: prev ? prev.mat : "AL6061",
+      t: prev ? prev.t : 6,
+      od: prev ? prev.od : Math.max(3 * F.d, F.wOD + 6),
+      holeMode: prev ? prev.holeMode : "normal",
+      hole: prev ? prev.hole : F.holes.normal
+    });
+    if (prev) { L.Fty = prev.Fty; L.Ftu = prev.Ftu; L.E = prev.E; L.kBrg = prev.kBrg; L.tp = prev.tp; L.tm = prev.tm; }
+    S.layers.push(L);
+    renderStack(); refresh();
+    const card = $('.layer[data-id="' + L.id + '"]');
+    if (card) { card.scrollIntoView({block: "nearest", behavior: reduced() ? "auto" : "smooth"}); card.querySelector(".lname").select(); }
+  });
+  $("#l-collapse").addEventListener("click", () => {
+    const anyOpen = S.layers.some(L => !L.collapsed);
+    S.layers.forEach(L => L.collapsed = anyOpen);
+    renderStack(); save();
+  });
+}
+
+function bindData() {
+  $("#v-run").addEventListener("click", () => {
+    const r = paintValidation();
+    toast(r.bad ? r.bad + " check" + (r.bad === 1 ? "" : "s") + " failed of " + r.tot : "All " + r.tot + " checks passed");
+  });
+  $("#x-export").addEventListener("click", exportExcel);
+  $("#x-import").addEventListener("click", () => $("#x-file").click());
+  $("#x-file").addEventListener("change", e => { const f = e.target.files[0]; if (f) importWorkbook(f); e.target.value = ""; });
+  $("#x-json").addEventListener("click", exportJSON);
+  $("#x-loadjson").addEventListener("click", () => $("#x-filejson").click());
+  $("#x-filejson").addEventListener("change", e => { const f = e.target.files[0]; if (f) importJSON(f); e.target.value = ""; });
+  $("#x-sample").addEventListener("click", () => {
+    S = sampleState(); S.meta.date = new Date().toISOString().slice(0, 10);
+    AN.clear(); applyStateToInputs(); renderStack(); refresh(true); toast("Sample stack loaded");
+  });
+  $("#x-reset").addEventListener("click", () => {
+    S = mergeState({layers: [newLayer({name: "Plate 1", t: 6, od: 30})], meta: {id: "JT-NEW", rev: "A", by: "", date: new Date().toISOString().slice(0, 10)}});
+    syncSizeDefaults(true); AN.clear(); applyStateToInputs(); renderStack(); refresh(true); toast("Cleared to a single layer");
+  });
+}
+function bindChrome() {
+  const root = document.documentElement;
+  const tkey = "boltedJointBench.theme";
+  try { const t = localStorage.getItem(tkey); if (t) root.dataset.theme = t; } catch (e) { }
+  $("#theme").addEventListener("click", () => {
+    const dark = root.dataset.theme ? root.dataset.theme === "dark"
+      : window.matchMedia("(prefers-color-scheme: dark)").matches;
+    root.dataset.theme = dark ? "light" : "dark";
+    try { localStorage.setItem(tkey, root.dataset.theme); } catch (e) { }
+    drawSection();
+  });
+  const setMode = (m) => {
+    S.mode = m;
+    document.documentElement.dataset.mode = m;
+    $("#mode-basic").setAttribute("aria-pressed", String(m === "basic"));
+    $("#mode-adv").setAttribute("aria-pressed", String(m === "advanced"));
+    renderStack();          /* rebuilds the simple corner controls from current values */
+    refresh();
+  };
+  $("#mode-basic").addEventListener("click", () => setMode("basic"));
+  $("#mode-adv").addEventListener("click", () => setMode("advanced"));
+  const setU = (u) => {
+    UNITS = u;
+    $("#u-si").setAttribute("aria-pressed", String(u === "si"));
+    $("#u-imp").setAttribute("aria-pressed", String(u === "im"));
+    paintAll();
+  };
+  $("#u-si").addEventListener("click", () => setU("si"));
+  $("#u-imp").addEventListener("click", () => setU("im"));
+  let rt = 0;
+  const ro = new ResizeObserver(() => { clearTimeout(rt); rt = setTimeout(() => drawSection(), 60); });
+  ro.observe($("#view"));
+  window.addEventListener("keydown", e => {
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "s") { e.preventDefault(); exportExcel(); }
+    if (e.key === "Escape") setActive(null, false);
+  });
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   13 — BOOT
+   ═══════════════════════════════════════════════════════════════════════ */
+(function init() {
+  const saved = load();
+  if (saved) S = saved; else S.meta.date = new Date().toISOString().slice(0, 10);
+  if (!S.meta.date) S.meta.date = new Date().toISOString().slice(0, 10);
+  buildSelects();
+  applyStateToInputs();
+  renderStack();
+  bindFastener(); bindStack(); bindData(); bindChrome();
+  $("#xl-tag").textContent = window.XLSX ? "Excel engine: SheetJS" : "Excel engine: built-in writer";
+  refresh(true);
+  window.addEventListener("load", () => {
+    $("#xl-tag").textContent = window.XLSX ? "Excel engine: SheetJS" : "Excel engine: built-in writer";
+    drawSection();
+  });
+})();
+</script>
+</body>
+</html>
