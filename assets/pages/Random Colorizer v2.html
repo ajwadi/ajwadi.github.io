@@ -1,0 +1,1691 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>CATIA Random Colorizer v2 - VBA Package</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono&display=swap">
+<style>
+:root {
+  --bg:#eef1f5; --panel:#ffffff; --ink:#16202c; --muted:#566475; --line:#d3dae3;
+  --accent:#2c5aa0; --accent2:#1f437a; --code-bg:#f6f8fb; --note:#fff6dc; --note-line:#d9a400;
+  box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --bg:#141a22; --panel:#1c242f; --ink:#e6ebf2; --muted:#9aa8b9; --line:#324052; --accent:#6f9fe6; --accent2:#8fb5ee; --code-bg:#151c25; --note:#3a3216; --note-line:#d9a400; }
+}
+:root[data-theme="dark"] { --bg:#141a22; --panel:#1c242f; --ink:#e6ebf2; --muted:#9aa8b9; --line:#324052; --accent:#6f9fe6; --accent2:#8fb5ee; --code-bg:#151c25; --note:#3a3216; --note-line:#d9a400; }
+*, *::before, *::after { box-sizing:inherit; }
+html { scroll-padding-top:env(safe-area-inset-top,0px); }
+body { margin:0; background:var(--bg); color:var(--ink); font-family:"IBM Plex Sans","Segoe UI","Malgun Gothic",Arial,sans-serif; font-size:16px; line-height:1.6; }
+.wrap { max-width:920px; margin:0 auto; padding:0 20px; }
+header { padding:40px 0 8px; }
+h1 { font-size:2rem; line-height:1.2; margin:0 0 6px; font-weight:600; letter-spacing:-0.01em; }
+.subtitle { margin:0; color:var(--muted); max-width:62ch; }
+.palettes { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:14px 22px; margin:26px 0 8px; }
+.strip { display:flex; height:34px; border:1px solid var(--line); }
+.strip span { flex:1; }
+.pal p { margin:4px 0 0; font-size:.85rem; color:var(--muted); }
+section { background:var(--panel); border:1px solid var(--line); border-radius:6px; padding:22px 24px; margin:18px 0; }
+h2 { font-size:1.15rem; margin:0 0 10px; font-weight:600; }
+p { margin:0 0 10px; max-width:72ch; }
+ul, ol { margin:0; padding-left:22px; max-width:72ch; }
+li { margin-bottom:6px; }
+code, pre { font-family:"IBM Plex Mono",Consolas,monospace; }
+code { font-size:.9em; }
+.code-head { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:10px; margin-bottom:10px; }
+.code-head h2 { margin:0; }
+.right { display:flex; align-items:center; gap:10px; }
+.filetag { font-size:.8rem; color:var(--muted); border:1px solid var(--line); border-radius:4px; padding:3px 8px; }
+.copy { background:var(--accent); color:#fff; border:0; border-radius:4px; padding:8px 16px; font:inherit; font-size:.9rem; font-weight:500; cursor:pointer; }
+.copy:hover { background:var(--accent2); }
+.copy:focus-visible { outline:3px solid var(--note-line); outline-offset:2px; }
+:root[data-theme="dark"] .copy { color:#10161e; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .copy { color:#10161e; } }
+pre { margin:0; background:var(--code-bg); border:1px solid var(--line); border-radius:4px; padding:14px; max-height:520px; overflow:auto; font-size:.8rem; line-height:1.5; }
+.logo { display:block; max-width:100%; height:auto; margin:10px 0 0; border:1px solid var(--line); }
+.note { background:var(--note); border-left:4px solid var(--note-line); padding:10px 14px; margin:12px 0 0; }
+.wrapx { overflow-x:auto; }
+table { border-collapse:collapse; width:100%; font-size:.88rem; }
+th, td { text-align:left; padding:6px 10px; border-bottom:1px solid var(--line); vertical-align:top; }
+th { color:var(--muted); font-weight:500; }
+footer { color:var(--muted); font-size:.85rem; padding:8px 0 40px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>CATIA Random Colorizer v2</h1>
+  <p class="subtitle">Color templates, an in-order repeating option, a safer Reset, and an English / Korean button. Two code blocks to paste: the form and the module.</p>
+  <div class="palettes" aria-label="The seven color templates"><div class="pal"><div class="strip"><span style="background:#E53935"></span><span style="background:#FB8C00"></span><span style="background:#FDD835"></span><span style="background:#7CB342"></span><span style="background:#00897B"></span><span style="background:#039BE5"></span><span style="background:#3949AB"></span><span style="background:#8E24AA"></span><span style="background:#D81B60"></span><span style="background:#6D4C41"></span></div><p>Standard 10 colors</p></div><div class="pal"><div class="strip"><span style="background:#F4A6A6"></span><span style="background:#F9C99B"></span><span style="background:#F8E9A1"></span><span style="background:#C5E1A5"></span><span style="background:#A5D6C8"></span><span style="background:#A9D4F5"></span><span style="background:#B3B9E8"></span><span style="background:#D1B3E0"></span><span style="background:#F3B0CC"></span><span style="background:#CFC4BC"></span></div><p>Pastel</p></div><div class="pal"><div class="strip"><span style="background:#FF0000"></span><span style="background:#00C000"></span><span style="background:#0000FF"></span><span style="background:#FFFF00"></span><span style="background:#FF00FF"></span><span style="background:#00FFFF"></span><span style="background:#FF8000"></span><span style="background:#8000FF"></span><span style="background:#804000"></span><span style="background:#008060"></span></div><p>High contrast</p></div><div class="pal"><div class="strip"><span style="background:#6D4C41"></span><span style="background:#A0522D"></span><span style="background:#C68642"></span><span style="background:#D2B48C"></span><span style="background:#BDB76B"></span><span style="background:#8A9A5B"></span><span style="background:#556B2F"></span><span style="background:#5F7A76"></span><span style="background:#8B7D6B"></span><span style="background:#B5651D"></span></div><p>Earth tones</p></div><div class="pal"><div class="strip"><span style="background:#0D47A1"></span><span style="background:#1976D2"></span><span style="background:#42A5F5"></span><span style="background:#90CAF9"></span><span style="background:#006064"></span><span style="background:#00ACC1"></span><span style="background:#4DD0E1"></span><span style="background:#00695C"></span><span style="background:#26A69A"></span><span style="background:#5C6BC0"></span></div><p>Cool</p></div><div class="pal"><div class="strip"><span style="background:#B71C1C"></span><span style="background:#E53935"></span><span style="background:#FF7043"></span><span style="background:#FB8C00"></span><span style="background:#FFB300"></span><span style="background:#FDD835"></span><span style="background:#F06292"></span><span style="background:#AD1457"></span><span style="background:#8D6E63"></span><span style="background:#FFCC80"></span></div><p>Warm</p></div><div class="pal"><div class="strip"><span style="background:#2E2E2E"></span><span style="background:#ABABAB"></span><span style="background:#606060"></span><span style="background:#D0D0D0"></span><span style="background:#474747"></span><span style="background:#BEBEBE"></span><span style="background:#797979"></span><span style="background:#E0E0E0"></span><span style="background:#929292"></span><span style="background:#F0F0F0"></span></div><p>Grayscale</p></div></div>
+</header>
+<main>
+  <section>
+    <h2>What changed</h2>
+    <ul>
+      <li><strong>Color template picker.</strong> A dropdown with the seven templates shown above, plus "Any color (fully random)". The ten colors of the selected template show as swatches in the window.</li>
+      <li><strong>In order, repeating.</strong> Components 1 to 10 get colors 1 to 10 of the template, 11 to 20 start again at color 1, and so on until everything is colored. The other choice picks randomly from the template and never uses the same color twice in a row.</li>
+      <li><strong>Reset goes back to the true original.</strong> The original colors are saved once, before the first run. Run it as many times as you like, in any mode, and Reset still returns to how the document looked at the start.</li>
+      <li><strong>Default Colors button.</strong> Switches the whole document to CATIA default colors: in an assembly, components stop forcing a color so each part shows its own; in a part, every body gets the standard CATIA part color. Reset can undo it.</li>
+      <li><strong>English / Korean button</strong> in the top right corner. The language, template and order are remembered for next time.</li>
+      <li><strong>No pop-up boxes.</strong> Every result and error shows on the status line, so Korean text displays correctly without extra Windows declarations.</li>
+      <li><strong>Credit image centered at the bottom.</strong> The image is stored inside the code as text, at the bottom of the module, so there is no image file to install and no wording typed into the code. <img class="logo" src="data:image/gif;base64,R0lGODdhwwAPAIQAAPDw8Nfc4MTM1LXAy6e0wpqpuo2fsn+SqXKIoGuCnWV9mVdxkEhlhjtafyxOdR5CbA81YgAqWgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACwAAAAAwwAPAAAI/wABCBxIsKDBgwgTKlzIsKHDhxAjSpxIsaLFixgzatzoEEGEAQQfNBh4IIIAggYeRICwIAAAjxFWKiCpMgKDkwRjxnRQQCABnTETQCBY4AEAoBEQHCVQ8EDNmwIb6HzQE6bOlzpZuhz4MyYEpQ2UCkQwkmBJnEsBDHAQsyWAsAQbMBXIwOhAAQxiPjjgMwJBBEqtxvwboSyAkoYdNOAr0CnTAAscvCwb4IGBlw/mIoCwVWCEuQYg9PxZUPTABTM/F1Q9EEHmsZzfii3AmWxB2wDwSubqN7foAbEDQJg7UDHjtHsBBGCwQHbcucIdgFQOQYHLtUpJtw5s+HaDBj0rK/8oK+CBgN0AhockgBvAAqXqB8IdyBpASgDaT88UCAFkfc/EpRcgXPMt1d5Y3VnGm3xKvfdScwSVdx59TJkkkACXFfgWaAsYsN8B3RHAWX4vcYcQWQM8ABlgZSHAl3T49ebdhZmROFlOAX5kY1EC8ZgWjgv+NdJ8Pwlw4I2tMRAkcCcJ8BEEaI314nSqLbAXWhrKFdUAwkUlFoUkAoakQbYtYCWS5tk3k41jAcWXjQR0999nXV0FwAMgoeYZUBUSB+eQU1UF1EgHtlenTVspUJ1BaXoIoEAG5NUASFIhxVR5Ai3Qk4YbhhnYoEJSV9VIAwBlFJtIAheAjSACSd8AbCr/MBOUj7oaY1NDfongjEkGCRllEXQmUKlT1SpQAIo6Jx9TJenUHKfDeTomr62NpMBxkwq4XnsOXBafl7bex2aKBaD334/8DQiWrtNOq2BfQR5l0LXy+UfAAHIqGxVTMPJ3WIicldoZAyYedKRtaTbW3AEOPBbZmAg0h0C/B8RGYY+mofqAA8ed+9/E01XsEqcHk/dwvArYJW9BCR/W3GfCXXbYUFkSgOlADBggnFjnieWAW0W2W613Pg47lH0qaTWmj07FBFVOOvHUF58CKWDhnjopZelhT+FEMlJYeeUWbzoxMN3KAxWt1lCq4es0pbrKpQCEjSmJl17HLbdTT2HbJMnR34AHLvhFBDgQ5eCIJ6744h1BICPjkEcu+eSUV2755RsFBAA7" alt="Credit line reading: macro developed by AISHAQUE" width="195" height="15"></li>
+      <li><strong>Buttons cannot get stuck.</strong> An unexpected error is caught and shown, and the buttons come back.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Setup</h2>
+    <ol>
+      <li>In the VBA editor, select your form and set its <code>(Name)</code> to <code>frmRandomColorizer</code> in the Properties window. The form stays empty in the designer.</li>
+      <li>Open the form's code, select all, delete, and paste the Form code below.</li>
+      <li>Open your module, select all, delete, and paste the Module code below. Any module name works; <code>Colorizer</code> is suggested.</li>
+      <li>Run <code>CATMain</code>.</li>
+    </ol>
+    <p class="note"><strong>First run:</strong> this code was written and reviewed but not run inside CATIA. Try Apply and then Reset on a copy of a small assembly, and on a copy of a part, before using it on real work.</p>
+  </section>
+
+  <section>
+    <div class="code-head"><h2>Form code</h2><div class="right"><span class="filetag">frmRandomColorizer</span><button class="copy" data-target="form">Copy code</button></div></div>
+    <pre><code id="form">Option Explicit
+
+'=========================================================
+' CATIA RANDOM COLORIZER - FORM
+' Form name: frmRandomColorizer
+' The form is empty in the designer. Every control is
+' created here in code.
+'=========================================================
+
+Private WithEvents mRandomizeButton As MSForms.CommandButton
+Private WithEvents mResetButton As MSForms.CommandButton
+Private WithEvents mDefaultButton As MSForms.CommandButton
+Private WithEvents mCancelButton As MSForms.CommandButton
+Private WithEvents mLangButton As MSForms.CommandButton
+Private WithEvents mPaletteCombo As MSForms.ComboBox
+Private WithEvents mOptAll As MSForms.OptionButton
+Private WithEvents mOptLeaf As MSForms.OptionButton
+
+' 0 = nothing open, 1 = CATProduct, 2 = CATPart, 3 = other
+Private mDocKind As Integer
+
+Private mLoading As Boolean
+
+
+'=========================================================
+' FORM INITIALIZATION
+'=========================================================
+
+Private Sub UserForm_Initialize()
+
+    mLoading = True
+
+    LoadLanguage
+
+    Me.Caption = "CATIA Random Colorizer"
+    Me.Width = 440
+    Me.Height = 482
+
+    BuildControls
+    ApplyLanguage
+    LoadChoices
+    DetectDocument
+
+    mLoading = False
+
+    UpdateState
+    ShowDocStatus
+
+End Sub
+
+
+Private Function AddCtl( _
+        ByVal progId As String, _
+        ByVal ctlName As String, _
+        ByVal x As Single, _
+        ByVal y As Single, _
+        ByVal w As Single, _
+        ByVal h As Single) As Object
+
+    Dim c As Object
+
+    Set c = Me.Controls.Add(progId, ctlName, True)
+
+    c.Left = x
+    c.Top = y
+    c.Width = w
+    c.Height = h
+
+    Set AddCtl = c
+
+End Function
+
+
+Private Sub BuildControls()
+
+    Dim c As Object
+    Dim i As Integer
+
+    ' Title and language button
+    Set c = AddCtl("Forms.Label.1", "lblTitle", 20, 12, 290, 24)
+    c.Font.Size = 14
+    c.Font.Bold = True
+
+    Set mLangButton = AddCtl("Forms.CommandButton.1", "cmdLang", 330, 12, 80, 24)
+
+    Set c = AddCtl("Forms.Label.1", "lblSubtitle", 20, 40, 390, 18)
+
+    ' What to color
+    Set c = AddCtl("Forms.Label.1", "lblMode", 20, 68, 390, 18)
+    c.Font.Bold = True
+
+    Set mOptAll = AddCtl("Forms.OptionButton.1", "optAllComponents", 35, 88, 375, 20)
+    mOptAll.GroupName = "mode"
+
+    Set mOptLeaf = AddCtl("Forms.OptionButton.1", "optLeafParts", 35, 110, 375, 20)
+    mOptLeaf.GroupName = "mode"
+
+    Set c = AddCtl("Forms.CheckBox.1", "chkRecursive", 55, 132, 355, 20)
+    c.Value = True
+
+    Set c = AddCtl("Forms.OptionButton.1", "optBodies", 35, 156, 375, 20)
+    c.GroupName = "mode"
+
+    ' Color template
+    Set c = AddCtl("Forms.Label.1", "lblPalette", 20, 188, 390, 18)
+    c.Font.Bold = True
+
+    Set mPaletteCombo = AddCtl("Forms.ComboBox.1", "cboPalette", 20, 208, 260, 22)
+    mPaletteCombo.Style = 2
+
+    For i = 1 To PALETTE_SIZE
+
+        Set c = AddCtl("Forms.Label.1", "lblSwatch" &amp; i, _
+            20 + (i - 1) * 26, 238, 22, 18)
+
+        c.BorderStyle = 1
+        c.BackStyle = 1
+
+    Next i
+
+    ' How the template is used
+    Set c = AddCtl("Forms.Label.1", "lblOrder", 20, 266, 390, 18)
+    c.Font.Bold = True
+
+    Set c = AddCtl("Forms.OptionButton.1", "optSeq", 35, 286, 375, 20)
+    c.GroupName = "order"
+
+    Set c = AddCtl("Forms.OptionButton.1", "optRnd", 35, 308, 375, 20)
+    c.GroupName = "order"
+
+    ' Info and status
+    Set c = AddCtl("Forms.Label.1", "lblInfo", 20, 338, 390, 30)
+    c.WordWrap = True
+
+    Set c = AddCtl("Forms.Label.1", "lblStatus", 20, 372, 390, 30)
+    c.WordWrap = True
+    c.Font.Bold = True
+
+    ' Buttons
+    Set mRandomizeButton = AddCtl("Forms.CommandButton.1", "cmdRandomize", 20, 410, 100, 30)
+    Set mResetButton = AddCtl("Forms.CommandButton.1", "cmdReset", 125, 410, 95, 30)
+    Set mDefaultButton = AddCtl("Forms.CommandButton.1", "cmdDefault", 225, 410, 95, 30)
+    Set mCancelButton = AddCtl("Forms.CommandButton.1", "cmdCancel", 325, 410, 85, 30)
+
+    ' Logo, centered at the bottom. The picture data is at the bottom of the module.
+    Set c = AddCtl("Forms.Image.1", "imgLogo", 20, 448, 10, 10)
+    c.BorderStyle = 0
+    c.BackStyle = 0
+    c.AutoSize = True
+
+    If LoadLogo(c) Then
+        c.Left = 215 - c.Width / 2
+        Me.Height = 482 + c.Height + 8
+    Else
+        c.Visible = False
+    End If
+
+End Sub
+
+
+'=========================================================
+' LANGUAGE
+'=========================================================
+
+Private Sub ApplyLanguage()
+
+    Dim wasLoading As Boolean
+    Dim keepIndex As Long
+    Dim i As Integer
+    Dim c As Object
+
+    wasLoading = mLoading
+    mLoading = True
+
+    Me.Controls("lblTitle").Caption = Txt("title")
+    Me.Controls("lblSubtitle").Caption = Txt("subtitle")
+    Me.Controls("lblMode").Caption = Txt("mode")
+    Me.Controls("optAllComponents").Caption = Txt("optAll")
+    Me.Controls("optLeafParts").Caption = Txt("optLeaf")
+    Me.Controls("chkRecursive").Caption = Txt("recursive")
+    Me.Controls("optBodies").Caption = Txt("optBodies")
+    Me.Controls("lblPalette").Caption = Txt("palette")
+    Me.Controls("lblOrder").Caption = Txt("order")
+    Me.Controls("optSeq").Caption = Txt("ordSeq")
+    Me.Controls("optRnd").Caption = Txt("ordRnd")
+    Me.Controls("lblInfo").Caption = Txt("info")
+
+    mRandomizeButton.Caption = Txt("btnApply")
+    mResetButton.Caption = Txt("btnReset")
+    mDefaultButton.Caption = Txt("btnDefault")
+    mCancelButton.Caption = Txt("btnClose")
+    mLangButton.Caption = Txt("btnLang")
+
+    ' Template names
+    keepIndex = mPaletteCombo.ListIndex
+
+    mPaletteCombo.Clear
+
+    For i = 0 To PALETTE_LAST
+        mPaletteCombo.AddItem Txt("pal" &amp; i)
+    Next i
+
+    If keepIndex &lt; 0 Then keepIndex = 1
+
+    mPaletteCombo.ListIndex = keepIndex
+
+    ' A font that can show the selected language
+    On Error Resume Next
+
+    For Each c In Me.Controls
+        c.Font.Name = UiFontName()
+    Next c
+
+    On Error GoTo 0
+
+    mLoading = wasLoading
+
+End Sub
+
+
+Private Sub mLangButton_Click()
+
+    If gLang = "KO" Then
+        SetLanguage "EN"
+    Else
+        SetLanguage "KO"
+    End If
+
+    ApplyLanguage
+    ShowDocStatus
+
+End Sub
+
+
+'=========================================================
+' REMEMBERED CHOICES
+'=========================================================
+
+Private Sub LoadChoices()
+
+    Dim paletteIndex As Integer
+
+    paletteIndex = LoadChoice("Palette", 1)
+
+    If paletteIndex &lt; 0 Or paletteIndex &gt; PALETTE_LAST Then paletteIndex = 1
+
+    mPaletteCombo.ListIndex = paletteIndex
+
+    If LoadChoice("Order", ORDER_SEQUENCE) = ORDER_RANDOM Then
+        Me.Controls("optRnd").Value = True
+    Else
+        Me.Controls("optSeq").Value = True
+    End If
+
+End Sub
+
+
+'=========================================================
+' ACTIVE DOCUMENT
+'=========================================================
+
+Private Sub DetectDocument()
+
+    Dim docType As String
+
+    mDocKind = 0
+
+    On Error Resume Next
+
+    If CATIA.Documents.Count &gt; 0 Then
+        docType = TypeName(CATIA.ActiveDocument)
+    End If
+
+    On Error GoTo 0
+
+    If docType = "ProductDocument" Then
+
+        mDocKind = 1
+        mOptLeaf.Value = True
+
+    ElseIf docType = "PartDocument" Then
+
+        mDocKind = 2
+        Me.Controls("optBodies").Value = True
+
+    ElseIf Len(docType) &gt; 0 Then
+
+        mDocKind = 3
+
+    End If
+
+    mOptAll.Enabled = (mDocKind = 1)
+    mOptLeaf.Enabled = (mDocKind = 1)
+    Me.Controls("optBodies").Enabled = (mDocKind = 2)
+
+End Sub
+
+
+Private Sub ShowDocStatus()
+
+    Select Case mDocKind
+        Case 1: ShowStatus Txt("stProduct")
+        Case 2: ShowStatus Txt("stPart")
+        Case 3: ShowStatus Txt("stUnsupported")
+        Case Else: ShowStatus Txt("stNoDoc")
+    End Select
+
+End Sub
+
+
+Private Sub ShowStatus(ByVal message As String)
+
+    Me.Controls("lblStatus").Caption = Txt("status") &amp; message
+
+End Sub
+
+
+'=========================================================
+' ENABLE / DISABLE AND SWATCHES
+'=========================================================
+
+Private Sub UpdateState()
+
+    Dim anyColor As Boolean
+    Dim canRun As Boolean
+    Dim i As Integer
+    Dim r As Long
+    Dim g As Long
+    Dim b As Long
+
+    If mLoading Then Exit Sub
+
+    canRun = (mDocKind = 1 Or mDocKind = 2)
+    anyColor = (mPaletteCombo.ListIndex = PALETTE_ANY)
+
+    Me.Controls("chkRecursive").Enabled = _
+        (mDocKind = 1) And (mOptLeaf.Value = True)
+
+    Me.Controls("optSeq").Enabled = canRun And Not anyColor
+    Me.Controls("optRnd").Enabled = canRun And Not anyColor
+
+    mPaletteCombo.Enabled = canRun
+    mRandomizeButton.Enabled = canRun
+    mResetButton.Enabled = HasSavedColors()
+    mDefaultButton.Enabled = canRun
+
+    For i = 1 To PALETTE_SIZE
+
+        With Me.Controls("lblSwatch" &amp; i)
+
+            .Visible = Not anyColor
+
+            If Not anyColor Then
+                GetPaletteColor mPaletteCombo.ListIndex, i, r, g, b
+                .BackColor = RGB(r, g, b)
+            End If
+
+        End With
+
+    Next i
+
+End Sub
+
+
+Private Sub mPaletteCombo_Change()
+
+    UpdateState
+
+End Sub
+
+
+Private Sub mOptAll_Click()
+
+    UpdateState
+
+End Sub
+
+
+Private Sub mOptLeaf_Click()
+
+    UpdateState
+
+End Sub
+
+
+Private Sub SetBusy(ByVal busy As Boolean)
+
+    mRandomizeButton.Enabled = Not busy
+    mResetButton.Enabled = Not busy
+    mDefaultButton.Enabled = Not busy
+    mLangButton.Enabled = Not busy
+
+    Me.Repaint
+
+    DoEvents
+
+End Sub
+
+
+'=========================================================
+' APPLY BUTTON
+'=========================================================
+
+Private Sub mRandomizeButton_Click()
+
+    Dim colorMode As Integer
+    Dim orderMode As Integer
+    Dim paletteIndex As Integer
+    Dim resultMessage As String
+
+    If mOptAll.Value = True Then
+        colorMode = COLOR_MODE_ALL_COMPONENTS
+    ElseIf mOptLeaf.Value = True Then
+        colorMode = COLOR_MODE_LEAF_PARTS
+    ElseIf Me.Controls("optBodies").Value = True Then
+        colorMode = COLOR_MODE_BODIES
+    Else
+        ShowStatus Txt("msgWrongDoc")
+        Exit Sub
+    End If
+
+    If Me.Controls("optRnd").Value = True Then
+        orderMode = ORDER_RANDOM
+    Else
+        orderMode = ORDER_SEQUENCE
+    End If
+
+    paletteIndex = mPaletteCombo.ListIndex
+
+    If paletteIndex &lt; 0 Then paletteIndex = 1
+
+    SaveChoice "Palette", paletteIndex
+    SaveChoice "Order", orderMode
+
+    ShowStatus Txt("stApplying")
+    SetBusy True
+
+    On Error Resume Next
+
+    RandomizeActiveDocument _
+        colorMode, _
+        (Me.Controls("chkRecursive").Value = True), _
+        paletteIndex, _
+        orderMode, _
+        resultMessage
+
+    If Err.Number &lt;&gt; 0 Then
+        resultMessage = Fmt(Txt("msgError"), Err.Description)
+        Err.Clear
+    End If
+
+    On Error GoTo 0
+
+    SetBusy False
+    UpdateState
+    ShowStatus resultMessage
+
+End Sub
+
+
+'=========================================================
+' RESET BUTTON
+'=========================================================
+
+Private Sub mResetButton_Click()
+
+    Dim resultMessage As String
+
+    ShowStatus Txt("stRestoring")
+    SetBusy True
+
+    On Error Resume Next
+
+    ResetSavedColors resultMessage
+
+    If Err.Number &lt;&gt; 0 Then
+        resultMessage = Fmt(Txt("msgError"), Err.Description)
+        Err.Clear
+    End If
+
+    On Error GoTo 0
+
+    SetBusy False
+    UpdateState
+    ShowStatus resultMessage
+
+End Sub
+
+
+'=========================================================
+' DEFAULT BUTTON
+'=========================================================
+
+Private Sub mDefaultButton_Click()
+
+    Dim resultMessage As String
+
+    ShowStatus Txt("stDefaulting")
+    SetBusy True
+
+    On Error Resume Next
+
+    SetDefaultColors resultMessage
+
+    If Err.Number &lt;&gt; 0 Then
+        resultMessage = Fmt(Txt("msgError"), Err.Description)
+        Err.Clear
+    End If
+
+    On Error GoTo 0
+
+    SetBusy False
+    UpdateState
+    ShowStatus resultMessage
+
+End Sub
+
+
+'=========================================================
+' CLOSE BUTTON
+'=========================================================
+
+Private Sub mCancelButton_Click()
+
+    Unload Me
+
+End Sub</code></pre>
+  </section>
+
+  <section>
+    <div class="code-head"><h2>Module code</h2><div class="right"><span class="filetag">Colorizer</span><button class="copy" data-target="module">Copy code</button></div></div>
+    <p>The long block of letters and numbers at the bottom is the credit image. Do not edit it.</p>
+    <pre><code id="module">Option Explicit
+
+'=========================================================
+' CATIA RANDOM COLORIZER - MAIN MODULE
+' Module name: Colorizer
+' Run CATMain to open the window.
+'=========================================================
+
+Public Const COLOR_MODE_ALL_COMPONENTS As Integer = 1
+Public Const COLOR_MODE_LEAF_PARTS As Integer = 2
+Public Const COLOR_MODE_BODIES As Integer = 3
+
+Public Const ORDER_SEQUENCE As Integer = 1
+Public Const ORDER_RANDOM As Integer = 2
+
+Public Const PALETTE_ANY As Integer = 0
+Public Const PALETTE_LAST As Integer = 7
+Public Const PALETTE_SIZE As Integer = 10
+
+' CATIA's standard part color, used by the Default button
+Public Const DEFAULT_RED As Long = 210
+Public Const DEFAULT_GREEN As Long = 210
+Public Const DEFAULT_BLUE As Long = 255
+
+Private Const REG_APP As String = "CatiaRandomColorizer"
+Private Const REG_SEC As String = "Settings"
+
+' "EN" or "KO"
+Public gLang As String
+
+' Colors saved before the first run, used by Reset
+Private mSavedDocName As String
+Private mSavedCount As Long
+Private mSavedObj() As Object
+Private mSavedR() As Long
+Private mSavedG() As Long
+Private mSavedB() As Long
+Private mSavedInh() As Long
+
+
+'=========================================================
+' ENTRY POINT
+'=========================================================
+
+Sub CATMain()
+
+    LoadLanguage
+    frmRandomColorizer.Show
+
+End Sub
+
+
+'=========================================================
+' COLOR TEMPLATES
+' Each template is 10 colors written as RRGGBB.
+' To add one: add a Case here, raise PALETTE_LAST by 1,
+' and add a "palN" name to TextEN and TextKO.
+'=========================================================
+
+Private Function PaletteHex(ByVal paletteIndex As Integer) As String
+
+    Select Case paletteIndex
+
+        Case 1  ' Standard 10 colors
+            PaletteHex = "E53935,FB8C00,FDD835,7CB342,00897B,039BE5,3949AB,8E24AA,D81B60,6D4C41"
+
+        Case 2  ' Pastel
+            PaletteHex = "F4A6A6,F9C99B,F8E9A1,C5E1A5,A5D6C8,A9D4F5,B3B9E8,D1B3E0,F3B0CC,CFC4BC"
+
+        Case 3  ' High contrast
+            PaletteHex = "FF0000,00C000,0000FF,FFFF00,FF00FF,00FFFF,FF8000,8000FF,804000,008060"
+
+        Case 4  ' Earth tones
+            PaletteHex = "6D4C41,A0522D,C68642,D2B48C,BDB76B,8A9A5B,556B2F,5F7A76,8B7D6B,B5651D"
+
+        Case 5  ' Cool
+            PaletteHex = "0D47A1,1976D2,42A5F5,90CAF9,006064,00ACC1,4DD0E1,00695C,26A69A,5C6BC0"
+
+        Case 6  ' Warm
+            PaletteHex = "B71C1C,E53935,FF7043,FB8C00,FFB300,FDD835,F06292,AD1457,8D6E63,FFCC80"
+
+        Case 7  ' Grayscale
+            PaletteHex = "2E2E2E,ABABAB,606060,D0D0D0,474747,BEBEBE,797979,E0E0E0,929292,F0F0F0"
+
+        Case Else
+            PaletteHex = "E53935,FB8C00,FDD835,7CB342,00897B,039BE5,3949AB,8E24AA,D81B60,6D4C41"
+
+    End Select
+
+End Function
+
+
+Public Sub GetPaletteColor( _
+        ByVal paletteIndex As Integer, _
+        ByVal colorIndex As Integer, _
+        ByRef r As Long, _
+        ByRef g As Long, _
+        ByRef b As Long)
+
+    Dim parts() As String
+    Dim hexText As String
+
+    parts = Split(PaletteHex(paletteIndex), ",")
+    hexText = parts(colorIndex - 1)
+
+    r = CLng("&amp;H" &amp; Mid$(hexText, 1, 2))
+    g = CLng("&amp;H" &amp; Mid$(hexText, 3, 2))
+    b = CLng("&amp;H" &amp; Mid$(hexText, 5, 2))
+
+End Sub
+
+
+' Any color, but kept bright enough to tell parts apart
+Private Sub RandomBrightColor( _
+        ByRef r As Long, _
+        ByRef g As Long, _
+        ByRef b As Long)
+
+    Dim hue As Double
+    Dim sat As Double
+    Dim bright As Double
+    Dim sector As Long
+    Dim frac As Double
+    Dim v1 As Double
+    Dim v2 As Double
+    Dim v3 As Double
+    Dim rr As Double
+    Dim gg As Double
+    Dim bb As Double
+
+    hue = Rnd * 6
+    sat = 0.45 + Rnd * 0.5
+    bright = 0.7 + Rnd * 0.3
+
+    sector = Int(hue)
+    If sector &gt; 5 Then sector = 5
+    frac = hue - sector
+
+    v1 = bright * (1 - sat)
+    v2 = bright * (1 - sat * frac)
+    v3 = bright * (1 - sat * (1 - frac))
+
+    Select Case sector
+        Case 0: rr = bright: gg = v3: bb = v1
+        Case 1: rr = v2: gg = bright: bb = v1
+        Case 2: rr = v1: gg = bright: bb = v3
+        Case 3: rr = v1: gg = v2: bb = bright
+        Case 4: rr = v3: gg = v1: bb = bright
+        Case Else: rr = bright: gg = v1: bb = v2
+    End Select
+
+    r = CLng(rr * 255)
+    g = CLng(gg * 255)
+    b = CLng(bb * 255)
+
+End Sub
+
+
+Private Sub PickColor( _
+        ByVal paletteIndex As Integer, _
+        ByVal orderMode As Integer, _
+        ByVal position As Long, _
+        ByRef lastPick As Integer, _
+        ByRef r As Long, _
+        ByRef g As Long, _
+        ByRef b As Long)
+
+    Dim k As Integer
+
+    If paletteIndex = PALETTE_ANY Then
+        RandomBrightColor r, g, b
+        Exit Sub
+    End If
+
+    If orderMode = ORDER_SEQUENCE Then
+
+        ' 1-10, then 11-20 start again at color 1, and so on
+        k = CInt((position - 1) Mod PALETTE_SIZE) + 1
+
+    Else
+
+        ' Random pick, never the same color twice in a row
+        Do
+            k = Int(Rnd * PALETTE_SIZE) + 1
+        Loop While k = lastPick
+
+    End If
+
+    lastPick = k
+
+    GetPaletteColor paletteIndex, k, r, g, b
+
+End Sub
+
+
+'=========================================================
+' APPLY COLORS
+'=========================================================
+
+Public Function RandomizeActiveDocument( _
+        ByVal colorMode As Integer, _
+        ByVal recursive As Boolean, _
+        ByVal paletteIndex As Integer, _
+        ByVal orderMode As Integer, _
+        ByRef resultMessage As String) As Boolean
+
+    Dim doc As Object
+    Dim sel As Selection
+    Dim targets As Collection
+    Dim item As Object
+    Dim position As Long
+    Dim okCount As Long
+    Dim failCount As Long
+    Dim restoredOk As Long
+    Dim restoredFail As Long
+    Dim lastPick As Integer
+    Dim r As Long
+    Dim g As Long
+    Dim b As Long
+
+    RandomizeActiveDocument = False
+
+    On Error GoTo Failed
+
+    If CATIA.Documents.Count = 0 Then
+        resultMessage = Txt("stNoDoc")
+        Exit Function
+    End If
+
+    Set doc = CATIA.ActiveDocument
+
+    If colorMode = COLOR_MODE_BODIES Then
+        If TypeName(doc) &lt;&gt; "PartDocument" Then
+            resultMessage = Txt("msgWrongDoc")
+            Exit Function
+        End If
+    Else
+        If TypeName(doc) &lt;&gt; "ProductDocument" Then
+            resultMessage = Txt("msgWrongDoc")
+            Exit Function
+        End If
+    End If
+
+    ' Build the list of things to color, in tree order
+    Set targets = New Collection
+
+    Select Case colorMode
+
+        Case COLOR_MODE_ALL_COMPONENTS
+            CollectProducts doc.Product, False, False, targets
+
+        Case COLOR_MODE_LEAF_PARTS
+            CollectProducts doc.Product, True, recursive, targets
+
+        Case COLOR_MODE_BODIES
+            CollectBodies doc, targets
+
+    End Select
+
+    If targets.Count = 0 Then
+        resultMessage = Txt("msgNothing")
+        Exit Function
+    End If
+
+    CATIA.RefreshDisplay = False
+
+    ' First run on this document: remember the original colors.
+    ' Later runs: put the originals back first, so every run starts
+    ' clean and Reset always returns to the true original.
+    If mSavedCount &gt; 0 And mSavedDocName = doc.FullName Then
+
+        RestoreSnapshot doc, restoredOk, restoredFail
+
+        If restoredOk = 0 Then TakeSnapshot doc
+
+    Else
+
+        TakeSnapshot doc
+
+    End If
+
+    Set sel = doc.Selection
+
+    Randomize
+
+    position = 0
+    lastPick = 0
+
+    For Each item In targets
+
+        position = position + 1
+
+        PickColor paletteIndex, orderMode, position, lastPick, r, g, b
+
+        If PaintItem(sel, item, r, g, b, 1) Then
+            okCount = okCount + 1
+        Else
+            failCount = failCount + 1
+        End If
+
+    Next item
+
+    sel.Clear
+
+    CATIA.RefreshDisplay = True
+
+    If failCount = 0 Then
+        resultMessage = Fmt(Txt("msgDone"), CStr(okCount))
+    Else
+        resultMessage = Fmt(Txt("msgDoneFail"), CStr(okCount), CStr(failCount))
+    End If
+
+    RandomizeActiveDocument = (okCount &gt; 0)
+
+    Exit Function
+
+Failed:
+
+    resultMessage = Fmt(Txt("msgError"), Err.Description)
+
+    On Error Resume Next
+    CATIA.RefreshDisplay = True
+
+End Function
+
+
+'=========================================================
+' RESET
+'=========================================================
+
+Public Function HasSavedColors() As Boolean
+
+    HasSavedColors = (mSavedCount &gt; 0)
+
+End Function
+
+
+Public Function ResetSavedColors( _
+        ByRef resultMessage As String) As Boolean
+
+    Dim doc As Object
+    Dim okCount As Long
+    Dim failCount As Long
+
+    ResetSavedColors = False
+
+    On Error GoTo Failed
+
+    If mSavedCount = 0 Then
+        resultMessage = Txt("msgNoSaved")
+        Exit Function
+    End If
+
+    If CATIA.Documents.Count = 0 Then
+        resultMessage = Txt("stNoDoc")
+        Exit Function
+    End If
+
+    Set doc = CATIA.ActiveDocument
+
+    If doc.FullName &lt;&gt; mSavedDocName Then
+        resultMessage = Fmt(Txt("msgDocChanged"), mSavedDocName)
+        Exit Function
+    End If
+
+    CATIA.RefreshDisplay = False
+
+    RestoreSnapshot doc, okCount, failCount
+
+    CATIA.RefreshDisplay = True
+
+    ClearSnapshot
+
+    If failCount = 0 Then
+        resultMessage = Fmt(Txt("msgRestored"), CStr(okCount))
+    Else
+        resultMessage = Fmt(Txt("msgRestoredFail"), CStr(okCount), CStr(failCount))
+    End If
+
+    ResetSavedColors = (okCount &gt; 0)
+
+    Exit Function
+
+Failed:
+
+    resultMessage = Fmt(Txt("msgError"), Err.Description)
+
+    On Error Resume Next
+    CATIA.RefreshDisplay = True
+
+End Function
+
+
+'=========================================================
+' DEFAULT COLORS
+' CATIA has no "Auto" color command for macros, so this is
+' the closest match:
+'   Assembly: every component at every level stops forcing
+'             a color, so each part shows its own colors.
+'   Part:     every body gets CATIA's standard part color.
+' The originals are saved first, so Reset can undo this.
+'=========================================================
+
+Public Function SetDefaultColors( _
+        ByRef resultMessage As String) As Boolean
+
+    Dim doc As Object
+    Dim sel As Selection
+    Dim targets As Collection
+    Dim item As Object
+    Dim inheritFlag As Long
+    Dim okCount As Long
+    Dim failCount As Long
+
+    SetDefaultColors = False
+
+    On Error GoTo Failed
+
+    If CATIA.Documents.Count = 0 Then
+        resultMessage = Txt("stNoDoc")
+        Exit Function
+    End If
+
+    Set doc = CATIA.ActiveDocument
+
+    Set targets = New Collection
+
+    If TypeName(doc) = "PartDocument" Then
+        CollectBodies doc, targets
+        inheritFlag = 1
+    ElseIf TypeName(doc) = "ProductDocument" Then
+        CollectProducts doc.Product, False, True, targets
+        inheritFlag = 0
+    Else
+        resultMessage = Txt("stUnsupported")
+        Exit Function
+    End If
+
+    If targets.Count = 0 Then
+        resultMessage = Txt("msgNothing")
+        Exit Function
+    End If
+
+    CATIA.RefreshDisplay = False
+
+    If Not (mSavedCount &gt; 0 And mSavedDocName = doc.FullName) Then
+        TakeSnapshot doc
+    End If
+
+    Set sel = doc.Selection
+
+    For Each item In targets
+
+        If PaintItem(sel, item, _
+                DEFAULT_RED, DEFAULT_GREEN, DEFAULT_BLUE, inheritFlag) Then
+            okCount = okCount + 1
+        Else
+            failCount = failCount + 1
+        End If
+
+    Next item
+
+    sel.Clear
+
+    CATIA.RefreshDisplay = True
+
+    If failCount = 0 Then
+        resultMessage = Fmt(Txt("msgDefault"), CStr(okCount))
+    Else
+        resultMessage = Fmt(Txt("msgDefaultFail"), CStr(okCount), CStr(failCount))
+    End If
+
+    SetDefaultColors = (okCount &gt; 0)
+
+    Exit Function
+
+Failed:
+
+    resultMessage = Fmt(Txt("msgError"), Err.Description)
+
+    On Error Resume Next
+    CATIA.RefreshDisplay = True
+
+End Function
+
+
+'=========================================================
+' TREE WALKING
+'=========================================================
+
+' leafOnly = True : only components that have no children
+' deep = True     : also go inside subassemblies
+Private Sub CollectProducts( _
+        ByVal parent As Object, _
+        ByVal leafOnly As Boolean, _
+        ByVal deep As Boolean, _
+        ByVal items As Collection)
+
+    Dim i As Long
+    Dim child As Object
+
+    For i = 1 To parent.Products.Count
+
+        Set child = parent.Products.Item(i)
+
+        If leafOnly Then
+
+            If child.Products.Count = 0 Then
+                items.Add child
+            ElseIf deep Then
+                CollectProducts child, leafOnly, deep, items
+            End If
+
+        Else
+
+            items.Add child
+
+            If deep Then
+                CollectProducts child, leafOnly, deep, items
+            End If
+
+        End If
+
+    Next i
+
+End Sub
+
+
+Private Sub CollectBodies( _
+        ByVal doc As Object, _
+        ByVal items As Collection)
+
+    Dim i As Long
+    Dim bodyList As Object
+
+    Set bodyList = doc.Part.Bodies
+
+    For i = 1 To bodyList.Count
+        items.Add bodyList.Item(i)
+    Next i
+
+End Sub
+
+
+'=========================================================
+' SAVED COLORS
+'=========================================================
+
+Private Sub ClearSnapshot()
+
+    mSavedCount = 0
+    mSavedDocName = ""
+
+    Erase mSavedObj
+    Erase mSavedR
+    Erase mSavedG
+    Erase mSavedB
+    Erase mSavedInh
+
+End Sub
+
+
+' Saves the color and the inheritance flag of every component
+' at every level (or every body), whatever mode is selected.
+Private Sub TakeSnapshot(ByVal doc As Object)
+
+    Dim items As Collection
+    Dim item As Object
+    Dim sel As Selection
+    Dim vis As VisPropertySet
+    Dim r As Long
+    Dim g As Long
+    Dim b As Long
+    Dim inh As Long
+
+    ClearSnapshot
+
+    Set items = New Collection
+
+    If TypeName(doc) = "PartDocument" Then
+        CollectBodies doc, items
+    Else
+        CollectProducts doc.Product, False, True, items
+    End If
+
+    If items.Count = 0 Then Exit Sub
+
+    ReDim mSavedObj(1 To items.Count)
+    ReDim mSavedR(1 To items.Count)
+    ReDim mSavedG(1 To items.Count)
+    ReDim mSavedB(1 To items.Count)
+    ReDim mSavedInh(1 To items.Count)
+
+    Set sel = doc.Selection
+
+    On Error Resume Next
+
+    For Each item In items
+
+        r = 0
+        g = 0
+        b = 0
+        inh = 0
+
+        Err.Clear
+
+        sel.Clear
+        sel.Add item
+
+        Set vis = sel.VisProperties
+
+        vis.GetRealColor r, g, b
+        vis.GetRealInheritance catVisPropertyColor, inh
+
+        If Err.Number = 0 Then
+
+            mSavedCount = mSavedCount + 1
+
+            Set mSavedObj(mSavedCount) = item
+            mSavedR(mSavedCount) = r
+            mSavedG(mSavedCount) = g
+            mSavedB(mSavedCount) = b
+            mSavedInh(mSavedCount) = inh
+
+        End If
+
+    Next item
+
+    sel.Clear
+
+    Err.Clear
+
+    mSavedDocName = doc.FullName
+
+End Sub
+
+
+Private Sub RestoreSnapshot( _
+        ByVal doc As Object, _
+        ByRef okCount As Long, _
+        ByRef failCount As Long)
+
+    Dim i As Long
+    Dim sel As Selection
+
+    okCount = 0
+    failCount = 0
+
+    Set sel = doc.Selection
+
+    For i = 1 To mSavedCount
+
+        If PaintItem(sel, mSavedObj(i), _
+                mSavedR(i), mSavedG(i), mSavedB(i), mSavedInh(i)) Then
+            okCount = okCount + 1
+        Else
+            failCount = failCount + 1
+        End If
+
+    Next i
+
+    On Error Resume Next
+    sel.Clear
+
+End Sub
+
+
+Private Function PaintItem( _
+        ByVal sel As Selection, _
+        ByVal item As Object, _
+        ByVal r As Long, _
+        ByVal g As Long, _
+        ByVal b As Long, _
+        ByVal inheritFlag As Long) As Boolean
+
+    On Error Resume Next
+
+    Err.Clear
+
+    sel.Clear
+    sel.Add item
+
+    sel.VisProperties.SetRealColor r, g, b, inheritFlag
+
+    PaintItem = (Err.Number = 0)
+
+    Err.Clear
+
+End Function
+
+
+'=========================================================
+' SETTINGS (remembered between runs)
+'=========================================================
+
+Public Sub LoadLanguage()
+
+    gLang = UCase$(GetSetting(REG_APP, REG_SEC, "Lang", "EN"))
+
+    If gLang &lt;&gt; "KO" Then gLang = "EN"
+
+End Sub
+
+
+Public Sub SetLanguage(ByVal langCode As String)
+
+    gLang = langCode
+
+    SaveSetting REG_APP, REG_SEC, "Lang", gLang
+
+End Sub
+
+
+Public Function LoadChoice( _
+        ByVal choiceName As String, _
+        ByVal defaultValue As Integer) As Integer
+
+    LoadChoice = CInt(Val(GetSetting( _
+        REG_APP, REG_SEC, choiceName, CStr(defaultValue))))
+
+End Function
+
+
+Public Sub SaveChoice( _
+        ByVal choiceName As String, _
+        ByVal choiceValue As Integer)
+
+    SaveSetting REG_APP, REG_SEC, choiceName, CStr(choiceValue)
+
+End Sub
+
+
+'=========================================================
+' TEXT (ENGLISH AND KOREAN)
+'=========================================================
+
+Public Function Txt(ByVal key As String) As String
+
+    If gLang = "KO" Then
+        Txt = TextKO(key)
+    Else
+        Txt = TextEN(key)
+    End If
+
+    If Len(Txt) = 0 Then Txt = TextEN(key)
+    If Len(Txt) = 0 Then Txt = key
+
+End Function
+
+
+Public Function UiFontName() As String
+
+    If gLang = "KO" Then
+        UiFontName = "Malgun Gothic"
+    Else
+        UiFontName = "Tahoma"
+    End If
+
+End Function
+
+
+' Fills {0} and {1} in a text
+Public Function Fmt( _
+        ByVal template As String, _
+        Optional ByVal a As String = "", _
+        Optional ByVal b As String = "") As String
+
+    Fmt = Replace(Replace(template, "{0}", a), "{1}", b)
+
+End Function
+
+
+' Turns \uXXXX codes into real characters
+Private Function U(ByVal coded As String) As String
+
+    Dim i As Long
+    Dim result As String
+
+    i = 1
+
+    Do While i &lt;= Len(coded)
+
+        If Mid$(coded, i, 2) = "\u" And i + 5 &lt;= Len(coded) Then
+            result = result &amp; ChrW$(CLng("&amp;H" &amp; Mid$(coded, i + 2, 4)))
+            i = i + 6
+        Else
+            result = result &amp; Mid$(coded, i, 1)
+            i = i + 1
+        End If
+
+    Loop
+
+    U = result
+
+End Function
+
+
+Private Function TextEN(ByVal key As String) As String
+
+    Select Case key
+        Case "title": TextEN = "CATIA Random Colorizer"
+        Case "subtitle": TextEN = "Color assembly components or Part bodies"
+        Case "mode": TextEN = "What to color:"
+        Case "optAll": TextEN = "Top-level components (a subassembly gets one color)"
+        Case "optLeaf": TextEN = "Individual parts"
+        Case "recursive": TextEN = "Include parts inside subassemblies"
+        Case "optBodies": TextEN = "Bodies in active CATPart"
+        Case "palette": TextEN = "Color template:"
+        Case "pal0": TextEN = "Any color (fully random)"
+        Case "pal1": TextEN = "Standard 10 colors"
+        Case "pal2": TextEN = "Pastel"
+        Case "pal3": TextEN = "High contrast"
+        Case "pal4": TextEN = "Earth tones"
+        Case "pal5": TextEN = "Cool"
+        Case "pal6": TextEN = "Warm"
+        Case "pal7": TextEN = "Grayscale"
+        Case "order": TextEN = "How to use the template:"
+        Case "ordSeq": TextEN = "In order, repeating (1-10, 11-20, ...)"
+        Case "ordRnd": TextEN = "Random pick from the template"
+        Case "info": TextEN = "Reset brings back the colors from before the first run. Default switches to CATIA default colors."
+        Case "btnApply": TextEN = "Apply Colors"
+        Case "btnReset": TextEN = "Reset Colors"
+        Case "btnDefault": TextEN = "Default Colors"
+        Case "btnClose": TextEN = "Close"
+        Case "btnLang": TextEN = U("\ud55c\uad6d\uc5b4")
+        Case "status": TextEN = "Status: "
+        Case "stNoDoc": TextEN = "Open a CATProduct or CATPart"
+        Case "stProduct": TextEN = "CATProduct detected"
+        Case "stPart": TextEN = "CATPart detected"
+        Case "stUnsupported": TextEN = "Unsupported document type"
+        Case "stApplying": TextEN = "Applying colors..."
+        Case "stRestoring": TextEN = "Restoring original colors..."
+        Case "msgDone": TextEN = "Colored {0} items."
+        Case "msgDoneFail": TextEN = "Colored {0} items, {1} failed."
+        Case "msgNothing": TextEN = "Nothing to color with these options."
+        Case "msgRestored": TextEN = "Restored {0} items."
+        Case "msgRestoredFail": TextEN = "Restored {0} items, {1} failed."
+        Case "stDefaulting": TextEN = "Setting default colors..."
+        Case "msgDefault": TextEN = "Set {0} items to CATIA default colors."
+        Case "msgDefaultFail": TextEN = "Set {0} items to default, {1} failed."
+        Case "msgNoSaved": TextEN = "Nothing to reset yet."
+        Case "msgDocChanged": TextEN = "The saved colors belong to another document: {0}"
+        Case "msgWrongDoc": TextEN = "This option does not match the active document."
+        Case "msgError": TextEN = "Error: {0}"
+    End Select
+
+End Function
+
+
+Private Function TextKO(ByVal key As String) As String
+
+    Select Case key
+        Case "title": TextKO = U("CATIA \ub79c\ub364 \uc0c9\uc0c1 \uc9c0\uc815")
+        Case "subtitle": TextKO = U("\uc5b4\uc148\ube14\ub9ac \uad6c\uc131\uc694\uc18c \ub610\ub294 \ud30c\ud2b8 \ubc14\ub514\uc5d0 \uc0c9\uc0c1 \uc9c0\uc815")
+        Case "mode": TextKO = U("\uc0c9\uc0c1 \uc9c0\uc815 \ub300\uc0c1:")
+        Case "optAll": TextKO = U("\ucd5c\uc0c1\uc704 \uad6c\uc131\uc694\uc18c (\uc11c\ube0c\uc5b4\uc148\ube14\ub9ac\ub294 \ud55c \uac00\uc9c0 \uc0c9)")
+        Case "optLeaf": TextKO = U("\uac1c\ubcc4 \ud30c\ud2b8")
+        Case "recursive": TextKO = U("\uc11c\ube0c\uc5b4\uc148\ube14\ub9ac \ub0b4\ubd80 \ud30c\ud2b8 \ud3ec\ud568")
+        Case "optBodies": TextKO = U("\ud65c\uc131 CATPart\uc758 \ubc14\ub514")
+        Case "palette": TextKO = U("\uc0c9\uc0c1 \ud15c\ud50c\ub9bf:")
+        Case "pal0": TextKO = U("\ubaa8\ub4e0 \uc0c9\uc0c1 (\uc644\uc804 \ub79c\ub364)")
+        Case "pal1": TextKO = U("\ud45c\uc900 10\uc0c9")
+        Case "pal2": TextKO = U("\ud30c\uc2a4\ud154")
+        Case "pal3": TextKO = U("\uace0\ub300\ube44")
+        Case "pal4": TextKO = U("\uc5b4\uc2a4 \ud1a4")
+        Case "pal5": TextKO = U("\ucc28\uac00\uc6b4 \uc0c9")
+        Case "pal6": TextKO = U("\ub530\ub73b\ud55c \uc0c9")
+        Case "pal7": TextKO = U("\ud68c\uc0c9\uc870")
+        Case "order": TextKO = U("\ud15c\ud50c\ub9bf \uc0ac\uc6a9 \ubc29\uc2dd:")
+        Case "ordSeq": TextKO = U("\uc21c\uc11c\ub300\ub85c \ubc18\ubcf5 (1-10, 11-20, ...)")
+        Case "ordRnd": TextKO = U("\ud15c\ud50c\ub9bf\uc5d0\uc11c \ubb34\uc791\uc704 \uc120\ud0dd")
+        Case "info": TextKO = U("\ucd08\uae30\ud654\ub294 \ucc98\uc74c \uc2e4\ud589 \uc774\uc804\uc758 \uc0c9\uc0c1\uc73c\ub85c \ubcf5\uc6d0\ud569\ub2c8\ub2e4. \uae30\ubcf8 \uc0c9\uc0c1\uc740 CATIA \uae30\ubcf8 \uc0c9\uc0c1\uc73c\ub85c \ubc14\uafc9\ub2c8\ub2e4.")
+        Case "btnApply": TextKO = U("\uc0c9\uc0c1 \uc801\uc6a9")
+        Case "btnReset": TextKO = U("\uc0c9\uc0c1 \ucd08\uae30\ud654")
+        Case "btnDefault": TextKO = U("\uae30\ubcf8 \uc0c9\uc0c1")
+        Case "btnClose": TextKO = U("\ub2eb\uae30")
+        Case "btnLang": TextKO = "English"
+        Case "status": TextKO = U("\uc0c1\ud0dc: ")
+        Case "stNoDoc": TextKO = U("CATProduct \ub610\ub294 CATPart\ub97c \uc5ec\uc138\uc694")
+        Case "stProduct": TextKO = U("CATProduct \uac10\uc9c0\ub428")
+        Case "stPart": TextKO = U("CATPart \uac10\uc9c0\ub428")
+        Case "stUnsupported": TextKO = U("\uc9c0\uc6d0\ub418\uc9c0 \uc54a\ub294 \ubb38\uc11c \uc720\ud615")
+        Case "stApplying": TextKO = U("\uc0c9\uc0c1 \uc801\uc6a9 \uc911...")
+        Case "stRestoring": TextKO = U("\uc6d0\ub798 \uc0c9\uc0c1 \ubcf5\uc6d0 \uc911...")
+        Case "msgDone": TextKO = U("{0}\uac1c \ud56d\ubaa9\uc5d0 \uc0c9\uc0c1\uc744 \uc801\uc6a9\ud588\uc2b5\ub2c8\ub2e4.")
+        Case "msgDoneFail": TextKO = U("{0}\uac1c \uc801\uc6a9, {1}\uac1c \uc2e4\ud328.")
+        Case "msgNothing": TextKO = U("\uc774 \uc635\uc158\uc73c\ub85c \uc0c9\uc0c1\uc744 \uc9c0\uc815\ud560 \ud56d\ubaa9\uc774 \uc5c6\uc2b5\ub2c8\ub2e4.")
+        Case "msgRestored": TextKO = U("{0}\uac1c \ud56d\ubaa9\uc744 \ubcf5\uc6d0\ud588\uc2b5\ub2c8\ub2e4.")
+        Case "msgRestoredFail": TextKO = U("{0}\uac1c \ubcf5\uc6d0, {1}\uac1c \uc2e4\ud328.")
+        Case "stDefaulting": TextKO = U("\uae30\ubcf8 \uc0c9\uc0c1 \uc801\uc6a9 \uc911...")
+        Case "msgDefault": TextKO = U("{0}\uac1c \ud56d\ubaa9\uc744 CATIA \uae30\ubcf8 \uc0c9\uc0c1\uc73c\ub85c \uc124\uc815\ud588\uc2b5\ub2c8\ub2e4.")
+        Case "msgDefaultFail": TextKO = U("{0}\uac1c \uc124\uc815, {1}\uac1c \uc2e4\ud328.")
+        Case "msgNoSaved": TextKO = U("\ucd08\uae30\ud654\ud560 \ub0b4\uc6a9\uc774 \uc5c6\uc2b5\ub2c8\ub2e4.")
+        Case "msgDocChanged": TextKO = U("\uc800\uc7a5\ub41c \uc0c9\uc0c1\uc740 \ub2e4\ub978 \ubb38\uc11c\uc758 \uac83\uc785\ub2c8\ub2e4: {0}")
+        Case "msgWrongDoc": TextKO = U("\uc774 \uc635\uc158\uc740 \ud65c\uc131 \ubb38\uc11c\uc640 \ub9de\uc9c0 \uc54a\uc2b5\ub2c8\ub2e4.")
+        Case "msgError": TextKO = U("\uc624\ub958: {0}")
+    End Select
+
+End Function
+
+
+'=========================================================
+' LOGO
+' The logo picture is stored below as text.
+' Any form in this project can show it:
+'     LoadLogo Me.Controls("imgLogo")
+'=========================================================
+
+' Puts the logo into an Image control.
+' Returns False if the picture could not be loaded.
+Public Function LoadLogo(ByVal target As Object) As Boolean
+
+    Dim data() As Byte
+    Dim filePath As String
+    Dim fileNo As Integer
+
+    LoadLogo = False
+
+    On Error GoTo Failed
+
+    data = HexToBytes(LogoHex())
+
+    ' VBA can only load a picture from a file, so the data is
+    ' written to the Windows temp folder, loaded, then deleted.
+    filePath = Environ$("TEMP") &amp; "\catia_macro_logo.gif"
+
+    If Len(Dir$(filePath)) &gt; 0 Then Kill filePath
+
+    fileNo = FreeFile
+
+    Open filePath For Binary Access Write As #fileNo
+    Put #fileNo, , data
+    Close #fileNo
+
+    Set target.Picture = LoadPicture(filePath)
+
+    LoadLogo = True
+
+    On Error Resume Next
+    Kill filePath
+
+    Exit Function
+
+Failed:
+
+    On Error Resume Next
+    Close #fileNo
+
+End Function
+
+
+' Turns pairs of hex characters back into bytes
+Private Function HexToBytes(ByVal hexText As String) As Byte()
+
+    Dim count As Long
+    Dim i As Long
+    Dim data() As Byte
+
+    count = Len(hexText) \ 2
+
+    ReDim data(0 To count - 1)
+
+    For i = 0 To count - 1
+        data(i) = CByte("&amp;H" &amp; Mid$(hexText, i * 2 + 1, 2))
+    Next i
+
+    HexToBytes = data
+
+End Function
+
+
+' The logo picture (a GIF image, 195 x 15 pixels) written as hex text
+Private Function LogoHex() As String
+
+    Dim s As String
+
+    s = s &amp; "474946383761C3000F00840000F0F0F0D7DCE0C4CCD4B5C0CBA7B4C29AA9BA8D9FB27F92A97288A06B829D657D9957719048"
+    s = s &amp; "65863B5A7F2C4E751E426C0F3562002A5A000000000000000000000000000000000000000000000000000000000000000000"
+    s = s &amp; "0000000000000000002C00000000C3000F000008FF0001081C48B0A0C18308132A5CC8B0A1C38710234A9C48B1A2C58B1833"
+    s = s &amp; "6ADCE810418401041F34187820820082061E4480B02000008F11562A20A9320283930463C674504020019D3113402058E001"
+    s = s &amp; "00A011101C2550F040CD9B021BE87CD013A6CE973A59BA1CF8332604A50D940A44309260499C4B010C7010B32580B0041B30"
+    s = s &amp; "15C8C0E840010C623E38E0330241044AADC6FC1BA12C8092861D34E02BD029D3000B1CBC2C1BE08181970FE62280B0556084"
+    s = s &amp; "B90620F4FC5950F4C005333F17543D1041E6B19CDF8A2DC0996C41DB00F04AE6EA37B7E801B10340983B5031E3B47B010460"
+    s = s &amp; "B04076DCB9C21D80540E4181CBB54A49B70E6CF87683063D2B2BFF282BE08180DD00868724801BC002A5EA07C21DC81A404A"
+    s = s &amp; "00DA4FCF140801647DCFC4A517205CF32DD5DE58DD59C69B7C4ABDF752730495771E7D4C992490009715F816680B18B0DF01"
+    s = s &amp; "DD11C0597E2F71871059033C0019606521C09774F8F5E6DD85999138594E017E64635102F198168E0BFE35D27C3F0970E08D"
+    s = s &amp; "AD311024702709F01104688DF5E274AA2DB0175A1ACA15D500C245251685240286A441B62D602592E6D937938D6301C5978D"
+    s = s &amp; "0474F7DF675D5D05C00320A1E61950151207E790535505D44807B657A74D5B29509D41697A08A04006E4D500485221C55479"
+    s = s &amp; "022DD093861B8619D8A0425257D548030065149B480217808D200249DF006C2AFF3013948FBA1A6353437E89E08C49060919"
+    s = s &amp; "6511742650A953D52A50008A3A271F5325E9D41CA7C3793A26AFAD8DA4C071930AB85E7B0E5C169F97B6DEC7668A05A0F7DF"
+    s = s &amp; "8FFC0D0896AED34EAB605F411E65D0B5F2F947C000722A1B155330F27758889C95DA1903261E74A46D6936D6DC010E3C16D9"
+    s = s &amp; "9808348740BF07C446618FA6A1FA8003C79DFBDFC4D355EC12A70793F770BC0AD8256F41091FD6DC67C25D76D850591280E9"
+    s = s &amp; "400C18209C58E789E5805B45B65BAD773E0E3B947D2A6935A68F4EC504554E3AF1D4179F022960E19E3A2965E9614FE14432"
+    s = s &amp; "525879E5166F3A3130DDCA0315ADD650AAE1EB34A5BACAA500848D2989975EC72DB7534F61DB24C9D1DF80072EF845043810"
+    s = s &amp; "E5E08827AEF8E21D412023E390472EF9E494576EF9E51B0504003B"
+
+    LogoHex = s
+
+End Function</code></pre>
+  </section>
+
+  <section>
+    <h2>What each option colors</h2>
+    <ul>
+      <li><strong>Top-level components.</strong> Each item directly under the root product gets one color. A subassembly gets a single color for everything inside it.</li>
+      <li><strong>Individual parts.</strong> Each part gets its own color. With "Include parts inside subassemblies" ticked, that covers parts at every level; unticked, only parts directly under the root.</li>
+      <li><strong>Bodies in active CATPart.</strong> Each body in the part gets its own color.</li>
+    </ul>
+    <p class="note">In CATIA, a color placed on a subassembly covers everything inside it. That is why a subassembly and its parts cannot both show their own colors, and why the first option colors the top level only.</p>
+  </section>
+
+  <section>
+    <h2>Adding your own template</h2>
+    <ol>
+      <li>In <code>PaletteHex</code>, add <code>Case 8</code> with ten colors written as <code>RRGGBB</code>, separated by commas.</li>
+      <li>Change <code>PALETTE_LAST</code> from 7 to 8.</li>
+      <li>Add a <code>"pal8"</code> line with the template's name to <code>TextEN</code> and <code>TextKO</code>.</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>English and Korean text</h2>
+    <p>All wording lives in <code>TextEN</code> and <code>TextKO</code> at the bottom of the module. Korean is stored as <code>\uXXXX</code> codes so it pastes safely into the VBA editor on any PC. This table shows what each one says. Please have a Korean-speaking CATIA user check the terms.</p>
+    <div class="wrapx"><table>
+      <tr><th>Key</th><th>English</th><th>Korean</th></tr>
+      <tr><td><code>title</code></td><td>CATIA Random Colorizer</td><td lang="ko">CATIA 랜덤 색상 지정</td></tr><tr><td><code>subtitle</code></td><td>Color assembly components or Part bodies</td><td lang="ko">어셈블리 구성요소 또는 파트 바디에 색상 지정</td></tr><tr><td><code>mode</code></td><td>What to color:</td><td lang="ko">색상 지정 대상:</td></tr><tr><td><code>optAll</code></td><td>Top-level components (a subassembly gets one color)</td><td lang="ko">최상위 구성요소 (서브어셈블리는 한 가지 색)</td></tr><tr><td><code>optLeaf</code></td><td>Individual parts</td><td lang="ko">개별 파트</td></tr><tr><td><code>recursive</code></td><td>Include parts inside subassemblies</td><td lang="ko">서브어셈블리 내부 파트 포함</td></tr><tr><td><code>optBodies</code></td><td>Bodies in active CATPart</td><td lang="ko">활성 CATPart의 바디</td></tr><tr><td><code>palette</code></td><td>Color template:</td><td lang="ko">색상 템플릿:</td></tr><tr><td><code>pal0</code></td><td>Any color (fully random)</td><td lang="ko">모든 색상 (완전 랜덤)</td></tr><tr><td><code>pal1</code></td><td>Standard 10 colors</td><td lang="ko">표준 10색</td></tr><tr><td><code>pal2</code></td><td>Pastel</td><td lang="ko">파스텔</td></tr><tr><td><code>pal3</code></td><td>High contrast</td><td lang="ko">고대비</td></tr><tr><td><code>pal4</code></td><td>Earth tones</td><td lang="ko">어스 톤</td></tr><tr><td><code>pal5</code></td><td>Cool</td><td lang="ko">차가운 색</td></tr><tr><td><code>pal6</code></td><td>Warm</td><td lang="ko">따뜻한 색</td></tr><tr><td><code>pal7</code></td><td>Grayscale</td><td lang="ko">회색조</td></tr><tr><td><code>order</code></td><td>How to use the template:</td><td lang="ko">템플릿 사용 방식:</td></tr><tr><td><code>ordSeq</code></td><td>In order, repeating (1-10, 11-20, ...)</td><td lang="ko">순서대로 반복 (1-10, 11-20, ...)</td></tr><tr><td><code>ordRnd</code></td><td>Random pick from the template</td><td lang="ko">템플릿에서 무작위 선택</td></tr><tr><td><code>info</code></td><td>Reset brings back the colors from before the first run. Default switches to CATIA default colors.</td><td lang="ko">초기화는 처음 실행 이전의 색상으로 복원합니다. 기본 색상은 CATIA 기본 색상으로 바꿉니다.</td></tr><tr><td><code>btnApply</code></td><td>Apply Colors</td><td lang="ko">색상 적용</td></tr><tr><td><code>btnReset</code></td><td>Reset Colors</td><td lang="ko">색상 초기화</td></tr><tr><td><code>btnDefault</code></td><td>Default Colors</td><td lang="ko">기본 색상</td></tr><tr><td><code>btnClose</code></td><td>Close</td><td lang="ko">닫기</td></tr><tr><td><code>btnLang</code></td><td>한국어</td><td lang="ko">English</td></tr><tr><td><code>status</code></td><td>Status: </td><td lang="ko">상태: </td></tr><tr><td><code>stNoDoc</code></td><td>Open a CATProduct or CATPart</td><td lang="ko">CATProduct 또는 CATPart를 여세요</td></tr><tr><td><code>stProduct</code></td><td>CATProduct detected</td><td lang="ko">CATProduct 감지됨</td></tr><tr><td><code>stPart</code></td><td>CATPart detected</td><td lang="ko">CATPart 감지됨</td></tr><tr><td><code>stUnsupported</code></td><td>Unsupported document type</td><td lang="ko">지원되지 않는 문서 유형</td></tr><tr><td><code>stApplying</code></td><td>Applying colors...</td><td lang="ko">색상 적용 중...</td></tr><tr><td><code>stRestoring</code></td><td>Restoring original colors...</td><td lang="ko">원래 색상 복원 중...</td></tr><tr><td><code>msgDone</code></td><td>Colored {0} items.</td><td lang="ko">{0}개 항목에 색상을 적용했습니다.</td></tr><tr><td><code>msgDoneFail</code></td><td>Colored {0} items, {1} failed.</td><td lang="ko">{0}개 적용, {1}개 실패.</td></tr><tr><td><code>msgNothing</code></td><td>Nothing to color with these options.</td><td lang="ko">이 옵션으로 색상을 지정할 항목이 없습니다.</td></tr><tr><td><code>msgRestored</code></td><td>Restored {0} items.</td><td lang="ko">{0}개 항목을 복원했습니다.</td></tr><tr><td><code>msgRestoredFail</code></td><td>Restored {0} items, {1} failed.</td><td lang="ko">{0}개 복원, {1}개 실패.</td></tr><tr><td><code>stDefaulting</code></td><td>Setting default colors...</td><td lang="ko">기본 색상 적용 중...</td></tr><tr><td><code>msgDefault</code></td><td>Set {0} items to CATIA default colors.</td><td lang="ko">{0}개 항목을 CATIA 기본 색상으로 설정했습니다.</td></tr><tr><td><code>msgDefaultFail</code></td><td>Set {0} items to default, {1} failed.</td><td lang="ko">{0}개 설정, {1}개 실패.</td></tr><tr><td><code>msgNoSaved</code></td><td>Nothing to reset yet.</td><td lang="ko">초기화할 내용이 없습니다.</td></tr><tr><td><code>msgDocChanged</code></td><td>The saved colors belong to another document: {0}</td><td lang="ko">저장된 색상은 다른 문서의 것입니다: {0}</td></tr><tr><td><code>msgWrongDoc</code></td><td>This option does not match the active document.</td><td lang="ko">이 옵션은 활성 문서와 맞지 않습니다.</td></tr><tr><td><code>msgError</code></td><td>Error: {0}</td><td lang="ko">오류: {0}</td></tr>
+    </table></div>
+    <p class="note"><code>{0}</code> and <code>{1}</code> are filled in with counts and names. The window title bar stays in English in both languages.</p>
+  </section>
+
+  <section>
+    <h2>Known limitations</h2>
+    <ul>
+      <li>Reset works while CATIA stays open with the same document. The saved colors are lost if CATIA is closed, the document is closed, or the VBA project is reset.</li>
+      <li>Colors on assembly components are instance colors set in the assembly. Colors on parts inside a subassembly may be stored in that subassembly's document and mark it as modified.</li>
+      <li>A subassembly used more than once may only show the new colors correctly on one of its copies.</li>
+      <li>Only color is changed and restored. Transparency, materials and face-level colors are left alone, so a part with a material applied may not show its new color in a material view mode.</li>
+      <li>The current selection in CATIA is cleared when the macro runs.</li>
+      <li>Macros have no command for CATIA's "Auto" color, so Default Colors uses the closest match described above. Bodies get the standard color 210, 210, 255; if your site uses a different default, change <code>DEFAULT_RED</code>, <code>DEFAULT_GREEN</code> and <code>DEFAULT_BLUE</code> at the top of the module.</li>
+      <li>Default Colors does not remove colors placed on single faces or features inside a part.</li>
+      <li>The credit image's background is the standard Windows form gray. On a PC with a different window color theme, it shows as a slightly different gray box.</li>
+      <li>If the image cannot be loaded, for example when the Windows temp folder is not writable, the window opens without it.</li>
+    </ul>
+  </section>
+</main>
+<footer>Prepared for CATIA V5 VBA. Colors assembly components or part bodies and can restore the original colors.</footer>
+</div>
+<script>
+document.querySelectorAll('.copy').forEach(function (btn) {
+  btn.addEventListener('click', function () {
+    var text = document.getElementById(btn.dataset.target).textContent;
+    function done(ok) {
+      btn.textContent = ok ? 'Copied' : 'Select and copy manually';
+      setTimeout(function () { btn.textContent = 'Copy code'; }, 1800);
+    }
+    function fallback() {
+      var ta = document.createElement('textarea');
+      ta.value = text; document.body.appendChild(ta); ta.select();
+      var ok = false;
+      try { ok = document.execCommand('copy'); } catch (e) {}
+      document.body.removeChild(ta); done(ok);
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () { done(true); }, fallback);
+    } else { fallback(); }
+  });
+});
+</script>
+</body>
+</html>

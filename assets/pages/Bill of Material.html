@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CATIA V5 R21 BOM + Physical Properties Macro</title>
+<style>
+:root {
+  --bg:#f4f7fb; --card:#fff; --ink:#18212f; --muted:#667085;
+  --accent:#2557a7; --accent2:#17396d; --line:#d9e1ec; --code:#101828;
+  --warn:#9a6700; --warnbg:#fff8e6; --good:#0f766e; --goodbg:#ecfdf5;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:Segoe UI,Arial,sans-serif;background:var(--bg);color:var(--ink)}
+header{background:linear-gradient(135deg,var(--accent2),var(--accent));color:white;padding:42px 24px}
+header .wrap,main{max-width:1150px;margin:auto}
+h1{margin:0 0 10px;font-size:32px}
+.subtitle{margin:0;opacity:.92}
+main{padding:28px 20px 60px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px;margin-bottom:22px;box-shadow:0 6px 18px rgba(16,24,40,.05)}
+h2{color:var(--accent2);margin-top:0}
+.tree{background:#eef3fa;border-radius:10px;padding:18px 20px;font-family:Consolas,monospace;line-height:1.65;white-space:pre}
+.note{border-left:4px solid var(--accent);padding:12px 14px;background:#f0f5ff;border-radius:8px;color:#344054}
+.warn{border-left-color:var(--warn);background:var(--warnbg)}
+.good{border-left-color:var(--good);background:var(--goodbg)}
+.code-head{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.filetag{font-family:Consolas,monospace;background:#e9eff8;color:#17365f;padding:5px 9px;border-radius:7px;font-size:13px}
+pre{background:var(--code);color:#eef2f6;padding:20px;border-radius:10px;overflow:auto;line-height:1.45;font-size:13px;tab-size:4}
+table{width:100%;border-collapse:collapse}
+th,td{padding:10px 12px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{background:#f8fafc}
+code.inline{background:#eef2f6;padding:2px 5px;border-radius:4px}
+footer{color:var(--muted);font-size:13px;margin-top:24px}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <h1>CATIA V5 R21 BOM + Physical Properties Exporter</h1>
+    <p class="subtitle">CSV export macro for BOM, material, mass, volume, density, thickness, and assembly metadata</p>
+  </div>
+</header>
+
+<main>
+  <section class="card">
+    <h2>Project Structure</h2>
+    <div class="tree">VBAProject
+│
+└── Modules
+    └── BOMPhysicalProperties
+        └── CATMain</div>
+    <p class="note"><strong>Recommended setup:</strong> create one standard VBA module named <code class="inline">BOMPhysicalProperties</code> and paste the full code from this page into it.</p>
+  </section>
+
+  <section class="card">
+    <h2>What This Macro Exports</h2>
+    <table>
+      <tr><th>Column</th><th>Description</th></tr>
+      <tr><td>Part Number</td><td>CATIA product part number.</td></tr>
+      <tr><td>Quantity</td><td>Number of matching occurrences in the assembly.</td></tr>
+      <tr><td>Type</td><td>Part or Assembly.</td></tr>
+      <tr><td>Material</td><td>Applied CATIA material when available.</td></tr>
+      <tr><td>Mass Each (kg)</td><td>Mass of one component from CATIA inertia properties.</td></tr>
+      <tr><td>Total Mass (kg)</td><td>Mass Each × Quantity.</td></tr>
+      <tr><td>Volume (mm³)</td><td>Component volume converted to cubic millimetres.</td></tr>
+      <tr><td>Density (kg/m³)</td><td>Density returned by CATIA inertia properties.</td></tr>
+      <tr><td>Thickness (mm)</td><td>Defined thickness parameter if found, otherwise a thin-wall estimate.</td></tr>
+      <tr><td>Thickness Method</td><td>Shows whether thickness came from a parameter or geometric estimate.</td></tr>
+      <tr><td>Thickness Status</td><td>Explains confidence or whether thickness is unavailable.</td></tr>
+      <tr><td>Nomenclature / Revision / Description</td><td>Standard CATIA metadata.</td></tr>
+      <tr><td>Example Instance / Parent Assembly</td><td>Assembly-tree context.</td></tr>
+      <tr><td>File Path</td><td>Referenced CATPart or CATProduct path when accessible.</td></tr>
+    </table>
+  </section>
+
+  <section class="card">
+    <h2>Important Thickness Behavior</h2>
+    <p class="note good"><strong>Preferred method:</strong> if the CATPart contains an explicit thickness parameter, the macro reports it and labels the method <code>Parameter</code>.</p>
+    <p class="note warn"><strong>Fallback:</strong> if no thickness parameter is found, the macro estimates thickness using <code>2 × Volume / Wet Area</code>. This is most meaningful for thin, fairly constant-wall parts and should be verified for blocks, castings, ribs, or variable-wall geometry.</p>
+  </section>
+
+  <section class="card">
+    <h2>How to Install</h2>
+    <table>
+      <tr><th>Step</th><th>Action</th></tr>
+      <tr><td>1</td><td>Open the CATIA VBA editor.</td></tr>
+      <tr><td>2</td><td>Choose <strong>Insert → Module</strong>.</td></tr>
+      <tr><td>3</td><td>Rename the module to <code>BOMPhysicalProperties</code>.</td></tr>
+      <tr><td>4</td><td>Paste the full VBA code from this page into the module.</td></tr>
+      <tr><td>5</td><td>Use <strong>Debug → Compile VBAProject</strong>.</td></tr>
+      <tr><td>6</td><td>Open the CATProduct you want to analyze.</td></tr>
+      <tr><td>7</td><td>Run <code>CATMain</code>.</td></tr>
+      <tr><td>8</td><td>Choose where to save the CSV when CATIA displays the file-selection dialog.</td></tr>
+    </table>
+  </section>
+
+  <section class="card">
+    <h2>Expected Workflow</h2>
+    <div class="tree">Open CATProduct
+      ↓
+Run CATMain
+      ↓
+Scan the assembly tree
+      ↓
+Group repeated components
+      ↓
+Collect material / mass / volume / density
+      ↓
+Look for a thickness parameter
+      ↓
+Attempt fallback thickness estimate
+      ↓
+Choose CSV save location
+      ↓
+Create CSV report</div>
+  </section>
+
+  <section class="card">
+    <div class="code-head">
+      <h2>Full VBA Code</h2>
+      <span class="filetag">Module: BOMPhysicalProperties</span>
+    </div>
+    <pre><code>Option Explicit
+
+&#x27;=========================================================
+&#x27; CATIA BOM + PHYSICAL PROPERTIES CSV EXPORTER
+&#x27; CATIA V5 R21
+&#x27;=========================================================
+
+Public Sub CATMain()
+
+    Dim productDoc As ProductDocument
+    Dim rootProduct As Product
+    Dim bomData As Object
+    Dim savePath As String
+    Dim fileNumber As Integer
+    Dim key As Variant
+    Dim itemData As Variant
+    Dim itemNumber As Long
+
+    If CATIA.Documents.Count = 0 Then
+        MsgBox &quot;Please open a CATProduct before running the report.&quot;, _
+               vbExclamation, &quot;CATIA BOM + Properties&quot;
+        Exit Sub
+    End If
+
+    If TypeName(CATIA.ActiveDocument) &lt;&gt; &quot;ProductDocument&quot; Then
+        MsgBox &quot;The active document must be a CATProduct.&quot;, _
+               vbExclamation, &quot;CATIA BOM + Properties&quot;
+        Exit Sub
+    End If
+
+    Set productDoc = CATIA.ActiveDocument
+    Set rootProduct = productDoc.Product
+
+    Set bomData = CreateObject(&quot;Scripting.Dictionary&quot;)
+
+    Call ReadProductTree(rootProduct, bomData)
+
+    If bomData.Count = 0 Then
+        MsgBox &quot;No components were found.&quot;, _
+               vbInformation, &quot;CATIA BOM + Properties&quot;
+        Exit Sub
+    End If
+
+    savePath = CATIA.FileSelectionBox( _
+        &quot;Save CATIA BOM + Physical Properties&quot;, _
+        &quot;*.csv&quot;, _
+        1)
+
+    If savePath = &quot;&quot; Then Exit Sub
+
+    If LCase(Right(savePath, 4)) &lt;&gt; &quot;.csv&quot; Then
+        savePath = savePath &amp; &quot;.csv&quot;
+    End If
+
+    On Error GoTo WriteError
+
+    fileNumber = FreeFile
+    Open savePath For Output As #fileNumber
+
+    Print #fileNumber, CSVLine(Array( _
+        &quot;CATIA BOM + Physical Properties Report&quot;, _
+        &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;))
+
+    Print #fileNumber, CSVLine(Array( _
+        &quot;Assembly&quot;, rootProduct.PartNumber, _
+        &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;))
+
+    Print #fileNumber, CSVLine(Array( _
+        &quot;CATProduct&quot;, productDoc.Name, _
+        &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;))
+
+    Print #fileNumber, CSVLine(Array( _
+        &quot;Generated&quot;, CStr(Now), _
+        &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;))
+
+    Print #fileNumber, &quot;&quot;
+
+    Print #fileNumber, CSVLine(Array( _
+        &quot;Item&quot;, _
+        &quot;Part Number&quot;, _
+        &quot;Quantity&quot;, _
+        &quot;Type&quot;, _
+        &quot;Material&quot;, _
+        &quot;Mass Each (kg)&quot;, _
+        &quot;Total Mass (kg)&quot;, _
+        &quot;Volume (mm3)&quot;, _
+        &quot;Density (kg/m3)&quot;, _
+        &quot;Thickness (mm)&quot;, _
+        &quot;Thickness Method&quot;, _
+        &quot;Thickness Status&quot;, _
+        &quot;Nomenclature&quot;, _
+        &quot;Revision&quot;, _
+        &quot;Description&quot;, _
+        &quot;Example Instance&quot;, _
+        &quot;Parent Assembly&quot;, _
+        &quot;File Path&quot;))
+
+    itemNumber = 1
+
+    For Each key In bomData.Keys
+        itemData = bomData(key)
+
+        Print #fileNumber, CSVLine(Array( _
+            CStr(itemNumber), _
+            CStr(itemData(0)), _
+            CStr(itemData(1)), _
+            CStr(itemData(2)), _
+            CStr(itemData(3)), _
+            FormatCSVNumber(itemData(4)), _
+            FormatCSVNumber(itemData(5)), _
+            FormatCSVNumber(itemData(6)), _
+            FormatCSVNumber(itemData(7)), _
+            FormatCSVNumber(itemData(8)), _
+            CStr(itemData(9)), _
+            CStr(itemData(10)), _
+            CStr(itemData(11)), _
+            CStr(itemData(12)), _
+            CStr(itemData(13)), _
+            CStr(itemData(14)), _
+            CStr(itemData(15)), _
+            CStr(itemData(16))))
+
+        itemNumber = itemNumber + 1
+    Next key
+
+    Close #fileNumber
+
+    MsgBox &quot;Report exported successfully.&quot; &amp; _
+           vbCrLf &amp; vbCrLf &amp; savePath, _
+           vbInformation, &quot;CATIA BOM + Properties&quot;
+
+    Exit Sub
+
+WriteError:
+
+    On Error Resume Next
+    Close #fileNumber
+
+    MsgBox &quot;The CSV could not be written.&quot; &amp; _
+           vbCrLf &amp; vbCrLf &amp; _
+           &quot;Error &quot; &amp; CStr(Err.Number) &amp; _
+           vbCrLf &amp; Err.Description, _
+           vbCritical, &quot;CATIA BOM + Properties&quot;
+
+End Sub
+
+
+Private Sub ReadProductTree( _
+    ByVal parentProduct As Product, _
+    ByRef bomData As Object)
+
+    Dim children As Products
+    Dim child As Product
+    Dim i As Long
+
+    Dim partNumber As String
+    Dim instanceName As String
+    Dim parentName As String
+    Dim nomenclature As String
+    Dim revision As String
+    Dim description As String
+    Dim componentType As String
+    Dim filePath As String
+    Dim bomKey As String
+    Dim materialName As String
+
+    Dim massEach As Double
+    Dim totalMass As Double
+    Dim volumeMM3 As Double
+    Dim density As Double
+    Dim thicknessMM As Double
+    Dim thicknessMethod As String
+    Dim thicknessStatus As String
+    Dim quantity As Long
+    Dim itemData As Variant
+
+    Set children = parentProduct.Products
+    parentName = SafePartNumber(parentProduct)
+
+    For i = 1 To children.Count
+
+        Set child = children.Item(i)
+
+        partNumber = SafePartNumber(child)
+        instanceName = SafeInstanceName(child)
+        nomenclature = SafeNomenclature(child)
+        revision = SafeRevision(child)
+        description = SafeDescription(child)
+        filePath = GetProductFilePath(child)
+
+        If child.Products.Count &gt; 0 Then
+            componentType = &quot;Assembly&quot;
+        Else
+            componentType = &quot;Part&quot;
+        End If
+
+        materialName = &quot;&quot;
+        massEach = 0#
+        volumeMM3 = 0#
+        density = 0#
+        thicknessMM = 0#
+        thicknessMethod = &quot;&quot;
+        thicknessStatus = &quot;&quot;
+
+        If componentType = &quot;Part&quot; Then
+
+            materialName = GetMaterialName(child)
+
+            Call GetPhysicalProperties( _
+                child, massEach, volumeMM3, density)
+
+            Call GetThickness( _
+                child, volumeMM3, thicknessMM, _
+                thicknessMethod, thicknessStatus)
+
+        Else
+
+            thicknessStatus = &quot;N/A - Assembly&quot;
+
+        End If
+
+        If filePath &lt;&gt; &quot;&quot; Then
+            bomKey = UCase(filePath) &amp; &quot;|&quot; &amp; UCase(componentType)
+        Else
+            bomKey = UCase(partNumber) &amp; &quot;|&quot; &amp; UCase(componentType)
+        End If
+
+        If bomData.Exists(bomKey) Then
+
+            itemData = bomData(bomKey)
+            quantity = CLng(itemData(1)) + 1
+            itemData(1) = quantity
+
+            If CDbl(itemData(4)) &gt; 0 Then
+                itemData(5) = CDbl(itemData(4)) * quantity
+            End If
+
+            bomData(bomKey) = itemData
+
+        Else
+
+            quantity = 1
+            totalMass = massEach
+
+            ReDim itemData(0 To 16)
+
+            itemData(0) = partNumber
+            itemData(1) = quantity
+            itemData(2) = componentType
+            itemData(3) = materialName
+            itemData(4) = massEach
+            itemData(5) = totalMass
+            itemData(6) = volumeMM3
+            itemData(7) = density
+            itemData(8) = thicknessMM
+            itemData(9) = thicknessMethod
+            itemData(10) = thicknessStatus
+            itemData(11) = nomenclature
+            itemData(12) = revision
+            itemData(13) = description
+            itemData(14) = instanceName
+            itemData(15) = parentName
+            itemData(16) = filePath
+
+            bomData.Add bomKey, itemData
+
+        End If
+
+        If child.Products.Count &gt; 0 Then
+            Call ReadProductTree(child, bomData)
+        End If
+
+    Next i
+
+End Sub
+
+
+Private Sub GetPhysicalProperties( _
+    ByVal productObj As Product, _
+    ByRef massKg As Double, _
+    ByRef volumeMM3 As Double, _
+    ByRef densityKgM3 As Double)
+
+    Dim refProd As Product
+    Dim inertiaObj As Object
+    Dim analyzeObj As Object
+    Dim volumeM3 As Double
+
+    massKg = 0#
+    volumeMM3 = 0#
+    densityKgM3 = 0#
+
+    On Error Resume Next
+
+    Set refProd = productObj.ReferenceProduct
+
+    If Not refProd Is Nothing Then
+        Set inertiaObj = refProd.GetTechnologicalObject(&quot;Inertia&quot;)
+    End If
+
+    If inertiaObj Is Nothing Then
+        Set inertiaObj = productObj.GetTechnologicalObject(&quot;Inertia&quot;)
+    End If
+
+    If Not inertiaObj Is Nothing Then
+        massKg = inertiaObj.Mass
+        densityKgM3 = inertiaObj.Density
+    End If
+
+    Set analyzeObj = Nothing
+
+    If Not refProd Is Nothing Then
+        Set analyzeObj = refProd.Analyze
+    End If
+
+    If analyzeObj Is Nothing Then
+        Set analyzeObj = productObj.Analyze
+    End If
+
+    If Not analyzeObj Is Nothing Then
+
+        volumeM3 = analyzeObj.Volume
+
+        If volumeM3 &gt; 0# Then
+            volumeMM3 = volumeM3 * 1000000000#
+        End If
+
+    End If
+
+    On Error GoTo 0
+
+End Sub
+
+
+Private Sub GetThickness( _
+    ByVal productObj As Product, _
+    ByVal volumeMM3 As Double, _
+    ByRef thicknessMM As Double, _
+    ByRef thicknessMethod As String, _
+    ByRef thicknessStatus As String)
+
+    Dim definedThickness As Double
+    Dim wetAreaMM2 As Double
+
+    thicknessMM = 0#
+    thicknessMethod = &quot;&quot;
+    thicknessStatus = &quot;&quot;
+
+    definedThickness = FindThicknessParameter(productObj)
+
+    If definedThickness &gt; 0# Then
+
+        thicknessMM = definedThickness
+        thicknessMethod = &quot;Parameter&quot;
+        thicknessStatus = &quot;Defined thickness parameter&quot;
+
+        Exit Sub
+
+    End If
+
+    wetAreaMM2 = GetWetAreaMM2(productObj)
+
+    If volumeMM3 &gt; 0# And wetAreaMM2 &gt; 0# Then
+
+        thicknessMM = (2# * volumeMM3) / wetAreaMM2
+        thicknessMethod = &quot;Geometric estimate (2V/A)&quot;
+        thicknessStatus = _
+            &quot;Approximate - verify for non-sheet geometry&quot;
+
+        Exit Sub
+
+    End If
+
+    thicknessMM = 0#
+    thicknessMethod = &quot;Unavailable&quot;
+    thicknessStatus = &quot;Could not determine thickness&quot;
+
+End Sub
+
+
+Private Function FindThicknessParameter( _
+    ByVal productObj As Product) As Double
+
+    Dim refProd As Product
+    Dim parametersObj As Parameters
+    Dim parameterObj As Parameter
+    Dim i As Long
+    Dim paramName As String
+    Dim paramValueString As String
+    Dim numericValue As Double
+
+    FindThicknessParameter = 0#
+
+    On Error Resume Next
+
+    Set refProd = productObj.ReferenceProduct
+
+    If refProd Is Nothing Then
+        Set refProd = productObj
+    End If
+
+    Set parametersObj = refProd.Parameters
+
+    If parametersObj Is Nothing Then
+        On Error GoTo 0
+        Exit Function
+    End If
+
+    For i = 1 To parametersObj.Count
+
+        Set parameterObj = parametersObj.Item(i)
+
+        paramName = LCase(parameterObj.Name)
+
+        If InStr(paramName, &quot;thickness&quot;) &gt; 0 Or _
+           InStr(paramName, &quot;thick&quot;) &gt; 0 Or _
+           InStr(paramName, &quot;epaisseur&quot;) &gt; 0 Then
+
+            Err.Clear
+
+            paramValueString = parameterObj.ValueAsString
+
+            If Err.Number = 0 Then
+
+                numericValue = ExtractNumber(paramValueString)
+
+                If numericValue &gt; 0# Then
+
+                    FindThicknessParameter = numericValue
+
+                    On Error GoTo 0
+                    Exit Function
+
+                End If
+
+            End If
+
+        End If
+
+    Next i
+
+    On Error GoTo 0
+
+End Function
+
+
+Private Function GetWetAreaMM2( _
+    ByVal productObj As Product) As Double
+
+    Dim refProd As Product
+    Dim analyzeObj As Object
+
+    GetWetAreaMM2 = 0#
+
+    On Error Resume Next
+
+    Set refProd = productObj.ReferenceProduct
+
+    If Not refProd Is Nothing Then
+        Set analyzeObj = refProd.Analyze
+    End If
+
+    If analyzeObj Is Nothing Then
+        Set analyzeObj = productObj.Analyze
+    End If
+
+    If Not analyzeObj Is Nothing Then
+        GetWetAreaMM2 = analyzeObj.WetArea
+    End If
+
+    On Error GoTo 0
+
+End Function
+
+
+Private Function GetMaterialName( _
+    ByVal productObj As Product) As String
+
+    Dim refProd As Product
+    Dim managerObj As Object
+    Dim materialObj As Object
+    Dim refDoc As Object
+    Dim partObj As Object
+
+    GetMaterialName = &quot;&quot;
+
+    On Error Resume Next
+
+    Set refProd = productObj.ReferenceProduct
+
+    If Not refProd Is Nothing Then
+
+        Set managerObj = refProd.GetItem(&quot;CATMatManagerVBExt&quot;)
+
+        If Not managerObj Is Nothing Then
+
+            Set materialObj = Nothing
+
+            managerObj.GetMaterialOnProduct _
+                refProd, materialObj
+
+            If Not materialObj Is Nothing Then
+
+                GetMaterialName = materialObj.Name
+
+                On Error GoTo 0
+                Exit Function
+
+            End If
+
+        End If
+
+    End If
+
+    Set refDoc = Nothing
+
+    If Not refProd Is Nothing Then
+        Set refDoc = refProd.Parent
+    End If
+
+    If Not refDoc Is Nothing Then
+
+        Set partObj = Nothing
+        Set partObj = refDoc.Part
+
+        If Not partObj Is Nothing Then
+
+            Set managerObj = Nothing
+            Set managerObj = partObj.GetItem(&quot;CATMatManagerVBExt&quot;)
+
+            If Not managerObj Is Nothing Then
+
+                Set materialObj = Nothing
+
+                managerObj.GetMaterialOnPart _
+                    partObj, materialObj
+
+                If Not materialObj Is Nothing Then
+                    GetMaterialName = materialObj.Name
+                End If
+
+            End If
+
+        End If
+
+    End If
+
+    On Error GoTo 0
+
+End Function
+
+
+Private Function GetProductFilePath( _
+    ByVal productObj As Product) As String
+
+    Dim refProd As Product
+    Dim parentObj As Object
+
+    GetProductFilePath = &quot;&quot;
+
+    On Error Resume Next
+
+    Set refProd = productObj.ReferenceProduct
+
+    If Not refProd Is Nothing Then
+
+        Set parentObj = refProd.Parent
+        GetProductFilePath = parentObj.FullName
+
+    End If
+
+    On Error GoTo 0
+
+End Function
+
+
+Private Function SafePartNumber( _
+    ByVal productObj As Product) As String
+
+    SafePartNumber = &quot;&quot;
+
+    On Error Resume Next
+
+    SafePartNumber = productObj.PartNumber
+
+    If Trim(SafePartNumber) = &quot;&quot; Then
+        SafePartNumber = productObj.Name
+    End If
+
+    On Error GoTo 0
+
+End Function
+
+
+Private Function SafeInstanceName( _
+    ByVal productObj As Product) As String
+
+    SafeInstanceName = &quot;&quot;
+
+    On Error Resume Next
+    SafeInstanceName = productObj.Name
+    On Error GoTo 0
+
+End Function
+
+
+Private Function SafeNomenclature( _
+    ByVal productObj As Product) As String
+
+    SafeNomenclature = &quot;&quot;
+
+    On Error Resume Next
+    SafeNomenclature = productObj.Nomenclature
+    On Error GoTo 0
+
+End Function
+
+
+Private Function SafeRevision( _
+    ByVal productObj As Product) As String
+
+    SafeRevision = &quot;&quot;
+
+    On Error Resume Next
+    SafeRevision = productObj.Revision
+    On Error GoTo 0
+
+End Function
+
+
+Private Function SafeDescription( _
+    ByVal productObj As Product) As String
+
+    SafeDescription = &quot;&quot;
+
+    On Error Resume Next
+
+    SafeDescription = productObj.DescriptionRef
+
+    If SafeDescription = &quot;&quot; Then
+        SafeDescription = productObj.DescriptionInst
+    End If
+
+    On Error GoTo 0
+
+End Function
+
+
+Private Function ExtractNumber( _
+    ByVal valueString As String) As Double
+
+    Dim cleaned As String
+
+    cleaned = Trim(valueString)
+    cleaned = Replace(cleaned, &quot;,&quot;, &quot;.&quot;)
+
+    On Error Resume Next
+    ExtractNumber = Val(cleaned)
+    On Error GoTo 0
+
+End Function
+
+
+Private Function CSVLine( _
+    ByVal fields As Variant) As String
+
+    Dim i As Long
+    Dim result As String
+
+    result = &quot;&quot;
+
+    For i = LBound(fields) To UBound(fields)
+
+        If i &gt; LBound(fields) Then
+            result = result &amp; &quot;,&quot;
+        End If
+
+        result = result &amp; CSVField(CStr(fields(i)))
+
+    Next i
+
+    CSVLine = result
+
+End Function
+
+
+Private Function CSVField( _
+    ByVal value As String) As String
+
+    Dim cleanedValue As String
+
+    cleanedValue = Replace(value, , &quot;&quot;)
+
+    CSVField =  &amp; cleanedValue &amp; 
+
+End Function
+
+
+Private Function FormatCSVNumber( _
+    ByVal value As Variant) As String
+
+    If IsNumeric(value) Then
+
+        If CDbl(value) = 0# Then
+            FormatCSVNumber = &quot;&quot;
+        Else
+            FormatCSVNumber = Format(CDbl(value), &quot;0.######&quot;)
+        End If
+
+    Else
+
+        FormatCSVNumber = &quot;&quot;
+
+    End If
+
+End Function
+</code></pre>
+  </section>
+
+  <section class="card">
+    <h2>CSV Output Columns</h2>
+    <div class="tree">Item
+Part Number
+Quantity
+Type
+Material
+Mass Each (kg)
+Total Mass (kg)
+Volume (mm3)
+Density (kg/m3)
+Thickness (mm)
+Thickness Method
+Thickness Status
+Nomenclature
+Revision
+Description
+Example Instance
+Parent Assembly
+File Path</div>
+  </section>
+
+  <section class="card">
+    <h2>Notes & Limitations</h2>
+    <p class="note">Mass and density depend on CATIA being able to evaluate the component's inertia properties. Material may be blank if no CATIA material is applied or if the model stores material information differently.</p>
+    <p class="note warn">The geometric thickness estimate is not equivalent to manually using CATIA's interactive Measure Thickness command. Rows marked <code>Geometric estimate (2V/A)</code> should be treated as values requiring engineering verification.</p>
+    <p class="note">Duplicate components are grouped primarily by referenced file path when available, reducing the chance of combining unrelated files that share the same Part Number.</p>
+  </section>
+
+  <section class="card">
+    <h2>Viewing the CSV</h2>
+    <p>The report does not require Microsoft Excel. The CSV can be opened in Excel, LibreOffice Calc, a text editor, or the separate browser-based CATIA BOM CSV Viewer.</p>
+  </section>
+
+  <footer>
+    Prepared for CATIA V5 R21 VBA. Validate automatically extracted engineering properties before using them for released design or manufacturing decisions.
+  </footer>
+</main>
+</body>
+</html>

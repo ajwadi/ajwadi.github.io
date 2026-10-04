@@ -1,0 +1,2258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>CATIA Component Renamer v4 - VBA Package</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono&display=swap">
+<style>
+:root {
+  --bg:#eef1f5; --panel:#ffffff; --ink:#16202c; --muted:#566475; --line:#d3dae3;
+  --accent:#2c5aa0; --accent2:#1f437a; --code-bg:#f6f8fb; --note:#fff6dc; --note-line:#d9a400;
+  box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --bg:#141a22; --panel:#1c242f; --ink:#e6ebf2; --muted:#9aa8b9; --line:#324052; --accent:#6f9fe6; --accent2:#8fb5ee; --code-bg:#151c25; --note:#3a3216; --note-line:#d9a400; }
+}
+:root[data-theme="dark"] { --bg:#141a22; --panel:#1c242f; --ink:#e6ebf2; --muted:#9aa8b9; --line:#324052; --accent:#6f9fe6; --accent2:#8fb5ee; --code-bg:#151c25; --note:#3a3216; --note-line:#d9a400; }
+*, *::before, *::after { box-sizing:inherit; }
+html { scroll-padding-top:env(safe-area-inset-top,0px); }
+body { margin:0; background:var(--bg); color:var(--ink); font-family:"IBM Plex Sans","Segoe UI","Malgun Gothic",Arial,sans-serif; font-size:16px; line-height:1.6; }
+.wrap { max-width:920px; margin:0 auto; padding:0 20px; }
+header { padding:40px 0 8px; }
+h1 { font-size:2rem; line-height:1.2; margin:0 0 6px; font-weight:600; letter-spacing:-0.01em; }
+.subtitle { margin:0; color:var(--muted); max-width:62ch; }
+.tree { font-family:"IBM Plex Mono",Consolas,monospace; font-size:.85rem; white-space:pre; overflow-x:auto; background:var(--code-bg); border:1px solid var(--line); border-radius:4px; padding:14px; line-height:1.45; }
+.scroll { max-height:420px; overflow:auto; }
+.palettes { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:14px 22px; margin:26px 0 8px; }
+.strip { display:flex; height:34px; border:1px solid var(--line); }
+.strip span { flex:1; }
+.pal p { margin:4px 0 0; font-size:.85rem; color:var(--muted); }
+section { background:var(--panel); border:1px solid var(--line); border-radius:6px; padding:22px 24px; margin:18px 0; }
+h2 { font-size:1.15rem; margin:0 0 10px; font-weight:600; }
+p { margin:0 0 10px; max-width:72ch; }
+ul, ol { margin:0; padding-left:22px; max-width:72ch; }
+li { margin-bottom:6px; }
+code, pre { font-family:"IBM Plex Mono",Consolas,monospace; }
+code { font-size:.9em; }
+.code-head { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:10px; margin-bottom:10px; }
+.code-head h2 { margin:0; }
+.right { display:flex; align-items:center; gap:10px; }
+.filetag { font-size:.8rem; color:var(--muted); border:1px solid var(--line); border-radius:4px; padding:3px 8px; }
+.copy { background:var(--accent); color:#fff; border:0; border-radius:4px; padding:8px 16px; font:inherit; font-size:.9rem; font-weight:500; cursor:pointer; }
+.copy:hover { background:var(--accent2); }
+.copy:focus-visible { outline:3px solid var(--note-line); outline-offset:2px; }
+:root[data-theme="dark"] .copy { color:#10161e; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .copy { color:#10161e; } }
+pre { margin:0; background:var(--code-bg); border:1px solid var(--line); border-radius:4px; padding:14px; max-height:520px; overflow:auto; font-size:.8rem; line-height:1.5; }
+.logo { display:block; max-width:100%; height:auto; margin:10px 0 0; border:1px solid var(--line); }
+.note { background:var(--note); border-left:4px solid var(--note-line); padding:10px 14px; margin:12px 0 0; }
+.wrapx { overflow-x:auto; }
+table { border-collapse:collapse; width:100%; font-size:.88rem; }
+th, td { text-align:left; padding:6px 10px; border-bottom:1px solid var(--line); vertical-align:top; }
+th { color:var(--muted); font-weight:500; }
+footer { color:var(--muted); font-size:.85rem; padding:8px 0 40px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>CATIA Component Renamer v4</h1>
+  <p class="subtitle">Preview, rename, undo, English / Korean, and now a credit image centered at the bottom of the window. Three code blocks to paste: the form, the module and the button class.</p>
+</header>
+<main>
+  <section>
+    <h2>New in v4</h2>
+    <ul>
+      <li><strong>Credit image centered at the bottom.</strong> The image is stored inside the code as text, at the bottom of the <code>Renamer</code> module, so there is no image file to install and no wording typed into the code. <img class="logo" src="data:image/gif;base64,R0lGODdhwwAPAIQAAPDw8Nfc4MTM1LXAy6e0wpqpuo2fsn+SqXKIoGuCnWV9mVdxkEhlhjtafyxOdR5CbA81YgAqWgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACwAAAAAwwAPAAAI/wABCBxIsKDBgwgTKlzIsKHDhxAjSpxIsaLFixgzatzoEEGEAQQfNBh4IIIAggYeRICwIAAAjxFWKiCpMgKDkwRjxnRQQCABnTETQCBY4AEAoBEQHCVQ8EDNmwIb6HzQE6bOlzpZuhz4MyYEpQ2UCkQwkmBJnEsBDHAQsyWAsAQbMBXIwOhAAQxiPjjgMwJBBEqtxvwboSyAkoYdNOAr0CnTAAscvCwb4IGBlw/mIoCwVWCEuQYg9PxZUPTABTM/F1Q9EEHmsZzfii3AmWxB2wDwSubqN7foAbEDQJg7UDHjtHsBBGCwQHbcucIdgFQOQYHLtUpJtw5s+HaDBj0rK/8oK+CBgN0AhockgBvAAqXqB8IdyBpASgDaT88UCAFkfc/EpRcgXPMt1d5Y3VnGm3xKvfdScwSVdx59TJkkkACXFfgWaAsYsN8B3RHAWX4vcYcQWQM8ABlgZSHAl3T49ebdhZmROFlOAX5kY1EC8ZgWjgv+NdJ8Pwlw4I2tMRAkcCcJ8BEEaI314nSqLbAXWhrKFdUAwkUlFoUkAoakQbYtYCWS5tk3k41jAcWXjQR0999nXV0FwAMgoeYZUBUSB+eQU1UF1EgHtlenTVspUJ1BaXoIoEAG5NUASFIhxVR5Ai3Qk4YbhhnYoEJSV9VIAwBlFJtIAheAjSACSd8AbCr/MBOUj7oaY1NDfongjEkGCRllEXQmUKlT1SpQAIo6Jx9TJenUHKfDeTomr62NpMBxkwq4XnsOXBafl7bex2aKBaD334/8DQiWrtNOq2BfQR5l0LXy+UfAAHIqGxVTMPJ3WIicldoZAyYedKRtaTbW3AEOPBbZmAg0h0C/B8RGYY+mofqAA8ed+9/E01XsEqcHk/dwvArYJW9BCR/W3GfCXXbYUFkSgOlADBggnFjnieWAW0W2W613Pg47lH0qaTWmj07FBFVOOvHUF58CKWDhnjopZelhT+FEMlJYeeUWbzoxMN3KAxWt1lCq4es0pbrKpQCEjSmJl17HLbdTT2HbJMnR34AHLvhFBDgQ5eCIJ6744h1BICPjkEcu+eSUV2755RsFBAA7" alt="Credit line reading: macro developed by AISHAQUE" width="195" height="15"></li>
+      <li><strong>Everything else is the same as v3,</strong> including the fix for the "Type mismatch" error in the Korean text decoding.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Updating from v3</h2>
+    <ol>
+      <li>Open the code of <code>frmComponentRenamer</code>, select all, delete, and paste block 1. Keep the form itself; only its code changes.</li>
+      <li>Do the same in the <code>Renamer</code> module with block 2.</li>
+      <li>Block 3, <code>clsButtonHandler</code>, has not changed. It is here so the page is complete.</li>
+      <li>Debug, Compile, then run <code>CATMain</code>.</li>
+    </ol>
+    <p class="note"><strong>Names must match exactly:</strong> the form's <code>(Name)</code> is <code>frmComponentRenamer</code>, the module is <code>Renamer</code>, and the class module is <code>clsButtonHandler</code>.</p>
+    <p class="note"><strong>Red lines near the top of Renamer are normal.</strong> The module holds two versions of a Windows declaration, and the editor colors the unused one red. It still compiles and runs.</p>
+    <p class="note"><strong>First run:</strong> this version was written and reviewed but not run inside CATIA. Check that the image appears, and try Rename and then Undo on a copy of a small assembly before using it on real work.</p>
+  </section>
+
+  <section>
+    <h2>Project structure</h2>
+    <div class="tree">VBAProject
+|
++-- Forms
+|   +-- frmComponentRenamer      (blank in the designer, built by code)
+|
++-- Modules
+|   +-- Renamer                  (CATMain, rename, undo, text, credit image)
+|
++-- Class Modules
+    +-- clsButtonHandler         (handles the button clicks)</div>
+  </section>
+
+  <section>
+    <div class="code-head"><h2>1. Form code</h2><div class="right"><span class="filetag">frmComponentRenamer</span><button class="copy" data-target="form">Copy code</button></div></div>
+    <pre><code id="form">Option Explicit
+
+'=========================================================
+' frmComponentRenamer
+' Leave the form blank in the designer.
+' All controls are created by code when the form opens.
+'=========================================================
+
+Private ButtonHandlers As Collection
+Private mDoc As ProductDocument
+Private mLastCsv As String      'rename map of the last rename done in this window
+Private mHasDocs As Boolean
+
+
+'=========================================================
+' FORM STARTUP
+'=========================================================
+
+Private Sub UserForm_Initialize()
+
+    Dim docs As Documents
+    Dim doc As Document
+    Dim ctrl As Object
+    Dim i As Long
+
+    Me.Caption = APP_TITLE
+    Me.Width = 540
+    Me.Height = 500
+
+    Set ButtonHandlers = New Collection
+
+    'Remember the language chosen last time
+    gKorean = (GetSetting("CatiaComponentRenamer", "Options", "Language", "EN") = "KO")
+
+    '---------------------------------------
+    'TITLE AND LANGUAGE BUTTON
+    '---------------------------------------
+
+    Set ctrl = AddLabel("lblTitle", 16, 12, 380)
+    ctrl.Height = 22
+    ctrl.Font.Size = 14
+    ctrl.Font.Bold = True
+
+    Set ctrl = AddButton("cmdLanguage", 416, 12, 100)
+    ctrl.Height = 22
+
+    AddLabel "lblSubtitle", 16, 38, 500
+
+    '---------------------------------------
+    'DOCUMENT DROPDOWN
+    '---------------------------------------
+
+    AddLabel "lblDocument", 16, 62, 100
+
+    Set ctrl = Me.Controls.Add("Forms.ComboBox.1", "cmbDocument", True)
+
+    With ctrl
+        .Left = 16
+        .Top = 78
+        .Width = 500
+        .Height = 20
+        .Style = 2          'drop-down list, no typing
+    End With
+
+    Set docs = CATIA.Documents
+
+    For i = 1 To docs.Count
+
+        Set doc = docs.Item(i)
+
+        If TypeName(doc) = "ProductDocument" Then
+            ctrl.AddItem doc.Name
+        End If
+
+    Next i
+
+    If ctrl.ListCount &gt; 0 Then
+        ctrl.ListIndex = 0
+    End If
+
+    mHasDocs = (ctrl.ListCount &gt; 0)
+
+    '---------------------------------------
+    'PREFIX, START NUMBER, DIGITS
+    '---------------------------------------
+
+    AddLabel "lblPrefix", 16, 108, 180
+    AddTextBox "txtPrefix", "PART_", 16, 124, 180
+
+    AddLabel "lblStartNumber", 212, 108, 90
+    AddTextBox "txtStartNumber", "1", 212, 124, 80
+
+    AddLabel "lblDigits", 308, 108, 60
+    AddTextBox "txtDigits", "3", 308, 124, 60
+
+    '---------------------------------------
+    'OPTIONS
+    '---------------------------------------
+
+    AddCheckBox "chkRecursive", 16, 152, 170
+    AddCheckBox "chkInstanceName", 200, 152, 170
+
+    '---------------------------------------
+    'PLAN LIST
+    '---------------------------------------
+
+    AddLabel "lblColType", 20, 182, 60
+    AddLabel "lblColOld", 90, 182, 140
+    AddLabel "lblColNew", 240, 182, 140
+    AddLabel "lblColResult", 390, 182, 100
+
+    Set ctrl = Me.Controls.Add("Forms.ListBox.1", "lstPlan", True)
+
+    With ctrl
+        .Left = 16
+        .Top = 198
+        .Width = 500
+        .Height = 190
+        .ColumnCount = 4
+        .ColumnWidths = "70 pt;150 pt;150 pt;300 pt"
+    End With
+
+    '---------------------------------------
+    'STATUS
+    '---------------------------------------
+
+    Set ctrl = AddLabel("lblStatus", 16, 396, 500)
+    ctrl.Height = 24
+
+    '---------------------------------------
+    'BUTTONS
+    '---------------------------------------
+
+    AddButton "cmdPreview", 16, 426, 110
+    AddButton "cmdRename", 134, 426, 150
+    AddButton "cmdUndo", 292, 426, 120
+    AddButton "cmdClose", 420, 426, 96
+
+    If Not mHasDocs Then
+        Me.Controls("cmdPreview").Enabled = False
+        Me.Controls("cmdRename").Enabled = False
+        Me.Controls("cmdUndo").Enabled = False
+    End If
+
+    '---------------------------------------
+    'CREDIT IMAGE, CENTERED AT THE BOTTOM
+    'The picture data is at the bottom of the Renamer module.
+    '---------------------------------------
+
+    Set ctrl = Me.Controls.Add("Forms.Image.1", "imgCredit", True)
+
+    With ctrl
+        .Left = 16
+        .Top = 460
+        .BorderStyle = 0
+        .BackStyle = 0
+        .AutoSize = True
+    End With
+
+    If Renamer.LoadCreditImage(ctrl) Then
+        ctrl.Left = 266 - ctrl.Width / 2
+        Me.Height = 500 + ctrl.Height + 6
+    Else
+        ctrl.Visible = False
+    End If
+
+    ApplyLanguage
+
+End Sub
+
+
+Private Sub UserForm_Terminate()
+
+    Set ButtonHandlers = Nothing
+    Set mDoc = Nothing
+    Renamer.ClearPlan
+
+End Sub
+
+
+'=========================================================
+' LANGUAGE
+'=========================================================
+
+Public Sub ToggleLanguage()
+
+    gKorean = Not gKorean
+
+    If gKorean Then
+        SaveSetting "CatiaComponentRenamer", "Options", "Language", "KO"
+    Else
+        SaveSetting "CatiaComponentRenamer", "Options", "Language", "EN"
+    End If
+
+    ApplyLanguage
+
+End Sub
+
+
+Private Sub ApplyLanguage()
+
+    Dim ctrl As Object
+    Dim fontName As String
+
+    If gKorean Then
+        fontName = "Malgun Gothic"
+    Else
+        fontName = "Tahoma"
+    End If
+
+    On Error Resume Next
+
+    For Each ctrl In Me.Controls
+        ctrl.Font.Name = fontName
+    Next ctrl
+
+    On Error GoTo 0
+
+    SetCaption "lblTitle", "title"
+    SetCaption "lblSubtitle", "subtitle"
+    SetCaption "lblDocument", "lbl_doc"
+    SetCaption "lblPrefix", "lbl_prefix"
+    SetCaption "lblStartNumber", "lbl_start"
+    SetCaption "lblDigits", "lbl_digits"
+    SetCaption "chkRecursive", "chk_recursive"
+    SetCaption "chkInstanceName", "chk_instance"
+    SetCaption "lblColType", "col_type"
+    SetCaption "lblColOld", "col_old"
+    SetCaption "lblColNew", "col_new"
+    SetCaption "lblColResult", "col_result"
+    SetCaption "cmdPreview", "btn_preview"
+    SetCaption "cmdRename", "btn_rename"
+    SetCaption "cmdUndo", "btn_undo"
+    SetCaption "cmdClose", "btn_close"
+
+    'The language button shows the language you can switch TO
+    Me.Controls("cmdLanguage").Caption = Renamer.OtherLanguageName()
+
+    FillList
+
+    If mHasDocs Then
+        SetStatus T("st_ready")
+    Else
+        SetStatus T("st_nodoc")
+    End If
+
+End Sub
+
+
+Private Sub SetCaption(ByVal ctrlName As String, ByVal textKey As String)
+
+    Me.Controls(ctrlName).Caption = T(textKey)
+
+End Sub
+
+
+'=========================================================
+' BUTTON ACTIONS (called by clsButtonHandler)
+'=========================================================
+
+Public Sub RunPreview()
+
+    If Not PreparePlan() Then
+        Exit Sub
+    End If
+
+    FillList
+
+    SetStatus T("st_preview", _
+        Renamer.CountKind(KIND_PART), _
+        Renamer.CountKind(KIND_INST))
+
+End Sub
+
+
+Public Sub RunRename()
+
+    If Not PreparePlan() Then
+        Exit Sub
+    End If
+
+    FillList
+    ExecutePlan False
+
+End Sub
+
+
+Public Sub RunUndo()
+
+    Dim csvFile As String
+    Dim loaded As Boolean
+    Dim errText As String
+
+    If Not SelectDocument() Then
+        Exit Sub
+    End If
+
+    '---------------------------------------
+    'WHICH RENAME MAP?
+    'The last rename done in this window, or a file you pick.
+    '---------------------------------------
+
+    csvFile = mLastCsv
+
+    If csvFile = "" Then
+
+        On Error Resume Next
+        csvFile = CATIA.FileSelectionBox(T("undo_pick"), "*.csv", 0)   '0 = open
+        On Error GoTo 0
+
+        If csvFile = "" Then
+            SetStatus T("st_ready")
+            Exit Sub
+        End If
+
+    End If
+
+    '---------------------------------------
+    'BUILD THE REVERSE PLAN (reads only)
+    '---------------------------------------
+
+    On Error GoTo PlanError
+    loaded = Renamer.BuildUndoPlan(mDoc.Product, csvFile)
+    On Error GoTo 0
+
+    FillList
+
+    If Not loaded Then
+        Renamer.ShowMessage T("undo_badfile", csvFile), vbExclamation
+        SetStatus T("st_ready")
+        Exit Sub
+    End If
+
+    ExecutePlan True
+    Exit Sub
+
+PlanError:
+
+    errText = "Error " &amp; CStr(Err.Number) &amp; ": " &amp; Err.Description
+    On Error GoTo 0
+
+    SetStatus T("st_error")
+    Renamer.ShowMessage T("msg_read_error", errText), vbCritical
+
+End Sub
+
+
+Public Sub CloseForm()
+
+    Unload Me
+
+End Sub
+
+
+'=========================================================
+' CONFIRM, SAVE THE MAP, APPLY, REPORT
+' Used by both Rename and Undo.
+'=========================================================
+
+Private Sub ExecutePlan(ByVal isUndo As Boolean)
+
+    Dim partCount As Long
+    Dim instCount As Long
+    Dim confirmText As String
+    Dim csvPath As String
+    Dim errText As String
+    Dim updateNote As String
+    Dim summary As String
+    Dim okCount As Long
+    Dim failCount As Long
+    Dim skipCount As Long
+
+    partCount = Renamer.CountKind(KIND_PART)
+    instCount = Renamer.CountKind(KIND_INST)
+
+    If partCount + instCount = 0 Then
+
+        If isUndo Then
+            Renamer.ShowMessage T("undo_nomatch"), vbExclamation
+        Else
+            Renamer.ShowMessage T("msg_nothing"), vbInformation
+        End If
+
+        SetStatus T("st_nothing")
+        Exit Sub
+
+    End If
+
+    '---------------------------------------
+    'CONFIRM
+    '---------------------------------------
+
+    If isUndo Then
+        confirmText = T("confirm_undo", mDoc.Name, partCount, instCount)
+    Else
+        confirmText = T("confirm_rename", mDoc.Name, partCount, instCount)
+    End If
+
+    If Renamer.ShowMessage(confirmText, vbYesNo + vbQuestion) &lt;&gt; vbYes Then
+        SetStatus T("st_cancelled")
+        Exit Sub
+    End If
+
+    '---------------------------------------
+    'SAVE THE OLD-TO-NEW MAP BEFORE CHANGING ANYTHING
+    '---------------------------------------
+
+    csvPath = Renamer.SavePlanCsv(mDoc)
+
+    If csvPath = "" Then
+
+        If Renamer.ShowMessage(T("msg_csv_fail"), vbYesNo + vbExclamation) &lt;&gt; vbYes Then
+            SetStatus T("st_cancelled")
+            Exit Sub
+        End If
+
+    End If
+
+    '---------------------------------------
+    'APPLY
+    '---------------------------------------
+
+    SetBusy True
+
+    If isUndo Then
+        SetStatus T("st_undoing")
+    Else
+        SetStatus T("st_working")
+    End If
+
+    On Error Resume Next
+    CATIA.RefreshDisplay = False
+    On Error GoTo RenameError
+
+    Renamer.ApplyPlan
+
+Finish:
+
+    '---------------------------------------
+    'UPDATE AND REFRESH CATIA
+    '---------------------------------------
+
+    On Error Resume Next
+
+    Err.Clear
+    mDoc.Product.Update
+
+    If Err.Number &lt;&gt; 0 Then
+        updateNote = T("sum_update", Err.Description)
+        Err.Clear
+    End If
+
+    CATIA.RefreshDisplay = True
+
+    On Error GoTo 0
+
+    '---------------------------------------
+    'REPORT
+    '---------------------------------------
+
+    Renamer.UpdatePlanCsv
+    FillList
+    SetBusy False
+
+    'After a rename, Undo uses this map. After an undo, it asks for a file.
+    If isUndo Then
+        mLastCsv = ""
+    Else
+        mLastCsv = csvPath
+    End If
+
+    okCount = Renamer.CountResults(RESULT_OK)
+    failCount = Renamer.CountResults(RESULT_FAILED)
+    skipCount = Renamer.CountResults(RESULT_SKIPPED)
+
+    summary = T("sum_counts", okCount, failCount, skipCount)
+
+    SetStatus T("st_done", summary)
+
+    If csvPath &lt;&gt; "" Then
+        summary = summary &amp; vbCrLf &amp; vbCrLf &amp; T("sum_csv", csvPath)
+    End If
+
+    If updateNote &lt;&gt; "" Then
+        summary = summary &amp; vbCrLf &amp; vbCrLf &amp; updateNote
+    End If
+
+    If errText &lt;&gt; "" Then
+        summary = summary &amp; vbCrLf &amp; vbCrLf &amp; T("sum_stopped", errText)
+    End If
+
+    If failCount &gt; 0 Or errText &lt;&gt; "" Then
+        Renamer.ShowMessage summary &amp; vbCrLf &amp; vbCrLf &amp; T("sum_details"), vbExclamation
+    Else
+        Renamer.ShowMessage summary, vbInformation
+    End If
+
+    Exit Sub
+
+RenameError:
+
+    errText = "Error " &amp; CStr(Err.Number) &amp; ": " &amp; Err.Description
+    Resume Finish
+
+End Sub
+
+
+'=========================================================
+' READ INPUTS AND BUILD THE RENAME PLAN
+'=========================================================
+
+Private Function SelectDocument() As Boolean
+
+    SelectDocument = False
+
+    If Me.Controls("cmbDocument").ListIndex = -1 Then
+        Renamer.ShowMessage T("msg_pick_doc"), vbExclamation
+        Exit Function
+    End If
+
+    Set mDoc = Nothing
+
+    On Error Resume Next
+    Set mDoc = CATIA.Documents.Item(CStr(Me.Controls("cmbDocument").Value))
+    On Error GoTo 0
+
+    If mDoc Is Nothing Then
+        Renamer.ShowMessage T("msg_no_access"), vbCritical
+        Exit Function
+    End If
+
+    'Load everything in design mode so every part can be read
+    SetStatus T("st_reading")
+
+    On Error Resume Next
+    mDoc.Product.ApplyWorkMode DESIGN_MODE
+    On Error GoTo 0
+
+    SelectDocument = True
+
+End Function
+
+
+Private Function PreparePlan() As Boolean
+
+    Dim prefix As String
+    Dim startText As String
+    Dim digitsText As String
+    Dim errText As String
+
+    PreparePlan = False
+
+    '---------------------------------------
+    'CHECK PREFIX
+    '---------------------------------------
+
+    prefix = Trim$(Me.Controls("txtPrefix").Text)
+
+    If prefix = "" Then
+        Renamer.ShowMessage T("msg_prefix"), vbExclamation
+        Exit Function
+    End If
+
+    '---------------------------------------
+    'CHECK START NUMBER
+    '---------------------------------------
+
+    startText = Trim$(Me.Controls("txtStartNumber").Text)
+
+    If Not IsWholeNumber(startText) Then
+        Renamer.ShowMessage T("msg_start"), vbExclamation
+        Exit Function
+    End If
+
+    '---------------------------------------
+    'CHECK DIGITS
+    '---------------------------------------
+
+    digitsText = Trim$(Me.Controls("txtDigits").Text)
+
+    If Not IsWholeNumber(digitsText) Then
+        Renamer.ShowMessage T("msg_digits"), vbExclamation
+        Exit Function
+    End If
+
+    If CLng(digitsText) &lt; 1 Or CLng(digitsText) &gt; 10 Then
+        Renamer.ShowMessage T("msg_digits"), vbExclamation
+        Exit Function
+    End If
+
+    '---------------------------------------
+    'GET CATPRODUCT
+    '---------------------------------------
+
+    If Not SelectDocument() Then
+        Exit Function
+    End If
+
+    '---------------------------------------
+    'BUILD PLAN (reads only, changes nothing)
+    '---------------------------------------
+
+    On Error GoTo PlanError
+
+    Renamer.BuildPlan _
+        mDoc.Product, _
+        prefix, _
+        CLng(startText), _
+        CInt(digitsText), _
+        CBool(Me.Controls("chkRecursive").Value), _
+        CBool(Me.Controls("chkInstanceName").Value)
+
+    PreparePlan = True
+    Exit Function
+
+PlanError:
+
+    errText = "Error " &amp; CStr(Err.Number) &amp; ": " &amp; Err.Description
+    On Error GoTo 0
+
+    SetStatus T("st_error")
+    Renamer.ShowMessage T("msg_read_error", errText), vbCritical
+
+End Function
+
+
+Private Function IsWholeNumber(ByVal textValue As String) As Boolean
+
+    Dim i As Long
+    Dim ch As String
+
+    IsWholeNumber = False
+
+    If Len(textValue) = 0 Or Len(textValue) &gt; 9 Then
+        Exit Function
+    End If
+
+    For i = 1 To Len(textValue)
+
+        ch = Mid$(textValue, i, 1)
+
+        If ch &lt; "0" Or ch &gt; "9" Then
+            Exit Function
+        End If
+
+    Next i
+
+    IsWholeNumber = True
+
+End Function
+
+
+'=========================================================
+' DISPLAY HELPERS
+'=========================================================
+
+Private Sub FillList()
+
+    Dim lst As Object
+    Dim i As Long
+    Dim r As Long
+
+    Set lst = Me.Controls("lstPlan")
+    lst.Clear
+
+    For i = 1 To Renamer.PlanCount
+
+        If Renamer.PlanKind(i) = KIND_PART Then
+            lst.AddItem T("kind_part")
+        Else
+            lst.AddItem T("kind_inst")
+        End If
+
+        r = lst.ListCount - 1
+
+        lst.List(r, 1) = Renamer.PlanOld(i)
+        lst.List(r, 2) = Renamer.PlanNew(i)
+        lst.List(r, 3) = ResultText(Renamer.PlanResult(i))
+
+    Next i
+
+End Sub
+
+
+'Results are stored in English. This translates them for display.
+Private Function ResultText(ByVal resultValue As String) As String
+
+    If resultValue = RESULT_OK Then
+
+        resultValue = T("res_ok")
+
+    ElseIf resultValue = RESULT_SAME Then
+
+        resultValue = T("res_same")
+
+    ElseIf Left$(resultValue, Len(RESULT_FAILED)) = RESULT_FAILED Then
+
+        resultValue = T("res_failed") &amp; Mid$(resultValue, Len(RESULT_FAILED) + 1)
+
+    ElseIf Left$(resultValue, Len(RESULT_SKIPPED)) = RESULT_SKIPPED Then
+
+        resultValue = T("res_skipped") &amp; Mid$(resultValue, Len(RESULT_SKIPPED) + 1)
+
+    End If
+
+    resultValue = Replace(resultValue, REASON_UNREAD, T("rsn_unread"))
+    resultValue = Replace(resultValue, REASON_KEPT, T("rsn_kept"))
+    resultValue = Replace(resultValue, REASON_RESTORED, T("rsn_restored"))
+    resultValue = Replace(resultValue, REASON_LEFT, T("rsn_left"))
+
+    ResultText = resultValue
+
+End Function
+
+
+Private Sub SetStatus(ByVal statusText As String)
+
+    Me.Controls("lblStatus").Caption = statusText
+    Me.Repaint
+    DoEvents
+
+End Sub
+
+
+Private Sub SetBusy(ByVal busy As Boolean)
+
+    Me.Controls("cmdPreview").Enabled = Not busy
+    Me.Controls("cmdRename").Enabled = Not busy
+    Me.Controls("cmdUndo").Enabled = Not busy
+    Me.Controls("cmdClose").Enabled = Not busy
+    Me.Controls("cmdLanguage").Enabled = Not busy
+
+End Sub
+
+
+'=========================================================
+' CONTROL BUILDERS (captions are set by ApplyLanguage)
+'=========================================================
+
+Private Function AddLabel( _
+    ByVal ctrlName As String, _
+    ByVal leftPos As Single, _
+    ByVal topPos As Single, _
+    ByVal ctrlWidth As Single) As Object
+
+    Dim ctrl As Object
+
+    Set ctrl = Me.Controls.Add("Forms.Label.1", ctrlName, True)
+
+    With ctrl
+        .Left = leftPos
+        .Top = topPos
+        .Width = ctrlWidth
+        .Height = 14
+    End With
+
+    Set AddLabel = ctrl
+
+End Function
+
+
+Private Function AddTextBox( _
+    ByVal ctrlName As String, _
+    ByVal defaultText As String, _
+    ByVal leftPos As Single, _
+    ByVal topPos As Single, _
+    ByVal ctrlWidth As Single) As Object
+
+    Dim ctrl As Object
+
+    Set ctrl = Me.Controls.Add("Forms.TextBox.1", ctrlName, True)
+
+    With ctrl
+        .Left = leftPos
+        .Top = topPos
+        .Width = ctrlWidth
+        .Height = 20
+        .Text = defaultText
+    End With
+
+    Set AddTextBox = ctrl
+
+End Function
+
+
+Private Function AddCheckBox( _
+    ByVal ctrlName As String, _
+    ByVal leftPos As Single, _
+    ByVal topPos As Single, _
+    ByVal ctrlWidth As Single) As Object
+
+    Dim ctrl As Object
+
+    Set ctrl = Me.Controls.Add("Forms.CheckBox.1", ctrlName, True)
+
+    With ctrl
+        .Left = leftPos
+        .Top = topPos
+        .Width = ctrlWidth
+        .Height = 18
+        .Value = True
+    End With
+
+    Set AddCheckBox = ctrl
+
+End Function
+
+
+Private Function AddButton( _
+    ByVal ctrlName As String, _
+    ByVal leftPos As Single, _
+    ByVal topPos As Single, _
+    ByVal ctrlWidth As Single) As Object
+
+    Dim ctrl As Object
+    Dim handler As clsButtonHandler
+
+    Set ctrl = Me.Controls.Add("Forms.CommandButton.1", ctrlName, True)
+
+    With ctrl
+        .Left = leftPos
+        .Top = topPos
+        .Width = ctrlWidth
+        .Height = 28
+    End With
+
+    Set handler = New clsButtonHandler
+    Set handler.Button = ctrl
+    Set handler.ParentForm = Me
+
+    ButtonHandlers.Add handler
+
+    Set AddButton = ctrl
+
+End Function</code></pre>
+  </section>
+
+  <section>
+    <div class="code-head"><h2>2. Module code</h2><div class="right"><span class="filetag">Renamer</span><button class="copy" data-target="module">Copy code</button></div></div>
+    <p>The long block of letters and numbers at the bottom is the credit image. Do not edit it.</p><pre><code id="module">Option Explicit
+
+'=========================================================
+' Renamer
+' Entry point, rename plan, rename engine, undo, the
+' English / Korean text table, and the credit image.
+'
+' How it works:
+'   1. BuildPlan walks the assembly and only READS it.
+'      Each unique part or subassembly gets one new number,
+'      no matter how many times it is used.
+'   2. ApplyPlan renames in two passes (temporary names
+'      first, final names second) so new names can never
+'      collide with old ones, and checks every result.
+'   3. Every rename saves a CSV map. BuildUndoPlan reads a
+'      map and builds the reverse plan, which is applied by
+'      the same engine.
+'=========================================================
+
+'Windows message box that can show Korean on any PC.
+'One of the two halves below will look red in the editor.
+'That is normal: VBA only uses the half that fits your version.
+#If VBA7 Then
+    Private Declare PtrSafe Function MessageBoxW Lib "user32" ( _
+        ByVal hWnd As LongPtr, ByVal lpText As LongPtr, _
+        ByVal lpCaption As LongPtr, ByVal uType As Long) As Long
+    Private Declare PtrSafe Function GetActiveWindow Lib "user32" () As LongPtr
+#Else
+    Private Declare Function MessageBoxW Lib "user32" ( _
+        ByVal hWnd As Long, ByVal lpText As Long, _
+        ByVal lpCaption As Long, ByVal uType As Long) As Long
+    Private Declare Function GetActiveWindow Lib "user32" () As Long
+#End If
+
+Public Const APP_TITLE As String = "CATIA Component Renamer"
+
+'These values are written to the CSV map. Keep them in English.
+Public Const KIND_PART As String = "Part number"
+Public Const KIND_INST As String = "Instance"
+
+Public Const RESULT_OK As String = "OK"
+Public Const RESULT_SAME As String = "No change"
+Public Const RESULT_FAILED As String = "FAILED"
+Public Const RESULT_SKIPPED As String = "SKIPPED"
+Public Const RESULT_PLANNED As String = "Planned"
+
+Public Const REASON_UNREAD As String = "could not be read (broken link or not loaded)"
+Public Const REASON_KEPT As String = "CATIA kept the name"
+Public Const REASON_RESTORED As String = "original name restored"
+Public Const REASON_LEFT As String = "left as"
+
+'True = Korean, False = English
+Public gKorean As Boolean
+
+Private Type RenameItem
+    Kind As String
+    Target As Product
+    ParentName As String        'part number of the parent after the change
+    OldName As String
+    NewName As String
+    Result As String
+End Type
+
+Private mItems() As RenameItem
+Private mCount As Long
+
+Private mMap As Object          'part numbers already planned
+Private mVisited As Object      'subassemblies already walked
+Private mUndoParts As Object    'undo: current part number -&gt; original
+Private mUndoInst As Object     'undo: parent|current instance -&gt; original
+Private mCsvPath As String
+
+
+'=========================================================
+' MAIN ENTRY POINT
+'=========================================================
+
+Public Sub CATMain()
+
+    frmComponentRenamer.Show
+
+End Sub
+
+
+'=========================================================
+' BUILD THE RENAME PLAN (reads only, changes nothing)
+'=========================================================
+
+Public Sub BuildPlan( _
+    ByVal rootProduct As Product, _
+    ByVal prefix As String, _
+    ByVal startNumber As Long, _
+    ByVal digits As Integer, _
+    ByVal recursive As Boolean, _
+    ByVal renameInstance As Boolean)
+
+    Dim counter As Long
+
+    ResetPlan
+
+    counter = startNumber
+
+    mVisited.Add rootProduct.PartNumber, True
+
+    PlanChildren rootProduct, rootProduct.PartNumber, prefix, counter, digits, _
+                 recursive, renameInstance
+
+End Sub
+
+
+Private Sub ResetPlan()
+
+    Set mMap = CreateObject("Scripting.Dictionary")
+    Set mVisited = CreateObject("Scripting.Dictionary")
+
+    ReDim mItems(1 To 256)
+    mCount = 0
+    mCsvPath = ""
+
+End Sub
+
+
+Private Sub PlanChildren( _
+    ByVal parentProduct As Product, _
+    ByVal parentNewName As String, _
+    ByVal prefix As String, _
+    ByRef counter As Long, _
+    ByVal digits As Integer, _
+    ByVal recursive As Boolean, _
+    ByVal renameInstance As Boolean)
+
+    Dim childProducts As Products
+    Dim childProduct As Product
+    Dim instCount As Object
+
+    Dim i As Long
+    Dim n As Long
+    Dim key As String
+    Dim newPartNumber As String
+
+    'Counts instances of each part under THIS parent,
+    'so instance names become NEWNAME.1, NEWNAME.2, ...
+    Set instCount = CreateObject("Scripting.Dictionary")
+
+    Set childProducts = parentProduct.Products
+
+    For i = 1 To childProducts.Count
+
+        Set childProduct = childProducts.Item(i)
+
+        '-----------------------------------
+        'READ THE CURRENT PART NUMBER
+        '-----------------------------------
+
+        key = ""
+
+        On Error Resume Next
+        key = childProduct.PartNumber
+        On Error GoTo 0
+
+        If key = "" Then
+
+            AddPlanItem KIND_PART, childProduct, parentNewName, _
+                SafeInstanceName(childProduct), "", _
+                RESULT_SKIPPED &amp; ": " &amp; REASON_UNREAD
+
+        Else
+
+            '-------------------------------
+            'ONE NEW NUMBER PER UNIQUE PART
+            '-------------------------------
+
+            If mMap.Exists(key) Then
+
+                newPartNumber = mMap(key)
+
+            Else
+
+                newPartNumber = prefix &amp; FormatRenameNumber(counter, digits)
+                counter = counter + 1
+
+                mMap.Add key, newPartNumber
+
+                AddPlanItem KIND_PART, childProduct, parentNewName, _
+                            key, newPartNumber, ""
+
+            End If
+
+            '-------------------------------
+            'INSTANCE NAME
+            '-------------------------------
+
+            If renameInstance Then
+
+                n = 0
+
+                If instCount.Exists(newPartNumber) Then
+                    n = instCount(newPartNumber)
+                End If
+
+                n = n + 1
+                instCount(newPartNumber) = n
+
+                AddPlanItem KIND_INST, childProduct, parentNewName, _
+                    SafeInstanceName(childProduct), _
+                    newPartNumber &amp; "." &amp; CStr(n), ""
+
+            End If
+
+            '-------------------------------
+            'SUBASSEMBLIES (each one walked once,
+            'even if it is used several times)
+            '-------------------------------
+
+            If recursive Then
+
+                If childProduct.Products.Count &gt; 0 Then
+
+                    If Not mVisited.Exists(key) Then
+
+                        mVisited.Add key, True
+
+                        PlanChildren childProduct, newPartNumber, prefix, counter, _
+                                     digits, recursive, renameInstance
+
+                    End If
+
+                End If
+
+            End If
+
+        End If
+
+    Next i
+
+End Sub
+
+
+Private Sub AddPlanItem( _
+    ByVal kind As String, _
+    ByVal target As Product, _
+    ByVal parentName As String, _
+    ByVal oldName As String, _
+    ByVal newName As String, _
+    ByVal result As String)
+
+    mCount = mCount + 1
+
+    If mCount &gt; UBound(mItems) Then
+        ReDim Preserve mItems(1 To UBound(mItems) * 2)
+    End If
+
+    With mItems(mCount)
+        .Kind = kind
+        Set .Target = target
+        .ParentName = parentName
+        .OldName = oldName
+        .NewName = newName
+        .Result = result
+    End With
+
+End Sub
+
+
+Private Function SafeInstanceName(ByVal productObj As Product) As String
+
+    SafeInstanceName = "(unknown)"
+
+    On Error Resume Next
+    SafeInstanceName = productObj.Name
+    On Error GoTo 0
+
+End Function
+
+
+'=========================================================
+' BUILD THE UNDO PLAN (reads only, changes nothing)
+' Returns False if the CSV map could not be read.
+'=========================================================
+
+Public Function BuildUndoPlan( _
+    ByVal rootProduct As Product, _
+    ByVal csvPath As String) As Boolean
+
+    BuildUndoPlan = False
+
+    ResetPlan
+
+    Set mUndoParts = CreateObject("Scripting.Dictionary")
+    Set mUndoInst = CreateObject("Scripting.Dictionary")
+
+    If Not LoadUndoMap(csvPath) Then
+        Exit Function
+    End If
+
+    mVisited.Add rootProduct.PartNumber, True
+
+    UndoChildren rootProduct
+
+    BuildUndoPlan = True
+
+End Function
+
+
+Private Function LoadUndoMap(ByVal csvPath As String) As Boolean
+
+    Dim fileNum As Integer
+    Dim isOpen As Boolean
+    Dim lineText As String
+    Dim fields() As String
+    Dim n As Long
+    Dim rowCount As Long
+
+    Dim kind As String
+    Dim parentName As String
+    Dim oldName As String
+    Dim newName As String
+    Dim resultText As String
+    Dim instKey As String
+
+    LoadUndoMap = False
+
+    On Error GoTo ReadFailed
+
+    fileNum = FreeFile
+    Open csvPath For Input As #fileNum
+    isOpen = True
+
+    Do While Not EOF(fileNum)
+
+        Line Input #fileNum, lineText
+
+        n = SplitCsvLine(lineText, fields)
+
+        kind = ""
+        parentName = ""
+        oldName = ""
+        newName = ""
+        resultText = ""
+
+        If n &gt;= 5 Then
+            kind = fields(1)
+            parentName = fields(2)
+            oldName = fields(3)
+            newName = fields(4)
+            resultText = fields(5)
+        ElseIf n = 4 Then
+            'Map written by the previous version (no Parent column):
+            'part numbers can be restored, instance names cannot.
+            kind = fields(1)
+            oldName = fields(2)
+            newName = fields(3)
+            resultText = fields(4)
+        End If
+
+        If resultText = RESULT_OK Or resultText = RESULT_PLANNED Then
+
+            If newName &lt;&gt; "" And oldName &lt;&gt; "" Then
+
+                If kind = KIND_PART Then
+
+                    If Not mUndoParts.Exists(newName) Then
+                        mUndoParts.Add newName, oldName
+                        rowCount = rowCount + 1
+                    End If
+
+                ElseIf kind = KIND_INST And parentName &lt;&gt; "" Then
+
+                    instKey = parentName &amp; "|" &amp; newName
+
+                    If Not mUndoInst.Exists(instKey) Then
+                        mUndoInst.Add instKey, oldName
+                        rowCount = rowCount + 1
+                    End If
+
+                End If
+
+            End If
+
+        End If
+
+    Loop
+
+    Close #fileNum
+
+    LoadUndoMap = (rowCount &gt; 0)
+    Exit Function
+
+ReadFailed:
+
+    On Error Resume Next
+
+    If isOpen Then
+        Close #fileNum
+    End If
+
+End Function
+
+
+Private Sub UndoChildren(ByVal parentProduct As Product)
+
+    Dim childProducts As Products
+    Dim childProduct As Product
+
+    Dim i As Long
+    Dim key As String
+    Dim parentNow As String
+    Dim parentAfter As String
+    Dim instName As String
+    Dim instKey As String
+
+    parentNow = parentProduct.PartNumber
+    parentAfter = parentNow
+
+    If mUndoParts.Exists(parentNow) Then
+        parentAfter = mUndoParts(parentNow)
+    End If
+
+    Set childProducts = parentProduct.Products
+
+    For i = 1 To childProducts.Count
+
+        Set childProduct = childProducts.Item(i)
+
+        key = ""
+
+        On Error Resume Next
+        key = childProduct.PartNumber
+        On Error GoTo 0
+
+        If key &lt;&gt; "" Then
+
+            '-------------------------------
+            'PART NUMBER (once per unique part)
+            '-------------------------------
+
+            If mUndoParts.Exists(key) Then
+
+                If Not mMap.Exists(key) Then
+
+                    mMap.Add key, True
+
+                    AddPlanItem KIND_PART, childProduct, parentAfter, _
+                                key, mUndoParts(key), ""
+
+                End If
+
+            End If
+
+            '-------------------------------
+            'INSTANCE NAME
+            '-------------------------------
+
+            instName = SafeInstanceName(childProduct)
+            instKey = parentNow &amp; "|" &amp; instName
+
+            If mUndoInst.Exists(instKey) Then
+
+                AddPlanItem KIND_INST, childProduct, parentAfter, _
+                            instName, mUndoInst(instKey), ""
+
+            End If
+
+            '-------------------------------
+            'SUBASSEMBLIES
+            '-------------------------------
+
+            If childProduct.Products.Count &gt; 0 Then
+
+                If Not mVisited.Exists(key) Then
+
+                    mVisited.Add key, True
+                    UndoChildren childProduct
+
+                End If
+
+            End If
+
+        End If
+
+    Next i
+
+End Sub
+
+
+'=========================================================
+' APPLY THE PLAN (used for both rename and undo)
+'=========================================================
+
+Public Sub ApplyPlan()
+
+    Dim i As Long
+
+    'Anything that already has the right name is left alone
+    For i = 1 To mCount
+
+        If mItems(i).Result = "" Then
+            If mItems(i).OldName = mItems(i).NewName Then
+                mItems(i).Result = RESULT_SAME
+            End If
+        End If
+
+    Next i
+
+    'Part numbers first, then instance names
+    ApplyKind KIND_PART
+    ApplyKind KIND_INST
+
+End Sub
+
+
+Private Sub ApplyKind(ByVal kind As String)
+
+    Dim i As Long
+    Dim tempTag As String
+    Dim reason As String
+    Dim ignored As String
+
+    tempTag = "RNTMP_" &amp; Format(Now, "hhnnss") &amp; "_"
+
+    '---------------------------------------
+    'PASS 1: TEMPORARY NAMES
+    '---------------------------------------
+
+    For i = 1 To mCount
+
+        If mItems(i).Kind = kind And mItems(i).Result = "" Then
+
+            If Not TrySetName(mItems(i).Target, kind, tempTag &amp; CStr(i), reason) Then
+
+                'Put the original name back in case it was half applied
+                TrySetName mItems(i).Target, kind, mItems(i).OldName, ignored
+
+                mItems(i).Result = RESULT_FAILED &amp; ": " &amp; reason
+
+            End If
+
+        End If
+
+    Next i
+
+    '---------------------------------------
+    'PASS 2: FINAL NAMES
+    '---------------------------------------
+
+    For i = 1 To mCount
+
+        If mItems(i).Kind = kind And mItems(i).Result = "" Then
+
+            If TrySetName(mItems(i).Target, kind, mItems(i).NewName, reason) Then
+
+                mItems(i).Result = RESULT_OK
+
+            ElseIf TrySetName(mItems(i).Target, kind, mItems(i).OldName, ignored) Then
+
+                mItems(i).Result = RESULT_FAILED &amp; ": " &amp; reason &amp; _
+                                   " (" &amp; REASON_RESTORED &amp; ")"
+
+            Else
+
+                mItems(i).Result = RESULT_FAILED &amp; ": " &amp; reason &amp; _
+                                   " (" &amp; REASON_LEFT &amp; " " &amp; tempTag &amp; CStr(i) &amp; ")"
+
+            End If
+
+        End If
+
+    Next i
+
+End Sub
+
+
+'Sets one name, then reads it back to confirm CATIA accepted it.
+Private Function TrySetName( _
+    ByVal target As Product, _
+    ByVal kind As String, _
+    ByVal newValue As String, _
+    ByRef reason As String) As Boolean
+
+    Dim actual As String
+
+    TrySetName = False
+    reason = ""
+    actual = ""
+
+    On Error Resume Next
+    Err.Clear
+
+    If kind = KIND_PART Then
+
+        target.PartNumber = newValue
+
+        If Err.Number &lt;&gt; 0 Then
+            'Direct rename failed, try the reference product
+            Err.Clear
+            target.ReferenceProduct.PartNumber = newValue
+        End If
+
+        If Err.Number = 0 Then
+            actual = target.PartNumber
+        End If
+
+    Else
+
+        target.Name = newValue
+
+        If Err.Number = 0 Then
+            actual = target.Name
+        End If
+
+    End If
+
+    If Err.Number &lt;&gt; 0 Then
+
+        reason = Err.Description
+
+        If reason = "" Then
+            reason = "error " &amp; CStr(Err.Number)
+        End If
+
+    ElseIf actual &lt;&gt; newValue Then
+
+        reason = REASON_KEPT &amp; " " &amp; actual
+
+    Else
+
+        TrySetName = True
+
+    End If
+
+    Err.Clear
+    On Error GoTo 0
+
+End Function
+
+
+'=========================================================
+' PLAN ACCESS (used by the form)
+'=========================================================
+
+Public Function PlanCount() As Long
+    PlanCount = mCount
+End Function
+
+Public Function PlanKind(ByVal index As Long) As String
+    PlanKind = mItems(index).Kind
+End Function
+
+Public Function PlanOld(ByVal index As Long) As String
+    PlanOld = mItems(index).OldName
+End Function
+
+Public Function PlanNew(ByVal index As Long) As String
+    PlanNew = mItems(index).NewName
+End Function
+
+Public Function PlanResult(ByVal index As Long) As String
+    PlanResult = mItems(index).Result
+End Function
+
+
+'Number of plan lines of one kind that are due to be renamed
+Public Function CountKind(ByVal kind As String) As Long
+
+    Dim i As Long
+
+    For i = 1 To mCount
+
+        If mItems(i).Kind = kind Then
+            If mItems(i).NewName &lt;&gt; "" And mItems(i).NewName &lt;&gt; mItems(i).OldName Then
+                CountKind = CountKind + 1
+            End If
+        End If
+
+    Next i
+
+End Function
+
+
+'Number of plan lines whose result starts with the given text
+Public Function CountResults(ByVal resultPrefix As String) As Long
+
+    Dim i As Long
+
+    For i = 1 To mCount
+
+        If Left$(mItems(i).Result, Len(resultPrefix)) = resultPrefix Then
+            CountResults = CountResults + 1
+        End If
+
+    Next i
+
+End Function
+
+
+Public Sub ClearPlan()
+
+    Erase mItems
+    mCount = 0
+    mCsvPath = ""
+
+    Set mMap = Nothing
+    Set mVisited = Nothing
+    Set mUndoParts = Nothing
+    Set mUndoInst = Nothing
+
+End Sub
+
+
+'=========================================================
+' RENAME MAP (CSV)
+'=========================================================
+
+'Saves the old-to-new map next to the CATProduct, or in the
+'Windows TEMP folder if that fails. Returns the file path,
+'or an empty string if nothing could be written.
+Public Function SavePlanCsv(ByVal productDoc As ProductDocument) As String
+
+    Dim baseName As String
+    Dim fileName As String
+    Dim folderPath As String
+    Dim dotPos As Long
+
+    mCsvPath = ""
+
+    baseName = productDoc.Name
+    dotPos = InStrRev(baseName, ".")
+
+    If dotPos &gt; 1 Then
+        baseName = Left$(baseName, dotPos - 1)
+    End If
+
+    fileName = baseName &amp; "_rename_map_" &amp; Format(Now, "yyyymmdd_hhnnss") &amp; ".csv"
+
+    folderPath = ""
+
+    On Error Resume Next
+    folderPath = productDoc.Path
+    On Error GoTo 0
+
+    If folderPath &lt;&gt; "" Then
+        If WriteCsv(folderPath &amp; "\" &amp; fileName) Then
+            mCsvPath = folderPath &amp; "\" &amp; fileName
+        End If
+    End If
+
+    If mCsvPath = "" Then
+        folderPath = Environ$("TEMP")
+        If WriteCsv(folderPath &amp; "\" &amp; fileName) Then
+            mCsvPath = folderPath &amp; "\" &amp; fileName
+        End If
+    End If
+
+    SavePlanCsv = mCsvPath
+
+End Function
+
+
+'Rewrites the same file with the Result column filled in
+Public Sub UpdatePlanCsv()
+
+    If mCsvPath &lt;&gt; "" Then
+        WriteCsv mCsvPath
+    End If
+
+End Sub
+
+
+Private Function WriteCsv(ByVal filePath As String) As Boolean
+
+    Dim fileNum As Integer
+    Dim isOpen As Boolean
+    Dim i As Long
+    Dim resultText As String
+
+    WriteCsv = False
+
+    On Error GoTo WriteFailed
+
+    fileNum = FreeFile
+    Open filePath For Output As #fileNum
+    isOpen = True
+
+    Print #fileNum, "Type,Parent,Current name,New name,Result"
+
+    For i = 1 To mCount
+
+        resultText = mItems(i).Result
+
+        If resultText = "" Then
+            resultText = RESULT_PLANNED
+        End If
+
+        Print #fileNum, _
+            CsvField(mItems(i).Kind) &amp; "," &amp; _
+            CsvField(mItems(i).ParentName) &amp; "," &amp; _
+            CsvField(mItems(i).OldName) &amp; "," &amp; _
+            CsvField(mItems(i).NewName) &amp; "," &amp; _
+            CsvField(resultText)
+
+    Next i
+
+    Close #fileNum
+
+    WriteCsv = True
+    Exit Function
+
+WriteFailed:
+
+    On Error Resume Next
+
+    If isOpen Then
+        Close #fileNum
+    End If
+
+End Function
+
+
+Private Function CsvField(ByVal textValue As String) As String
+
+    CsvField = """" &amp; Replace(textValue, """", """""") &amp; """"
+
+End Function
+
+
+'Splits one CSV line into fields(1..n) and returns n
+Private Function SplitCsvLine( _
+    ByVal lineText As String, _
+    ByRef fields() As String) As Long
+
+    Dim i As Long
+    Dim n As Long
+    Dim ch As String
+    Dim current As String
+    Dim inQuotes As Boolean
+
+    ReDim fields(1 To 8)
+
+    i = 1
+
+    Do While i &lt;= Len(lineText)
+
+        ch = Mid$(lineText, i, 1)
+
+        If inQuotes Then
+
+            If ch = """" Then
+
+                If Mid$(lineText, i + 1, 1) = """" Then
+                    current = current &amp; """"
+                    i = i + 1
+                Else
+                    inQuotes = False
+                End If
+
+            Else
+                current = current &amp; ch
+            End If
+
+        ElseIf ch = """" Then
+
+            inQuotes = True
+
+        ElseIf ch = "," Then
+
+            n = n + 1
+
+            If n &lt;= 8 Then
+                fields(n) = current
+            End If
+
+            current = ""
+
+        Else
+
+            current = current &amp; ch
+
+        End If
+
+        i = i + 1
+
+    Loop
+
+    n = n + 1
+
+    If n &lt;= 8 Then
+        fields(n) = current
+    End If
+
+    SplitCsvLine = n
+
+End Function
+
+
+'=========================================================
+' FORMAT NUMBER WITH LEADING ZEROS
+'=========================================================
+
+Public Function FormatRenameNumber( _
+    ByVal numberValue As Long, _
+    ByVal digits As Integer) As String
+
+    FormatRenameNumber = Format(numberValue, String(digits, "0"))
+
+End Function
+
+
+'=========================================================
+' MESSAGE BOX (shows Korean correctly on any PC)
+' Takes the same button values as MsgBox and returns
+' the same answers (vbYes, vbNo, ...).
+'=========================================================
+
+Public Function ShowMessage( _
+    ByVal messageText As String, _
+    ByVal buttons As Long) As Long
+
+    ShowMessage = MessageBoxW( _
+        GetActiveWindow(), _
+        StrPtr(messageText), _
+        StrPtr(APP_TITLE), _
+        buttons)
+
+End Function
+
+
+'=========================================================
+' LANGUAGE
+'
+' T("title") returns the text for "title" in the current language.
+' In a text, | means a new line and {0} {1} {2} are
+' replaced by the extra values passed to T.
+'
+' The Korean text is stored as \uXXXX codes so it survives
+' copy and paste into the VBA editor on any PC. To change
+' a Korean text, edit it on the web page table and convert
+' it, or replace the code string with one from any
+' "Unicode escape" converter.
+'=========================================================
+
+Public Function T(ByVal textKey As String, ParamArray args() As Variant) As String
+
+    Dim s As String
+    Dim i As Long
+
+    If gKorean Then
+        s = DecodeUnicode(TextKO(textKey))
+    End If
+
+    If s = "" Then
+        s = TextEN(textKey)
+    End If
+
+    s = Replace(s, "|", vbCrLf)
+
+    For i = LBound(args) To UBound(args)
+        s = Replace(s, "{" &amp; CStr(i) &amp; "}", CStr(args(i)))
+    Next i
+
+    T = s
+
+End Function
+
+
+'Caption for the language button: the language you can switch TO
+Public Function OtherLanguageName() As String
+
+    If gKorean Then
+        OtherLanguageName = "English"
+    Else
+        OtherLanguageName = DecodeUnicode("\uD55C\uAD6D\uC5B4")
+    End If
+
+End Function
+
+
+Private Function DecodeUnicode(ByVal s As String) As String
+
+    Dim p As Long
+    Dim startPos As Long
+    Dim result As String
+
+    startPos = 1
+    p = InStr(startPos, s, "\u")
+
+    Do While p &gt; 0
+
+        result = result &amp; Mid$(s, startPos, p - startPos) &amp; _
+                 ChrW$(CLng("&amp;H1" &amp; Mid$(s, p + 2, 4)) - 65536)
+
+        startPos = p + 6
+        p = InStr(startPos, s, "\u")
+
+    Loop
+
+    DecodeUnicode = result &amp; Mid$(s, startPos)
+
+End Function
+
+
+Private Function TextEN(ByVal textKey As String) As String
+
+    Select Case textKey
+        Case "title": TextEN = "CATIA Component Renamer"
+        Case "subtitle": TextEN = "Preview first, then rename. Each unique part gets one number."
+        Case "lbl_doc": TextEN = "CATProduct:"
+        Case "lbl_prefix": TextEN = "Prefix:"
+        Case "lbl_start": TextEN = "Starting number:"
+        Case "lbl_digits": TextEN = "Digits:"
+        Case "chk_recursive": TextEN = "Include subassemblies"
+        Case "chk_instance": TextEN = "Rename instance names"
+        Case "col_type": TextEN = "Type"
+        Case "col_old": TextEN = "Current name"
+        Case "col_new": TextEN = "New name"
+        Case "col_result": TextEN = "Result"
+        Case "btn_preview": TextEN = "Preview"
+        Case "btn_rename": TextEN = "Rename Components"
+        Case "btn_undo": TextEN = "Undo"
+        Case "btn_close": TextEN = "Close"
+        Case "kind_part": TextEN = "Part number"
+        Case "kind_inst": TextEN = "Instance"
+        Case "res_ok": TextEN = "OK"
+        Case "res_same": TextEN = "No change"
+        Case "res_failed": TextEN = "FAILED"
+        Case "res_skipped": TextEN = "SKIPPED"
+        Case "rsn_unread": TextEN = "could not be read (broken link or not loaded)"
+        Case "rsn_kept": TextEN = "CATIA kept the name"
+        Case "rsn_restored": TextEN = "original name restored"
+        Case "rsn_left": TextEN = "left as"
+        Case "st_ready": TextEN = "Status: Ready"
+        Case "st_nodoc": TextEN = "No CATProduct is open. Open one and run the macro again."
+        Case "st_reading": TextEN = "Status: Reading assembly..."
+        Case "st_preview": TextEN = "Preview: {0} part numbers and {1} instance names would change. Nothing has been renamed yet."
+        Case "st_nothing": TextEN = "Status: Nothing to change"
+        Case "st_cancelled": TextEN = "Status: Cancelled. Nothing was changed."
+        Case "st_working": TextEN = "Status: Renaming..."
+        Case "st_undoing": TextEN = "Status: Restoring names..."
+        Case "st_done": TextEN = "Status: Done. {0}"
+        Case "st_error": TextEN = "Status: Error while reading the assembly"
+        Case "msg_pick_doc": TextEN = "Please select a CATProduct."
+        Case "msg_prefix": TextEN = "Please enter a prefix."
+        Case "msg_start": TextEN = "Starting number must be a whole number (digits only)."
+        Case "msg_digits": TextEN = "Digits must be a whole number between 1 and 10."
+        Case "msg_no_access": TextEN = "Could not access the selected CATProduct."
+        Case "msg_read_error": TextEN = "The assembly could not be read.||{0}"
+        Case "msg_nothing": TextEN = "There are no components to rename in this CATProduct."
+        Case "msg_csv_fail": TextEN = "The rename map (CSV) could not be saved.|Without it, Undo will not be available for this change.||Continue anyway?"
+        Case "confirm_rename": TextEN = "Rename components in:||{0}||Part numbers: {1}|Instance names: {2}||The full list is shown in the window behind this message.|You can reverse this later with the Undo button.||Continue?"
+        Case "confirm_undo": TextEN = "Restore the original names in:||{0}||Part numbers: {1}|Instance names: {2}||The full list is shown in the window behind this message.||Continue?"
+        Case "sum_counts": TextEN = "{0} renamed, {1} failed, {2} skipped."
+        Case "sum_csv": TextEN = "Rename map saved to:|{0}"
+        Case "sum_update": TextEN = "Note: the product update reported: {0}"
+        Case "sum_stopped": TextEN = "The process stopped early because of an error:|{0}"
+        Case "sum_details": TextEN = "See the Result column for details."
+        Case "undo_pick": TextEN = "Select the rename map (CSV) to undo"
+        Case "undo_badfile": TextEN = "This file could not be read as a rename map:|{0}"
+        Case "undo_nomatch": TextEN = "Nothing in this CATProduct matches the names in the rename map.|Check that the right CATProduct and the right file are selected."
+    End Select
+
+End Function
+
+
+Private Function TextKO(ByVal textKey As String) As String
+
+    Select Case textKey
+        Case "title": TextKO = "CATIA \uAD6C\uC131\uC694\uC18C \uC774\uB984 \uBCC0\uACBD"
+        Case "subtitle": TextKO = "\uBA3C\uC800 \uBBF8\uB9AC\uBCF4\uAE30\uB97C \uD655\uC778\uD55C \uD6C4 \uC774\uB984\uC744 \uBCC0\uACBD\uD558\uC138\uC694. \uB3D9\uC77C\uD55C \uBD80\uD488\uC5D0\uB294 \uD558\uB098\uC758 \uBC88\uD638\uAC00 \uBD80\uC5EC\uB429\uB2C8\uB2E4."
+        Case "lbl_doc": TextKO = "CATProduct:"
+        Case "lbl_prefix": TextKO = "\uC811\uB450\uC0AC:"
+        Case "lbl_start": TextKO = "\uC2DC\uC791 \uBC88\uD638:"
+        Case "lbl_digits": TextKO = "\uC790\uB9BF\uC218:"
+        Case "chk_recursive": TextKO = "\uD558\uC704 \uC5B4\uC148\uBE14\uB9AC \uD3EC\uD568"
+        Case "chk_instance": TextKO = "\uC778\uC2A4\uD134\uC2A4 \uC774\uB984 \uBCC0\uACBD"
+        Case "col_type": TextKO = "\uC720\uD615"
+        Case "col_old": TextKO = "\uD604\uC7AC \uC774\uB984"
+        Case "col_new": TextKO = "\uC0C8 \uC774\uB984"
+        Case "col_result": TextKO = "\uACB0\uACFC"
+        Case "btn_preview": TextKO = "\uBBF8\uB9AC\uBCF4\uAE30"
+        Case "btn_rename": TextKO = "\uC774\uB984 \uBCC0\uACBD"
+        Case "btn_undo": TextKO = "\uC2E4\uD589 \uCDE8\uC18C"
+        Case "btn_close": TextKO = "\uB2EB\uAE30"
+        Case "kind_part": TextKO = "\uBD80\uD488 \uBC88\uD638"
+        Case "kind_inst": TextKO = "\uC778\uC2A4\uD134\uC2A4"
+        Case "res_ok": TextKO = "\uC644\uB8CC"
+        Case "res_same": TextKO = "\uBCC0\uACBD \uC5C6\uC74C"
+        Case "res_failed": TextKO = "\uC2E4\uD328"
+        Case "res_skipped": TextKO = "\uAC74\uB108\uB700"
+        Case "rsn_unread": TextKO = "\uC77D\uC744 \uC218 \uC5C6\uC74C (\uB9C1\uD06C \uB04A\uAE40 \uB610\uB294 \uB85C\uB4DC\uB418\uC9C0 \uC54A\uC74C)"
+        Case "rsn_kept": TextKO = "CATIA\uAC00 \uB2E4\uC74C \uC774\uB984\uC744 \uC720\uC9C0\uD568:"
+        Case "rsn_restored": TextKO = "\uC6D0\uB798 \uC774\uB984\uC73C\uB85C \uBCF5\uC6D0\uB428"
+        Case "rsn_left": TextKO = "\uC784\uC2DC \uC774\uB984\uC73C\uB85C \uB0A8\uC74C:"
+        Case "st_ready": TextKO = "\uC0C1\uD0DC: \uC900\uBE44"
+        Case "st_nodoc": TextKO = "\uC5F4\uB824 \uC788\uB294 CATProduct\uAC00 \uC5C6\uC2B5\uB2C8\uB2E4. CATProduct\uB97C \uC5F0 \uD6C4 \uB9E4\uD06C\uB85C\uB97C \uB2E4\uC2DC \uC2E4\uD589\uD558\uC138\uC694."
+        Case "st_reading": TextKO = "\uC0C1\uD0DC: \uC5B4\uC148\uBE14\uB9AC \uC77D\uB294 \uC911..."
+        Case "st_preview": TextKO = "\uBBF8\uB9AC\uBCF4\uAE30: \uBD80\uD488 \uBC88\uD638 {0}\uAC1C\uC640 \uC778\uC2A4\uD134\uC2A4 \uC774\uB984 {1}\uAC1C\uAC00 \uBCC0\uACBD\uB420 \uC608\uC815\uC785\uB2C8\uB2E4. \uC544\uC9C1 \uBCC0\uACBD\uB41C \uAC83\uC740 \uC5C6\uC2B5\uB2C8\uB2E4."
+        Case "st_nothing": TextKO = "\uC0C1\uD0DC: \uBCC0\uACBD\uD560 \uD56D\uBAA9 \uC5C6\uC74C"
+        Case "st_cancelled": TextKO = "\uC0C1\uD0DC: \uCDE8\uC18C\uB428. \uBCC0\uACBD\uB41C \uAC83\uC774 \uC5C6\uC2B5\uB2C8\uB2E4."
+        Case "st_working": TextKO = "\uC0C1\uD0DC: \uC774\uB984 \uBCC0\uACBD \uC911..."
+        Case "st_undoing": TextKO = "\uC0C1\uD0DC: \uC774\uB984 \uBCF5\uC6D0 \uC911..."
+        Case "st_done": TextKO = "\uC0C1\uD0DC: \uC644\uB8CC. {0}"
+        Case "st_error": TextKO = "\uC0C1\uD0DC: \uC5B4\uC148\uBE14\uB9AC\uB97C \uC77D\uB294 \uC911 \uC624\uB958 \uBC1C\uC0DD"
+        Case "msg_pick_doc": TextKO = "CATProduct\uB97C \uC120\uD0DD\uD558\uC138\uC694."
+        Case "msg_prefix": TextKO = "\uC811\uB450\uC0AC\uB97C \uC785\uB825\uD558\uC138\uC694."
+        Case "msg_start": TextKO = "\uC2DC\uC791 \uBC88\uD638\uB294 \uC815\uC218\uC5EC\uC57C \uD569\uB2C8\uB2E4 (\uC22B\uC790\uB9CC \uC785\uB825)."
+        Case "msg_digits": TextKO = "\uC790\uB9BF\uC218\uB294 1\uC5D0\uC11C 10 \uC0AC\uC774\uC758 \uC815\uC218\uC5EC\uC57C \uD569\uB2C8\uB2E4."
+        Case "msg_no_access": TextKO = "\uC120\uD0DD\uD55C CATProduct\uC5D0 \uC811\uADFC\uD560 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4."
+        Case "msg_read_error": TextKO = "\uC5B4\uC148\uBE14\uB9AC\uB97C \uC77D\uC744 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4.||{0}"
+        Case "msg_nothing": TextKO = "\uC774 CATProduct\uC5D0\uB294 \uC774\uB984\uC744 \uBCC0\uACBD\uD560 \uAD6C\uC131\uC694\uC18C\uAC00 \uC5C6\uC2B5\uB2C8\uB2E4."
+        Case "msg_csv_fail": TextKO = "\uC774\uB984 \uBCC0\uACBD \uAE30\uB85D(CSV)\uC744 \uC800\uC7A5\uD560 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4.|\uAE30\uB85D\uC774 \uC5C6\uC73C\uBA74 \uC774 \uBCC0\uACBD\uC740 \uC2E4\uD589 \uCDE8\uC18C\uD560 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4.||\uADF8\uB798\uB3C4 \uACC4\uC18D\uD558\uC2DC\uACA0\uC2B5\uB2C8\uAE4C?"
+        Case "confirm_rename": TextKO = "\uB2E4\uC74C \uBB38\uC11C\uC758 \uAD6C\uC131\uC694\uC18C \uC774\uB984\uC744 \uBCC0\uACBD\uD569\uB2C8\uB2E4:||{0}||\uBD80\uD488 \uBC88\uD638: {1}\uAC1C|\uC778\uC2A4\uD134\uC2A4 \uC774\uB984: {2}\uAC1C||\uC804\uCCB4 \uBAA9\uB85D\uC740 \uC774 \uBA54\uC2DC\uC9C0 \uB4A4\uC758 \uCC3D\uC5D0 \uD45C\uC2DC\uB418\uC5B4 \uC788\uC2B5\uB2C8\uB2E4.|\uB098\uC911\uC5D0 \uC2E4\uD589 \uCDE8\uC18C \uBC84\uD2BC\uC73C\uB85C \uB418\uB3CC\uB9B4 \uC218 \uC788\uC2B5\uB2C8\uB2E4.||\uACC4\uC18D\uD558\uC2DC\uACA0\uC2B5\uB2C8\uAE4C?"
+        Case "confirm_undo": TextKO = "\uB2E4\uC74C \uBB38\uC11C\uC758 \uC774\uB984\uC744 \uC6D0\uB798\uB300\uB85C \uBCF5\uC6D0\uD569\uB2C8\uB2E4:||{0}||\uBD80\uD488 \uBC88\uD638: {1}\uAC1C|\uC778\uC2A4\uD134\uC2A4 \uC774\uB984: {2}\uAC1C||\uC804\uCCB4 \uBAA9\uB85D\uC740 \uC774 \uBA54\uC2DC\uC9C0 \uB4A4\uC758 \uCC3D\uC5D0 \uD45C\uC2DC\uB418\uC5B4 \uC788\uC2B5\uB2C8\uB2E4.||\uACC4\uC18D\uD558\uC2DC\uACA0\uC2B5\uB2C8\uAE4C?"
+        Case "sum_counts": TextKO = "{0}\uAC1C \uBCC0\uACBD, {1}\uAC1C \uC2E4\uD328, {2}\uAC1C \uAC74\uB108\uB700."
+        Case "sum_csv": TextKO = "\uC774\uB984 \uBCC0\uACBD \uAE30\uB85D \uC800\uC7A5 \uC704\uCE58:|{0}"
+        Case "sum_update": TextKO = "\uCC38\uACE0: \uC81C\uD488 \uC5C5\uB370\uC774\uD2B8 \uC911 \uB2E4\uC74C \uBA54\uC2DC\uC9C0\uAC00 \uD45C\uC2DC\uB418\uC5C8\uC2B5\uB2C8\uB2E4: {0}"
+        Case "sum_stopped": TextKO = "\uC624\uB958\uB85C \uC778\uD574 \uC791\uC5C5\uC774 \uC911\uB2E8\uB418\uC5C8\uC2B5\uB2C8\uB2E4:|{0}"
+        Case "sum_details": TextKO = "\uC790\uC138\uD55C \uB0B4\uC6A9\uC740 \uACB0\uACFC \uC5F4\uC744 \uD655\uC778\uD558\uC138\uC694."
+        Case "undo_pick": TextKO = "\uC2E4\uD589 \uCDE8\uC18C\uD560 \uC774\uB984 \uBCC0\uACBD \uAE30\uB85D(CSV)\uC744 \uC120\uD0DD\uD558\uC138\uC694"
+        Case "undo_badfile": TextKO = "\uC774 \uD30C\uC77C\uC744 \uC774\uB984 \uBCC0\uACBD \uAE30\uB85D\uC73C\uB85C \uC77D\uC744 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4:|{0}"
+        Case "undo_nomatch": TextKO = "\uC774 CATProduct\uC5D0\uC11C \uAE30\uB85D\uACFC \uC77C\uCE58\uD558\uB294 \uC774\uB984\uC744 \uCC3E\uC744 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4.|\uC62C\uBC14\uB978 CATProduct\uC640 \uD30C\uC77C\uC744 \uC120\uD0DD\uD588\uB294\uC9C0 \uD655\uC778\uD558\uC138\uC694."
+    End Select
+
+End Function
+
+
+'=========================================================
+' CREDIT IMAGE
+' The picture shown at the bottom of the window is stored
+' below as text, so there is no image file to install.
+'=========================================================
+
+'Puts the picture into an Image control.
+'Returns False if the picture could not be loaded.
+Public Function LoadCreditImage(ByVal target As Object) As Boolean
+
+    Dim data() As Byte
+    Dim filePath As String
+    Dim fileNo As Integer
+
+    LoadCreditImage = False
+
+    On Error GoTo Failed
+
+    data = HexToBytes(CreditImageHex())
+
+    'VBA can only load a picture from a file, so the data is
+    'written to the Windows temp folder, loaded, then deleted.
+    filePath = Environ$("TEMP") &amp; "\catia_renamer_credit.gif"
+
+    If Len(Dir$(filePath)) &gt; 0 Then Kill filePath
+
+    fileNo = FreeFile
+
+    Open filePath For Binary Access Write As #fileNo
+    Put #fileNo, , data
+    Close #fileNo
+
+    Set target.Picture = LoadPicture(filePath)
+
+    LoadCreditImage = True
+
+    On Error Resume Next
+    Kill filePath
+
+    Exit Function
+
+Failed:
+
+    On Error Resume Next
+    Close #fileNo
+
+End Function
+
+
+'Turns pairs of hex characters back into bytes
+Private Function HexToBytes(ByVal hexText As String) As Byte()
+
+    Dim byteCount As Long
+    Dim i As Long
+    Dim data() As Byte
+
+    byteCount = Len(hexText) \ 2
+
+    ReDim data(0 To byteCount - 1)
+
+    For i = 0 To byteCount - 1
+        data(i) = CByte("&amp;H" &amp; Mid$(hexText, i * 2 + 1, 2))
+    Next i
+
+    HexToBytes = data
+
+End Function
+
+
+'The picture (a GIF image, 195 x 15 pixels) written as hex text
+Private Function CreditImageHex() As String
+
+    Dim s As String
+
+    s = s &amp; "474946383761C3000F00840000F0F0F0D7DCE0C4CCD4B5C0CBA7B4C29AA9BA8D9FB27F92A97288A06B829D657D9957719048"
+    s = s &amp; "65863B5A7F2C4E751E426C0F3562002A5A000000000000000000000000000000000000000000000000000000000000000000"
+    s = s &amp; "0000000000000000002C00000000C3000F000008FF0001081C48B0A0C18308132A5CC8B0A1C38710234A9C48B1A2C58B1833"
+    s = s &amp; "6ADCE810418401041F34187820820082061E4480B02000008F11562A20A9320283930463C674504020019D3113402058E001"
+    s = s &amp; "00A011101C2550F040CD9B021BE87CD013A6CE973A59BA1CF8332604A50D940A44309260499C4B010C7010B32580B0041B30"
+    s = s &amp; "15C8C0E840010C623E38E0330241044AADC6FC1BA12C8092861D34E02BD029D3000B1CBC2C1BE08181970FE62280B0556084"
+    s = s &amp; "B90620F4FC5950F4C005333F17543D1041E6B19CDF8A2DC0996C41DB00F04AE6EA37B7E801B10340983B5031E3B47B010460"
+    s = s &amp; "B04076DCB9C21D80540E4181CBB54A49B70E6CF87683063D2B2BFF282BE08180DD00868724801BC002A5EA07C21DC81A404A"
+    s = s &amp; "00DA4FCF140801647DCFC4A517205CF32DD5DE58DD59C69B7C4ABDF752730495771E7D4C992490009715F816680B18B0DF01"
+    s = s &amp; "DD11C0597E2F71871059033C0019606521C09774F8F5E6DD85999138594E017E64635102F198168E0BFE35D27C3F0970E08D"
+    s = s &amp; "AD311024702709F01104688DF5E274AA2DB0175A1ACA15D500C245251685240286A441B62D602592E6D937938D6301C5978D"
+    s = s &amp; "0474F7DF675D5D05C00320A1E61950151207E790535505D44807B657A74D5B29509D41697A08A04006E4D500485221C55479"
+    s = s &amp; "022DD093861B8619D8A0425257D548030065149B480217808D200249DF006C2AFF3013948FBA1A6353437E89E08C49060919"
+    s = s &amp; "6511742650A953D52A50008A3A271F5325E9D41CA7C3793A26AFAD8DA4C071930AB85E7B0E5C169F97B6DEC7668A05A0F7DF"
+    s = s &amp; "8FFC0D0896AED34EAB605F411E65D0B5F2F947C000722A1B155330F27758889C95DA1903261E74A46D6936D6DC010E3C16D9"
+    s = s &amp; "9808348740BF07C446618FA6A1FA8003C79DFBDFC4D355EC12A70793F770BC0AD8256F41091FD6DC67C25D76D850591280E9"
+    s = s &amp; "400C18209C58E789E5805B45B65BAD773E0E3B947D2A6935A68F4EC504554E3AF1D4179F022960E19E3A2965E9614FE14432"
+    s = s &amp; "525879E5166F3A3130DDCA0315ADD650AAE1EB34A5BACAA500848D2989975EC72DB7534F61DB24C9D1DF80072EF845043810"
+    s = s &amp; "E5E08827AEF8E21D412023E390472EF9E494576EF9E51B0504003B"
+
+    CreditImageHex = s
+
+End Function</code></pre>
+  </section>
+
+  <section>
+    <div class="code-head"><h2>3. Button class code</h2><div class="right"><span class="filetag">clsButtonHandler</span><button class="copy" data-target="class">Copy code</button></div></div>
+    <pre><code id="class">Option Explicit
+
+'=========================================================
+' clsButtonHandler
+' Catches clicks from buttons created at runtime.
+'=========================================================
+
+Public WithEvents Button As MSForms.CommandButton
+Public ParentForm As Object
+
+Private Sub Button_Click()
+
+    Select Case Button.Name
+
+        Case "cmdPreview"
+            ParentForm.RunPreview
+
+        Case "cmdRename"
+            ParentForm.RunRename
+
+        Case "cmdUndo"
+            ParentForm.RunUndo
+
+        Case "cmdLanguage"
+            ParentForm.ToggleLanguage
+
+        Case "cmdClose"
+            ParentForm.CloseForm
+
+    End Select
+
+End Sub</code></pre>
+  </section>
+
+  <section>
+    <h2>How Undo works</h2>
+    <ul>
+      <li>Every rename saves a CSV map next to the CATProduct, or in the Windows TEMP folder. The final message shows where.</li>
+      <li>Undo reads that map, finds the components that currently have the new names, and renames them back with the same checked two-pass process.</li>
+      <li>Select the same CATProduct in the dropdown that the rename was run on.</li>
+      <li>An undo also saves its own map, so an undo can itself be reversed.</li>
+      <li>Keep the CSV files. Without the map, there is nothing to undo from.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>English and Korean text</h2>
+    <p>All wording lives in <code>TextEN</code> and <code>TextKO</code> in the <code>Renamer</code> module. Korean is stored as <code>\uXXXX</code> codes so it pastes safely into the VBA editor on any PC. Please have a Korean-speaking CATIA user check the terms.</p>
+    <div class="wrapx scroll"><table>
+      <tr><th>Key</th><th>English</th><th>Korean</th></tr>
+      <tr><td><code>title</code></td><td>CATIA Component Renamer</td><td lang="ko">CATIA 구성요소 이름 변경</td></tr><tr><td><code>subtitle</code></td><td>Preview first, then rename. Each unique part gets one number.</td><td lang="ko">먼저 미리보기를 확인한 후 이름을 변경하세요. 동일한 부품에는 하나의 번호가 부여됩니다.</td></tr><tr><td><code>lbl_doc</code></td><td>CATProduct:</td><td lang="ko">CATProduct:</td></tr><tr><td><code>lbl_prefix</code></td><td>Prefix:</td><td lang="ko">접두사:</td></tr><tr><td><code>lbl_start</code></td><td>Starting number:</td><td lang="ko">시작 번호:</td></tr><tr><td><code>lbl_digits</code></td><td>Digits:</td><td lang="ko">자릿수:</td></tr><tr><td><code>chk_recursive</code></td><td>Include subassemblies</td><td lang="ko">하위 어셈블리 포함</td></tr><tr><td><code>chk_instance</code></td><td>Rename instance names</td><td lang="ko">인스턴스 이름 변경</td></tr><tr><td><code>col_type</code></td><td>Type</td><td lang="ko">유형</td></tr><tr><td><code>col_old</code></td><td>Current name</td><td lang="ko">현재 이름</td></tr><tr><td><code>col_new</code></td><td>New name</td><td lang="ko">새 이름</td></tr><tr><td><code>col_result</code></td><td>Result</td><td lang="ko">결과</td></tr><tr><td><code>btn_preview</code></td><td>Preview</td><td lang="ko">미리보기</td></tr><tr><td><code>btn_rename</code></td><td>Rename Components</td><td lang="ko">이름 변경</td></tr><tr><td><code>btn_undo</code></td><td>Undo</td><td lang="ko">실행 취소</td></tr><tr><td><code>btn_close</code></td><td>Close</td><td lang="ko">닫기</td></tr><tr><td><code>kind_part</code></td><td>Part number</td><td lang="ko">부품 번호</td></tr><tr><td><code>kind_inst</code></td><td>Instance</td><td lang="ko">인스턴스</td></tr><tr><td><code>res_ok</code></td><td>OK</td><td lang="ko">완료</td></tr><tr><td><code>res_same</code></td><td>No change</td><td lang="ko">변경 없음</td></tr><tr><td><code>res_failed</code></td><td>FAILED</td><td lang="ko">실패</td></tr><tr><td><code>res_skipped</code></td><td>SKIPPED</td><td lang="ko">건너뜀</td></tr><tr><td><code>rsn_unread</code></td><td>could not be read (broken link or not loaded)</td><td lang="ko">읽을 수 없음 (링크 끊김 또는 로드되지 않음)</td></tr><tr><td><code>rsn_kept</code></td><td>CATIA kept the name</td><td lang="ko">CATIA가 다음 이름을 유지함:</td></tr><tr><td><code>rsn_restored</code></td><td>original name restored</td><td lang="ko">원래 이름으로 복원됨</td></tr><tr><td><code>rsn_left</code></td><td>left as</td><td lang="ko">임시 이름으로 남음:</td></tr><tr><td><code>st_ready</code></td><td>Status: Ready</td><td lang="ko">상태: 준비</td></tr><tr><td><code>st_nodoc</code></td><td>No CATProduct is open. Open one and run the macro again.</td><td lang="ko">열려 있는 CATProduct가 없습니다. CATProduct를 연 후 매크로를 다시 실행하세요.</td></tr><tr><td><code>st_reading</code></td><td>Status: Reading assembly...</td><td lang="ko">상태: 어셈블리 읽는 중...</td></tr><tr><td><code>st_preview</code></td><td>Preview: {0} part numbers and {1} instance names would change. Nothing has been renamed yet.</td><td lang="ko">미리보기: 부품 번호 {0}개와 인스턴스 이름 {1}개가 변경될 예정입니다. 아직 변경된 것은 없습니다.</td></tr><tr><td><code>st_nothing</code></td><td>Status: Nothing to change</td><td lang="ko">상태: 변경할 항목 없음</td></tr><tr><td><code>st_cancelled</code></td><td>Status: Cancelled. Nothing was changed.</td><td lang="ko">상태: 취소됨. 변경된 것이 없습니다.</td></tr><tr><td><code>st_working</code></td><td>Status: Renaming...</td><td lang="ko">상태: 이름 변경 중...</td></tr><tr><td><code>st_undoing</code></td><td>Status: Restoring names...</td><td lang="ko">상태: 이름 복원 중...</td></tr><tr><td><code>st_done</code></td><td>Status: Done. {0}</td><td lang="ko">상태: 완료. {0}</td></tr><tr><td><code>st_error</code></td><td>Status: Error while reading the assembly</td><td lang="ko">상태: 어셈블리를 읽는 중 오류 발생</td></tr><tr><td><code>msg_pick_doc</code></td><td>Please select a CATProduct.</td><td lang="ko">CATProduct를 선택하세요.</td></tr><tr><td><code>msg_prefix</code></td><td>Please enter a prefix.</td><td lang="ko">접두사를 입력하세요.</td></tr><tr><td><code>msg_start</code></td><td>Starting number must be a whole number (digits only).</td><td lang="ko">시작 번호는 정수여야 합니다 (숫자만 입력).</td></tr><tr><td><code>msg_digits</code></td><td>Digits must be a whole number between 1 and 10.</td><td lang="ko">자릿수는 1에서 10 사이의 정수여야 합니다.</td></tr><tr><td><code>msg_no_access</code></td><td>Could not access the selected CATProduct.</td><td lang="ko">선택한 CATProduct에 접근할 수 없습니다.</td></tr><tr><td><code>msg_read_error</code></td><td>The assembly could not be read.||{0}</td><td lang="ko">어셈블리를 읽을 수 없습니다.||{0}</td></tr><tr><td><code>msg_nothing</code></td><td>There are no components to rename in this CATProduct.</td><td lang="ko">이 CATProduct에는 이름을 변경할 구성요소가 없습니다.</td></tr><tr><td><code>msg_csv_fail</code></td><td>The rename map (CSV) could not be saved.|Without it, Undo will not be available for this change.||Continue anyway?</td><td lang="ko">이름 변경 기록(CSV)을 저장할 수 없습니다.|기록이 없으면 이 변경은 실행 취소할 수 없습니다.||그래도 계속하시겠습니까?</td></tr><tr><td><code>confirm_rename</code></td><td>Rename components in:||{0}||Part numbers: {1}|Instance names: {2}||The full list is shown in the window behind this message.|You can reverse this later with the Undo button.||Continue?</td><td lang="ko">다음 문서의 구성요소 이름을 변경합니다:||{0}||부품 번호: {1}개|인스턴스 이름: {2}개||전체 목록은 이 메시지 뒤의 창에 표시되어 있습니다.|나중에 실행 취소 버튼으로 되돌릴 수 있습니다.||계속하시겠습니까?</td></tr><tr><td><code>confirm_undo</code></td><td>Restore the original names in:||{0}||Part numbers: {1}|Instance names: {2}||The full list is shown in the window behind this message.||Continue?</td><td lang="ko">다음 문서의 이름을 원래대로 복원합니다:||{0}||부품 번호: {1}개|인스턴스 이름: {2}개||전체 목록은 이 메시지 뒤의 창에 표시되어 있습니다.||계속하시겠습니까?</td></tr><tr><td><code>sum_counts</code></td><td>{0} renamed, {1} failed, {2} skipped.</td><td lang="ko">{0}개 변경, {1}개 실패, {2}개 건너뜀.</td></tr><tr><td><code>sum_csv</code></td><td>Rename map saved to:|{0}</td><td lang="ko">이름 변경 기록 저장 위치:|{0}</td></tr><tr><td><code>sum_update</code></td><td>Note: the product update reported: {0}</td><td lang="ko">참고: 제품 업데이트 중 다음 메시지가 표시되었습니다: {0}</td></tr><tr><td><code>sum_stopped</code></td><td>The process stopped early because of an error:|{0}</td><td lang="ko">오류로 인해 작업이 중단되었습니다:|{0}</td></tr><tr><td><code>sum_details</code></td><td>See the Result column for details.</td><td lang="ko">자세한 내용은 결과 열을 확인하세요.</td></tr><tr><td><code>undo_pick</code></td><td>Select the rename map (CSV) to undo</td><td lang="ko">실행 취소할 이름 변경 기록(CSV)을 선택하세요</td></tr><tr><td><code>undo_badfile</code></td><td>This file could not be read as a rename map:|{0}</td><td lang="ko">이 파일을 이름 변경 기록으로 읽을 수 없습니다:|{0}</td></tr><tr><td><code>undo_nomatch</code></td><td>Nothing in this CATProduct matches the names in the rename map.|Check that the right CATProduct and the right file are selected.</td><td lang="ko">이 CATProduct에서 기록과 일치하는 이름을 찾을 수 없습니다.|올바른 CATProduct와 파일을 선택했는지 확인하세요.</td></tr>
+    </table></div>
+    <p class="note">In a text, <code>|</code> means a new line, and <code>{0}</code>, <code>{1}</code>, <code>{2}</code> are filled in with names and counts. The window title bar stays in English in both languages.</p>
+  </section>
+
+  <section>
+    <h2>Known limitations</h2>
+    <ul>
+      <li>It renames Part Numbers and instance names only. Files on disk keep their names.</li>
+      <li>Parts are told apart by their current Part Number. Two different documents that share a Part Number are treated as one part.</li>
+      <li>Undo matches by name. Components renamed by hand after the macro ran will not be found and are left as they are.</li>
+      <li>A new name that matches another document open in the session, or a deeper part when "Include subassemblies" is off, may be rejected by CATIA and will show as FAILED.</li>
+      <li>Read-only or PDM-locked parts will show as FAILED and keep their original names.</li>
+      <li>Results in the CSV file are always written in English so that Undo can read them in either language.</li>
+      <li>The credit image's background is the standard Windows form gray. On a PC with a different window color theme, it shows as a slightly different gray box.</li>
+      <li>If the image cannot be loaded, for example when the Windows temp folder is not writable, the window opens without it.</li>
+    </ul>
+  </section>
+</main>
+<footer>Prepared for CATIA V5 R21 VBA. Renames component Part Numbers and, optionally, instance names.</footer>
+</div>
+<script>
+document.querySelectorAll('.copy').forEach(function (btn) {
+  btn.addEventListener('click', function () {
+    var text = document.getElementById(btn.dataset.target).textContent;
+    function done(ok) {
+      btn.textContent = ok ? 'Copied' : 'Select and copy manually';
+      setTimeout(function () { btn.textContent = 'Copy code'; }, 1800);
+    }
+    function fallback() {
+      var ta = document.createElement('textarea');
+      ta.value = text; document.body.appendChild(ta); ta.select();
+      var ok = false;
+      try { ok = document.execCommand('copy'); } catch (e) {}
+      document.body.removeChild(ta); done(ok);
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () { done(true); }, fallback);
+    } else { fallback(); }
+  });
+});
+</script>
+</body>
+</html>

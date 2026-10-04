@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CATIA V5 R21 Box Generator Macro</title>
+<style>
+:root {
+  --bg:#f5f7fb; --card:#ffffff; --ink:#18212f; --muted:#667085;
+  --accent:#2b5aa8; --accent2:#17396d; --line:#d9e1ec; --code:#101828;
+  --good:#0f766e;
+}
+* { box-sizing:border-box; }
+body {
+  margin:0; font-family:Segoe UI, Arial, sans-serif; color:var(--ink); background:var(--bg);
+}
+header {
+  background:linear-gradient(135deg,var(--accent2),var(--accent));
+  color:white; padding:42px 24px;
+}
+header .wrap, main { max-width:1100px; margin:auto; }
+h1 { margin:0 0 10px; font-size:32px; }
+.subtitle { margin:0; opacity:.9; font-size:16px; }
+main { padding:28px 20px 60px; }
+.card {
+  background:var(--card); border:1px solid var(--line); border-radius:14px;
+  padding:22px; margin:0 0 22px; box-shadow:0 6px 18px rgba(16,24,40,.05);
+}
+h2 { color:var(--accent2); margin-top:0; }
+h3 { margin-bottom:8px; }
+.tree {
+  background:#eef3fa; border-radius:10px; padding:18px 20px;
+  font-family:Consolas, monospace; line-height:1.65; white-space:pre;
+}
+.note {
+  border-left:4px solid var(--accent); padding:12px 14px; background:#f0f5ff;
+  border-radius:8px; color:#344054;
+}
+.good {
+  border-left-color:var(--good);
+  background:#ecfdf5;
+}
+.code-head {
+  display:flex; justify-content:space-between; align-items:center; gap:12px;
+}
+.filetag {
+  font-family:Consolas, monospace; background:#e9eff8; color:#17365f;
+  padding:5px 9px; border-radius:7px; font-size:13px;
+}
+pre {
+  background:var(--code); color:#eef2f6; padding:20px; border-radius:10px;
+  overflow:auto; line-height:1.45; font-size:13px; tab-size:4;
+}
+table { width:100%; border-collapse:collapse; }
+th, td { padding:10px 12px; border-bottom:1px solid var(--line); text-align:left; vertical-align:top; }
+th { background:#f8fafc; }
+code.inline {
+  background:#eef2f6; padding:2px 5px; border-radius:4px;
+}
+footer { color:var(--muted); font-size:13px; margin-top:24px; }
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <h1>CATIA V5 R21 Box Generator</h1>
+    <p class="subtitle">VBA macro for generating a 10 × 10 grid of 20 mm box parts inside an open CATProduct</p>
+  </div>
+</header>
+
+<main>
+
+  <section class="card">
+    <h2>Project Structure</h2>
+    <div class="tree">VBAProject
+│
+└── Modules
+    └── BoxGenerator
+        └── CATMain</div>
+    <p class="note"><strong>Recommended setup:</strong> create one standard VBA module named <code class="inline">BoxGenerator</code> and paste the full code below into that module.</p>
+  </section>
+
+  <section class="card">
+    <h2>What the Macro Does</h2>
+    <table>
+      <tr><th>Setting</th><th>Value</th></tr>
+      <tr><td>Grid size</td><td>10 × 10</td></tr>
+      <tr><td>Total components</td><td>100</td></tr>
+      <tr><td>Box footprint</td><td>20 mm × 20 mm</td></tr>
+      <tr><td>Pad height</td><td>20 mm</td></tr>
+      <tr><td>Grid spacing</td><td>50 mm</td></tr>
+      <tr><td>Generated filenames</td><td><code>TempBox_Part_001.CATPart</code> through <code>TempBox_Part_100.CATPart</code></td></tr>
+      <tr><td>Temporary save location</td><td>Windows system temporary folder</td></tr>
+    </table>
+    <p class="note good"><strong>R21 compatibility changes included:</strong> the macro avoids writing directly to <code>partObj.Name</code>, uses four <code>CreateLine</code> calls instead of <code>CreateClosedLine</code>, and passes component files using a Variant array.</p>
+  </section>
+
+  <section class="card">
+    <div class="code-head">
+      <h2>Full VBA Code</h2>
+      <span class="filetag">Module: BoxGenerator</span>
+    </div>
+    <pre><code>Option Explicit
+
+Sub CATMain()
+
+    Dim productDoc As ProductDocument
+    Dim rootProduct As Product
+    Dim prodsObj As Object
+    Dim docs As Documents
+
+    Dim fso As Object
+    Dim tempFolder As String
+
+    Dim i As Integer
+    Dim j As Integer
+    Dim count As Integer
+
+    Dim xOffset As Double
+    Dim yOffset As Double
+
+    Dim partDoc As PartDocument
+    Dim partObj As Part
+    Dim bodyObj As Body
+    Dim skt As Sketch
+    Dim geomDF As Factory2D
+
+    Dim line1 As Line2D
+    Dim line2 As Line2D
+    Dim line3 As Line2D
+    Dim line4 As Line2D
+
+    Dim shapeFact As ShapeFactory
+    Dim padObj As Pad
+
+    Dim partName As String
+    Dim filePath As String
+    Dim fileArray As Variant
+
+    &#x27;---------------------------------------
+    &#x27; Check active document
+    &#x27;---------------------------------------
+
+    If CATIA.Documents.Count = 0 Then
+        MsgBox &quot;Please open a CATProduct before running this script.&quot;, _
+               vbCritical, &quot;Error&quot;
+        Exit Sub
+    End If
+
+    If TypeName(CATIA.ActiveDocument) &lt;&gt; &quot;ProductDocument&quot; Then
+        MsgBox &quot;Active document must be a CATProduct.&quot;, _
+               vbCritical, &quot;Error&quot;
+        Exit Sub
+    End If
+
+    Set productDoc = CATIA.ActiveDocument
+    Set rootProduct = productDoc.Product
+    Set prodsObj = rootProduct.Products
+    Set docs = CATIA.Documents
+
+    &#x27;---------------------------------------
+    &#x27; Get Windows temporary folder
+    &#x27;---------------------------------------
+
+    Set fso = CreateObject(&quot;Scripting.FileSystemObject&quot;)
+    tempFolder = fso.GetSpecialFolder(2).Path &amp; &quot;\&quot;
+
+    count = 1
+
+    &#x27;---------------------------------------
+    &#x27; Generate 100 boxes
+    &#x27;---------------------------------------
+
+    For i = 0 To 9
+
+        For j = 0 To 9
+
+            xOffset = i * 50#
+            yOffset = j * 50#
+
+            partName = &quot;TempBox_Part_&quot; &amp; Format(count, &quot;000&quot;)
+            filePath = tempFolder &amp; partName &amp; &quot;.CATPart&quot;
+
+            &#x27;---------------------------------------
+            &#x27; Create new CATPart
+            &#x27;---------------------------------------
+
+            Set partDoc = docs.Add(&quot;Part&quot;)
+            Set partObj = partDoc.Part
+
+            &#x27; Do NOT use:
+            &#x27; partObj.Name = partName
+            &#x27;
+            &#x27; CATIA V5 R21 may throw Error 445 here.
+
+            &#x27; Optional: set Product Part Number
+            On Error Resume Next
+            partDoc.Product.PartNumber = partName
+            On Error GoTo 0
+
+            &#x27;---------------------------------------
+            &#x27; Get Main Body
+            &#x27;---------------------------------------
+
+            Set bodyObj = partObj.MainBody
+
+            &#x27;---------------------------------------
+            &#x27; Create sketch on XY Plane
+            &#x27;---------------------------------------
+
+            Set skt = bodyObj.Sketches.Add( _
+                      partObj.OriginElements.PlaneXY)
+
+            Set geomDF = skt.OpenEdition()
+
+            &#x27;---------------------------------------
+            &#x27; Create 20 mm x 20 mm square
+            &#x27;---------------------------------------
+
+            Set line1 = geomDF.CreateLine( _
+                        xOffset, _
+                        yOffset, _
+                        xOffset + 20#, _
+                        yOffset)
+
+            Set line2 = geomDF.CreateLine( _
+                        xOffset + 20#, _
+                        yOffset, _
+                        xOffset + 20#, _
+                        yOffset + 20#)
+
+            Set line3 = geomDF.CreateLine( _
+                        xOffset + 20#, _
+                        yOffset + 20#, _
+                        xOffset, _
+                        yOffset + 20#)
+
+            Set line4 = geomDF.CreateLine( _
+                        xOffset, _
+                        yOffset + 20#, _
+                        xOffset, _
+                        yOffset)
+
+            skt.CloseEdition
+
+            partObj.Update
+
+            &#x27;---------------------------------------
+            &#x27; Create 20 mm Pad
+            &#x27;---------------------------------------
+
+            Set shapeFact = partObj.ShapeFactory
+
+            Set padObj = shapeFact.AddNewPad( _
+                         skt, _
+                         20#)
+
+            partObj.Update
+
+            &#x27;---------------------------------------
+            &#x27; Save CATPart
+            &#x27;---------------------------------------
+
+            partDoc.SaveAs filePath
+
+            &#x27;---------------------------------------
+            &#x27; Close CATPart
+            &#x27;---------------------------------------
+
+            partDoc.Close
+
+            &#x27;---------------------------------------
+            &#x27; Add saved CATPart to CATProduct
+            &#x27;---------------------------------------
+
+            fileArray = Array(filePath)
+
+            Call prodsObj.AddComponentsFromFiles( _
+                 fileArray, _
+                 &quot;All&quot;)
+
+            count = count + 1
+
+        Next j
+
+    Next i
+
+    &#x27;---------------------------------------
+    &#x27; Update assembly
+    &#x27;---------------------------------------
+
+    rootProduct.Update
+
+    MsgBox &quot;Successfully generated and inserted 100 box parts!&quot;, _
+           vbInformation, &quot;Complete&quot;
+
+End Sub
+</code></pre>
+  </section>
+
+  <section class="card">
+    <h2>How to Install</h2>
+    <table>
+      <tr><th>Step</th><th>Action</th></tr>
+      <tr><td>1</td><td>Open the CATIA VBA editor.</td></tr>
+      <tr><td>2</td><td>Create a new standard module using <strong>Insert → Module</strong>.</td></tr>
+      <tr><td>3</td><td>Rename the module to <code>BoxGenerator</code>.</td></tr>
+      <tr><td>4</td><td>Paste the full VBA code from this page into the module.</td></tr>
+      <tr><td>5</td><td>Use <strong>Debug → Compile VBAProject</strong>.</td></tr>
+      <tr><td>6</td><td>Open a CATProduct in CATIA before running the macro.</td></tr>
+      <tr><td>7</td><td>Run <code>CATMain</code>.</td></tr>
+    </table>
+  </section>
+
+  <section class="card">
+    <h2>Important Behavior</h2>
+    <p>This version creates <strong>100 separate CATPart files</strong> and inserts them into the current CATProduct. The geometry is offset inside each CATPart to create the visible grid.</p>
+    <p class="note">A more advanced version could instead create one box CATPart and insert it 100 times using assembly-position transforms. That approach would usually be faster and produce a cleaner CATIA assembly structure.</p>
+  </section>
+
+  <footer>
+    Prepared for CATIA V5 R21 VBA.
+  </footer>
+
+</main>
+</body>
+</html>

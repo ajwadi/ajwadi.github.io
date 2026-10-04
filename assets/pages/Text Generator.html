@@ -1,0 +1,2046 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>CATIA Text Generator - VBA Package</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono&display=swap">
+<style>
+:root {
+  --bg:#eef1f5; --panel:#ffffff; --ink:#16202c; --muted:#566475; --line:#d3dae3;
+  --accent:#2c5aa0; --accent2:#1f437a; --code-bg:#f6f8fb; --note:#fff6dc; --note-line:#d9a400;
+  box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --bg:#141a22; --panel:#1c242f; --ink:#e6ebf2; --muted:#9aa8b9; --line:#324052; --accent:#6f9fe6; --accent2:#8fb5ee; --code-bg:#151c25; --note:#3a3216; --note-line:#d9a400; }
+}
+:root[data-theme="dark"] { --bg:#141a22; --panel:#1c242f; --ink:#e6ebf2; --muted:#9aa8b9; --line:#324052; --accent:#6f9fe6; --accent2:#8fb5ee; --code-bg:#151c25; --note:#3a3216; --note-line:#d9a400; }
+*, *::before, *::after { box-sizing:inherit; }
+html { scroll-padding-top:env(safe-area-inset-top,0px); }
+body { margin:0; background:var(--bg); color:var(--ink); font-family:"IBM Plex Sans","Segoe UI","Malgun Gothic",Arial,sans-serif; font-size:16px; line-height:1.6; }
+.wrap { max-width:920px; margin:0 auto; padding:0 20px; }
+header { padding:40px 0 8px; }
+h1 { font-size:2rem; line-height:1.2; margin:0 0 6px; font-weight:600; letter-spacing:-0.01em; }
+.subtitle { margin:0; color:var(--muted); max-width:62ch; }
+.palettes { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:14px 22px; margin:26px 0 8px; }
+.strip { display:flex; height:34px; border:1px solid var(--line); }
+.strip span { flex:1; }
+.pal p { margin:4px 0 0; font-size:.85rem; color:var(--muted); }
+section { background:var(--panel); border:1px solid var(--line); border-radius:6px; padding:22px 24px; margin:18px 0; }
+h2 { font-size:1.15rem; margin:0 0 10px; font-weight:600; }
+p { margin:0 0 10px; max-width:72ch; }
+ul, ol { margin:0; padding-left:22px; max-width:72ch; }
+li { margin-bottom:6px; }
+code, pre { font-family:"IBM Plex Mono",Consolas,monospace; }
+code { font-size:.9em; }
+.code-head { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:10px; margin-bottom:10px; }
+.code-head h2 { margin:0; }
+.right { display:flex; align-items:center; gap:10px; }
+.filetag { font-size:.8rem; color:var(--muted); border:1px solid var(--line); border-radius:4px; padding:3px 8px; }
+.copy { background:var(--accent); color:#fff; border:0; border-radius:4px; padding:8px 16px; font:inherit; font-size:.9rem; font-weight:500; cursor:pointer; }
+.copy:hover { background:var(--accent2); }
+.copy:focus-visible { outline:3px solid var(--note-line); outline-offset:2px; }
+:root[data-theme="dark"] .copy { color:#10161e; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .copy { color:#10161e; } }
+pre { margin:0; background:var(--code-bg); border:1px solid var(--line); border-radius:4px; padding:14px; max-height:520px; overflow:auto; font-size:.8rem; line-height:1.5; }
+.logo { display:block; max-width:100%; height:auto; margin:10px 0 0; border:1px solid var(--line); }
+.note { background:var(--note); border-left:4px solid var(--note-line); padding:10px 14px; margin:12px 0 0; }
+.wrapx { overflow-x:auto; }
+table { border-collapse:collapse; width:100%; font-size:.88rem; }
+th, td { text-align:left; padding:6px 10px; border-bottom:1px solid var(--line); vertical-align:top; }
+th { color:var(--muted); font-weight:500; }
+footer { color:var(--muted); font-size:.85rem; padding:8px 0 40px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>CATIA Text Generator</h1>
+  <p class="subtitle">Raised or engraved text in any installed font, in a straight line at an angle or around a circle. Two code blocks to paste: the form and the module.</p>
+</header>
+<main>
+  <section>
+    <h2>What it does</h2>
+    <ul>
+      <li><strong>Font picker with preview.</strong> A dropdown of the TrueType fonts installed on the PC, with Bold and Italic. The white box shows your text in that font as you type.</li>
+      <li><strong>Straight text at any angle.</strong> Centered on the position you enter, rotated counterclockwise.</li>
+      <li><strong>Text around a circle.</strong> Enter the circle diameter and choose Outside or Inside the circle. Angle 0 centers the text at the top; 180 puts it at the bottom.</li>
+      <li><strong>Depth in mm,</strong> as raised text (pad) or engraved text (pocket).</li>
+      <li><strong>Preview in CATIA.</strong> Draws only the sketch so you can check size and placement. Create Text replaces it with the finished text. Closing the window removes a leftover preview.</li>
+      <li><strong>English / Korean button</strong> and the credit image centered at the bottom, stored in the module as text. <img class="logo" src="data:image/gif;base64,R0lGODdhwwAPAIQAAPDw8Nfc4MTM1LXAy6e0wpqpuo2fsn+SqXKIoGuCnWV9mVdxkEhlhjtafyxOdR5CbA81YgAqWgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACwAAAAAwwAPAAAI/wABCBxIsKDBgwgTKlzIsKHDhxAjSpxIsaLFixgzatzoEEGEAQQfNBh4IIIAggYeRICwIAAAjxFWKiCpMgKDkwRjxnRQQCABnTETQCBY4AEAoBEQHCVQ8EDNmwIb6HzQE6bOlzpZuhz4MyYEpQ2UCkQwkmBJnEsBDHAQsyWAsAQbMBXIwOhAAQxiPjjgMwJBBEqtxvwboSyAkoYdNOAr0CnTAAscvCwb4IGBlw/mIoCwVWCEuQYg9PxZUPTABTM/F1Q9EEHmsZzfii3AmWxB2wDwSubqN7foAbEDQJg7UDHjtHsBBGCwQHbcucIdgFQOQYHLtUpJtw5s+HaDBj0rK/8oK+CBgN0AhockgBvAAqXqB8IdyBpASgDaT88UCAFkfc/EpRcgXPMt1d5Y3VnGm3xKvfdScwSVdx59TJkkkACXFfgWaAsYsN8B3RHAWX4vcYcQWQM8ABlgZSHAl3T49ebdhZmROFlOAX5kY1EC8ZgWjgv+NdJ8Pwlw4I2tMRAkcCcJ8BEEaI314nSqLbAXWhrKFdUAwkUlFoUkAoakQbYtYCWS5tk3k41jAcWXjQR0999nXV0FwAMgoeYZUBUSB+eQU1UF1EgHtlenTVspUJ1BaXoIoEAG5NUASFIhxVR5Ai3Qk4YbhhnYoEJSV9VIAwBlFJtIAheAjSACSd8AbCr/MBOUj7oaY1NDfongjEkGCRllEXQmUKlT1SpQAIo6Jx9TJenUHKfDeTomr62NpMBxkwq4XnsOXBafl7bex2aKBaD334/8DQiWrtNOq2BfQR5l0LXy+UfAAHIqGxVTMPJ3WIicldoZAyYedKRtaTbW3AEOPBbZmAg0h0C/B8RGYY+mofqAA8ed+9/E01XsEqcHk/dwvArYJW9BCR/W3GfCXXbYUFkSgOlADBggnFjnieWAW0W2W613Pg47lH0qaTWmj07FBFVOOvHUF58CKWDhnjopZelhT+FEMlJYeeUWbzoxMN3KAxWt1lCq4es0pbrKpQCEjSmJl17HLbdTT2HbJMnR34AHLvhFBDgQ5eCIJ6744h1BICPjkEcu+eSUV2755RsFBAA7" alt="Credit image with the line: macro developed by AISHAQUE" width="195" height="15"></li>
+      <li><strong>Safe beside your other macros.</strong> Every shared name starts with <code>TG</code>, and the Windows declarations are private to this module.</li>
+    </ul>
+    <p class="note"><strong>Not tested in CATIA.</strong> This macro calls Windows directly to read letter shapes, which is riskier than your other macros. Save your work first, and try it on a new empty part with the default "CATIA" in Arial.</p>
+  </section>
+
+  <section>
+    <h2>Setup</h2>
+    <ol>
+      <li>In the VBA editor, use Insert, UserForm. Set its <code>(Name)</code> to <code>frmTextGenerator</code>. Leave it empty in the designer.</li>
+      <li>Open the form's code, select all, delete, and paste the Form code below.</li>
+      <li>Use Insert, Module. Set its <code>(Name)</code> to <code>TextGenerator</code> and paste the Module code below.</li>
+      <li>Use Debug, Compile VBAProject.</li>
+      <li>Run <code>CATMain</code> from the <code>TextGenerator</code> module.</li>
+    </ol>
+    <p class="note"><strong>Red lines near the top of the module are normal.</strong> The module holds two sets of Windows declarations, one for newer VBA and one for older VBA. The set your CATIA does not use may show in red. It still compiles, so you do not need to tell me whether your CATIA is 32-bit or 64-bit.</p>
+  </section>
+
+  <section>
+    <h2>How to use it</h2>
+    <ol>
+      <li>Open a CATPart.</li>
+      <li>Before running the macro, select the plane or flat face the text should sit on. With nothing selected, it uses the XY plane. The window shows which one it picked up.</li>
+      <li>Run the macro, type the text, pick the font and fill in the sizes.</li>
+      <li>Click Preview in CATIA and look at the sketch behind the window.</li>
+      <li>Adjust and preview again, or click Create Text.</li>
+    </ol>
+    <div class="wrapx"><table>
+      <tr><th>Field</th><th>Meaning</th></tr>
+      <tr><td>Letter height</td><td>Height of capital letters in mm.</td></tr>
+      <tr><td>Extra spacing</td><td>Extra gap between letters in mm. Useful around small circles. Can be negative.</td></tr>
+      <tr><td>Angle, straight line</td><td>Rotation of the text, counterclockwise, in degrees.</td></tr>
+      <tr><td>Angle, around a circle</td><td>Where the middle of the text sits, clockwise from the top. 0 = top, 90 = right, 180 = bottom.</td></tr>
+      <tr><td>Circle diameter</td><td>The circle the text follows.</td></tr>
+      <tr><td>Outside</td><td>The bottoms of the letters sit on the circle and the letters extend outward.</td></tr>
+      <tr><td>Inside</td><td>The tops of the letters touch the circle and the letters extend inward.</td></tr>
+      <tr><td>Letter tops point to the center</td><td>Flips the letters so text at the bottom of the circle reads left to right. Use it with angle 180.</td></tr>
+      <tr><td>Position H, V</td><td>Center of the text, or center of the circle, in the sketch's H and V directions.</td></tr>
+      <tr><td>Mirror text</td><td>Use this if the text comes out backwards, which happens when the sketch faces away from you.</td></tr>
+      <tr><td>Reverse direction</td><td>Use this if the pad or pocket goes the wrong way.</td></tr>
+    </table></div>
+  </section>
+
+  <section>
+    <div class="code-head"><h2>Form code</h2><div class="right"><span class="filetag">frmTextGenerator</span><button class="copy" data-target="form">Copy code</button></div></div>
+    <pre><code id="form">Option Explicit
+
+&#x27;=========================================================
+&#x27; CATIA TEXT GENERATOR - FORM
+&#x27; Form name: frmTextGenerator
+&#x27; The form is empty in the designer. Every control is
+&#x27; created here in code.
+&#x27;=========================================================
+
+Private WithEvents mPreviewButton As MSForms.CommandButton
+Private WithEvents mCreateButton As MSForms.CommandButton
+Private WithEvents mCloseButton As MSForms.CommandButton
+Private WithEvents mLangButton As MSForms.CommandButton
+Private WithEvents mTextBox As MSForms.TextBox
+Private WithEvents mFontCombo As MSForms.ComboBox
+Private WithEvents mBold As MSForms.CheckBox
+Private WithEvents mItalic As MSForms.CheckBox
+Private WithEvents mOptStraight As MSForms.OptionButton
+Private WithEvents mOptRadial As MSForms.OptionButton
+
+&#x27; The plane or face the sketch goes on
+Private mSupport As Object
+Private mSupportName As String
+Private mHasPart As Boolean
+
+Private mLoading As Boolean
+Private mBusy As Boolean
+
+
+&#x27;=========================================================
+&#x27; FORM INITIALIZATION
+&#x27;=========================================================
+
+Private Sub UserForm_Initialize()
+
+    mLoading = True
+
+    TGLoadLanguage
+
+    Me.Caption = &quot;CATIA Text Generator&quot;
+    Me.Width = 460
+    Me.Height = 538
+
+    BuildControls
+    FillFonts
+    SetDefaults
+
+    mHasPart = TGGetSupport(mSupport, mSupportName)
+
+    ApplyLanguage
+
+    mLoading = False
+
+    UpdateState
+    UpdatePreview
+
+    If mHasPart Then
+        ShowStatus TGTxt(&quot;stReady&quot;)
+    Else
+        ShowStatus TGTxt(&quot;stNoPart&quot;)
+    End If
+
+End Sub
+
+
+Private Function AddCtl( _
+        ByVal progId As String, _
+        ByVal ctlName As String, _
+        ByVal x As Single, _
+        ByVal y As Single, _
+        ByVal w As Single, _
+        ByVal h As Single) As Object
+
+    Dim c As Object
+
+    Set c = Me.Controls.Add(progId, ctlName, True)
+
+    c.Left = x
+    c.Top = y
+    c.Width = w
+    c.Height = h
+
+    Set AddCtl = c
+
+End Function
+
+
+Private Sub BuildControls()
+
+    Dim c As Object
+
+    &#x27; Title and language button
+    Set c = AddCtl(&quot;Forms.Label.1&quot;, &quot;lblTitle&quot;, 20, 12, 310, 24)
+    c.Font.Size = 14
+    c.Font.Bold = True
+
+    Set mLangButton = AddCtl(&quot;Forms.CommandButton.1&quot;, &quot;cmdLang&quot;, 350, 12, 80, 24)
+
+    Set c = AddCtl(&quot;Forms.Label.1&quot;, &quot;lblSubtitle&quot;, 20, 40, 410, 18)
+
+    &#x27; Text and font
+    Set c = AddCtl(&quot;Forms.Label.1&quot;, &quot;lblText&quot;, 20, 66, 90, 18)
+    c.Font.Bold = True
+
+    Set mTextBox = AddCtl(&quot;Forms.TextBox.1&quot;, &quot;txtText&quot;, 115, 63, 315, 20)
+    mTextBox.MaxLength = TG_MAX_CHARS
+
+    Set c = AddCtl(&quot;Forms.Label.1&quot;, &quot;lblFont&quot;, 20, 92, 90, 18)
+    c.Font.Bold = True
+
+    Set mFontCombo = AddCtl(&quot;Forms.ComboBox.1&quot;, &quot;cboFont&quot;, 115, 89, 190, 20)
+    mFontCombo.Style = 2
+
+    Set mBold = AddCtl(&quot;Forms.CheckBox.1&quot;, &quot;chkBold&quot;, 315, 89, 55, 20)
+    Set mItalic = AddCtl(&quot;Forms.CheckBox.1&quot;, &quot;chkItalic&quot;, 372, 89, 60, 20)
+
+    &#x27; Font preview
+    Set c = AddCtl(&quot;Forms.Label.1&quot;, &quot;lblPreview&quot;, 20, 116, 410, 44)
+    c.BorderStyle = 1
+    c.BackStyle = 1
+    c.BackColor = RGB(255, 255, 255)
+    c.TextAlign = 2
+    c.WordWrap = False
+
+    &#x27; Size
+    Set c = AddCtl(&quot;Forms.Label.1&quot;, &quot;lblHeight&quot;, 20, 170, 150, 18)
+    Set c = AddCtl(&quot;Forms.TextBox.1&quot;, &quot;txtHeight&quot;, 175, 167, 55, 20)
+
+    Set c = AddCtl(&quot;Forms.Label.1&quot;, &quot;lblSpacing&quot;, 245, 170, 125, 18)
+    Set c = AddCtl(&quot;Forms.TextBox.1&quot;, &quot;txtSpacing&quot;, 375, 167, 55, 20)
+
+    &#x27; Layout
+    Set c = AddCtl(&quot;Forms.Label.1&quot;, &quot;lblLayout&quot;, 20, 196, 410, 16)
+    c.Font.Bold = True
+
+    Set mOptStraight = AddCtl(&quot;Forms.OptionButton.1&quot;, &quot;optStraight&quot;, 35, 214, 180, 18)
+    mOptStraight.GroupName = &quot;layout&quot;
+
+    Set mOptRadial = AddCtl(&quot;Forms.OptionButton.1&quot;, &quot;optRadial&quot;, 225, 214, 200, 18)
+    mOptRadial.GroupName = &quot;layout&quot;
+
+    Set c = AddCtl(&quot;Forms.Label.1&quot;, &quot;lblAngle&quot;, 20, 240, 150, 18)
+    Set c = AddCtl(&quot;Forms.TextBox.1&quot;, &quot;txtAngle&quot;, 175, 237, 55, 20)
+    Set c = AddCtl(&quot;Forms.Label.1&quot;, &quot;lblAngleHint&quot;, 245, 240, 185, 18)
+
+    Set c = AddCtl(&quot;Forms.Label.1&quot;, &quot;lblDia&quot;, 20, 266, 150, 18)
+    Set c = AddCtl(&quot;Forms.TextBox.1&quot;, &quot;txtDia&quot;, 175, 263, 55, 20)
+
+    Set c = AddCtl(&quot;Forms.OptionButton.1&quot;, &quot;optOutside&quot;, 245, 263, 90, 18)
+    c.GroupName = &quot;side&quot;
+
+    Set c = AddCtl(&quot;Forms.OptionButton.1&quot;, &quot;optInside&quot;, 340, 263, 90, 18)
+    c.GroupName = &quot;side&quot;
+
+    Set c = AddCtl(&quot;Forms.CheckBox.1&quot;, &quot;chkCenter&quot;, 35, 288, 395, 18)
+
+    &#x27; Position
+    Set c = AddCtl(&quot;Forms.Label.1&quot;, &quot;lblPos&quot;, 20, 316, 150, 18)
+    Set c = AddCtl(&quot;Forms.TextBox.1&quot;, &quot;txtPosH&quot;, 175, 313, 55, 20)
+    Set c = AddCtl(&quot;Forms.TextBox.1&quot;, &quot;txtPosV&quot;, 240, 313, 55, 20)
+
+    Set c = AddCtl(&quot;Forms.CheckBox.1&quot;, &quot;chkMirror&quot;, 310, 313, 120, 18)
+
+    &#x27; Result
+    Set c = AddCtl(&quot;Forms.Label.1&quot;, &quot;lblType&quot;, 20, 342, 410, 16)
+    c.Font.Bold = True
+
+    Set c = AddCtl(&quot;Forms.OptionButton.1&quot;, &quot;optPad&quot;, 35, 360, 180, 18)
+    c.GroupName = &quot;type&quot;
+
+    Set c = AddCtl(&quot;Forms.OptionButton.1&quot;, &quot;optPocket&quot;, 225, 360, 200, 18)
+    c.GroupName = &quot;type&quot;
+
+    Set c = AddCtl(&quot;Forms.Label.1&quot;, &quot;lblDepth&quot;, 20, 386, 150, 18)
+    Set c = AddCtl(&quot;Forms.TextBox.1&quot;, &quot;txtDepth&quot;, 175, 383, 55, 20)
+
+    Set c = AddCtl(&quot;Forms.CheckBox.1&quot;, &quot;chkReverse&quot;, 245, 383, 185, 18)
+
+    &#x27; Support and status
+    Set c = AddCtl(&quot;Forms.Label.1&quot;, &quot;lblSupport&quot;, 20, 410, 410, 16)
+
+    Set c = AddCtl(&quot;Forms.Label.1&quot;, &quot;lblStatus&quot;, 20, 430, 410, 30)
+    c.WordWrap = True
+    c.Font.Bold = True
+
+    &#x27; Buttons
+    Set mPreviewButton = AddCtl(&quot;Forms.CommandButton.1&quot;, &quot;cmdPreview&quot;, 20, 466, 150, 30)
+    Set mCreateButton = AddCtl(&quot;Forms.CommandButton.1&quot;, &quot;cmdCreate&quot;, 175, 466, 150, 30)
+    Set mCloseButton = AddCtl(&quot;Forms.CommandButton.1&quot;, &quot;cmdClose&quot;, 330, 466, 100, 30)
+
+    &#x27; Logo, centered at the bottom. The picture data is at the bottom of the module.
+    Set c = AddCtl(&quot;Forms.Image.1&quot;, &quot;imgLogo&quot;, 20, 504, 10, 10)
+    c.BorderStyle = 0
+    c.BackStyle = 0
+    c.AutoSize = True
+
+    If TGLoadLogo(c) Then
+        c.Left = 225 - c.Width / 2
+        Me.Height = 538 + c.Height + 8
+    Else
+        c.Visible = False
+    End If
+
+End Sub
+
+
+Private Sub FillFonts()
+
+    Dim names As Variant
+    Dim i As Long
+    Dim wanted As String
+
+    names = TGGetFontNames()
+
+    For i = LBound(names) To UBound(names)
+        mFontCombo.AddItem names(i)
+    Next i
+
+    &#x27; Last font used, or Arial, or the first in the list
+    wanted = TGLoadText(&quot;Font&quot;, &quot;Arial&quot;)
+
+    For i = 0 To mFontCombo.ListCount - 1
+        If StrComp(mFontCombo.List(i), wanted, vbTextCompare) = 0 Then
+            mFontCombo.ListIndex = i
+            Exit For
+        End If
+    Next i
+
+    If mFontCombo.ListIndex &lt; 0 Then
+
+        For i = 0 To mFontCombo.ListCount - 1
+            If StrComp(mFontCombo.List(i), &quot;Arial&quot;, vbTextCompare) = 0 Then
+                mFontCombo.ListIndex = i
+                Exit For
+            End If
+        Next i
+
+    End If
+
+    If mFontCombo.ListIndex &lt; 0 And mFontCombo.ListCount &gt; 0 Then
+        mFontCombo.ListIndex = 0
+    End If
+
+End Sub
+
+
+Private Sub SetDefaults()
+
+    mTextBox.Text = &quot;CATIA&quot;
+
+    Me.Controls(&quot;txtHeight&quot;).Text = &quot;10&quot;
+    Me.Controls(&quot;txtSpacing&quot;).Text = &quot;0&quot;
+    Me.Controls(&quot;txtAngle&quot;).Text = &quot;0&quot;
+    Me.Controls(&quot;txtDia&quot;).Text = &quot;100&quot;
+    Me.Controls(&quot;txtPosH&quot;).Text = &quot;0&quot;
+    Me.Controls(&quot;txtPosV&quot;).Text = &quot;0&quot;
+    Me.Controls(&quot;txtDepth&quot;).Text = &quot;1&quot;
+
+    mOptStraight.Value = True
+    Me.Controls(&quot;optOutside&quot;).Value = True
+    Me.Controls(&quot;optPad&quot;).Value = True
+
+End Sub
+
+
+&#x27;=========================================================
+&#x27; LANGUAGE
+&#x27;=========================================================
+
+Private Sub ApplyLanguage()
+
+    Dim c As Object
+
+    Me.Controls(&quot;lblTitle&quot;).Caption = TGTxt(&quot;title&quot;)
+    Me.Controls(&quot;lblSubtitle&quot;).Caption = TGTxt(&quot;subtitle&quot;)
+    Me.Controls(&quot;lblText&quot;).Caption = TGTxt(&quot;text&quot;)
+    Me.Controls(&quot;lblFont&quot;).Caption = TGTxt(&quot;font&quot;)
+    Me.Controls(&quot;lblHeight&quot;).Caption = TGTxt(&quot;height&quot;)
+    Me.Controls(&quot;lblSpacing&quot;).Caption = TGTxt(&quot;spacing&quot;)
+    Me.Controls(&quot;lblLayout&quot;).Caption = TGTxt(&quot;layout&quot;)
+    Me.Controls(&quot;lblAngle&quot;).Caption = TGTxt(&quot;angle&quot;)
+    Me.Controls(&quot;lblDia&quot;).Caption = TGTxt(&quot;dia&quot;)
+    Me.Controls(&quot;optOutside&quot;).Caption = TGTxt(&quot;optOutside&quot;)
+    Me.Controls(&quot;optInside&quot;).Caption = TGTxt(&quot;optInside&quot;)
+    Me.Controls(&quot;chkCenter&quot;).Caption = TGTxt(&quot;toCenter&quot;)
+    Me.Controls(&quot;lblPos&quot;).Caption = TGTxt(&quot;pos&quot;)
+    Me.Controls(&quot;chkMirror&quot;).Caption = TGTxt(&quot;mirror&quot;)
+    Me.Controls(&quot;lblType&quot;).Caption = TGTxt(&quot;type&quot;)
+    Me.Controls(&quot;optPad&quot;).Caption = TGTxt(&quot;optPad&quot;)
+    Me.Controls(&quot;optPocket&quot;).Caption = TGTxt(&quot;optPocket&quot;)
+    Me.Controls(&quot;lblDepth&quot;).Caption = TGTxt(&quot;depth&quot;)
+    Me.Controls(&quot;chkReverse&quot;).Caption = TGTxt(&quot;reverse&quot;)
+
+    mBold.Caption = TGTxt(&quot;bold&quot;)
+    mItalic.Caption = TGTxt(&quot;italic&quot;)
+    mOptStraight.Caption = TGTxt(&quot;optStraight&quot;)
+    mOptRadial.Caption = TGTxt(&quot;optRadial&quot;)
+
+    mPreviewButton.Caption = TGTxt(&quot;btnPreview&quot;)
+    mCreateButton.Caption = TGTxt(&quot;btnCreate&quot;)
+    mCloseButton.Caption = TGTxt(&quot;btnClose&quot;)
+    mLangButton.Caption = TGTxt(&quot;btnLang&quot;)
+
+    If Len(mSupportName) = 0 Then
+        Me.Controls(&quot;lblSupport&quot;).Caption = _
+            TGFmt(TGTxt(&quot;support&quot;), TGTxt(&quot;supDefault&quot;))
+    Else
+        Me.Controls(&quot;lblSupport&quot;).Caption = _
+            TGFmt(TGTxt(&quot;support&quot;), mSupportName)
+    End If
+
+    &#x27; A font that can show the selected language
+    On Error Resume Next
+
+    For Each c In Me.Controls
+        If c.Name &lt;&gt; &quot;lblPreview&quot; Then c.Font.Name = TGUiFontName()
+    Next c
+
+    On Error GoTo 0
+
+    UpdateAngleHint
+
+End Sub
+
+
+Private Sub UpdateAngleHint()
+
+    If mOptRadial.Value = True Then
+        Me.Controls(&quot;lblAngleHint&quot;).Caption = TGTxt(&quot;hintRadial&quot;)
+    Else
+        Me.Controls(&quot;lblAngleHint&quot;).Caption = TGTxt(&quot;hintStraight&quot;)
+    End If
+
+End Sub
+
+
+Private Sub mLangButton_Click()
+
+    If gTGLang = &quot;KO&quot; Then
+        TGSetLanguage &quot;EN&quot;
+    Else
+        TGSetLanguage &quot;KO&quot;
+    End If
+
+    ApplyLanguage
+
+    If mHasPart Then
+        ShowStatus TGTxt(&quot;stReady&quot;)
+    Else
+        ShowStatus TGTxt(&quot;stNoPart&quot;)
+    End If
+
+End Sub
+
+
+&#x27;=========================================================
+&#x27; PREVIEW AND STATE
+&#x27;=========================================================
+
+&#x27; Shows the text in the chosen font inside the window
+Private Sub UpdatePreview()
+
+    If mLoading Then Exit Sub
+
+    On Error Resume Next
+
+    With Me.Controls(&quot;lblPreview&quot;)
+
+        .Caption = mTextBox.Text
+        .Font.Name = mFontCombo.Text
+        .Font.Size = 22
+        .Font.Bold = (mBold.Value = True)
+        .Font.Italic = (mItalic.Value = True)
+
+    End With
+
+End Sub
+
+
+Private Sub UpdateState()
+
+    Dim radial As Boolean
+
+    If mLoading Then Exit Sub
+
+    radial = (mOptRadial.Value = True)
+
+    Me.Controls(&quot;lblDia&quot;).Enabled = radial
+    Me.Controls(&quot;txtDia&quot;).Enabled = radial
+    Me.Controls(&quot;optOutside&quot;).Enabled = radial
+    Me.Controls(&quot;optInside&quot;).Enabled = radial
+    Me.Controls(&quot;chkCenter&quot;).Enabled = radial
+
+    mPreviewButton.Enabled = mHasPart
+    mCreateButton.Enabled = mHasPart
+
+    UpdateAngleHint
+
+End Sub
+
+
+Private Sub mTextBox_Change()
+
+    UpdatePreview
+
+End Sub
+
+
+Private Sub mFontCombo_Change()
+
+    UpdatePreview
+
+End Sub
+
+
+Private Sub mBold_Click()
+
+    UpdatePreview
+
+End Sub
+
+
+Private Sub mItalic_Click()
+
+    UpdatePreview
+
+End Sub
+
+
+Private Sub mOptStraight_Click()
+
+    UpdateState
+
+End Sub
+
+
+Private Sub mOptRadial_Click()
+
+    UpdateState
+
+End Sub
+
+
+Private Sub ShowStatus(ByVal message As String)
+
+    Me.Controls(&quot;lblStatus&quot;).Caption = TGTxt(&quot;status&quot;) &amp; message
+
+End Sub
+
+
+Private Sub SetBusy(ByVal busy As Boolean)
+
+    mBusy = busy
+
+    mPreviewButton.Enabled = Not busy
+    mCreateButton.Enabled = Not busy
+    mCloseButton.Enabled = Not busy
+    mLangButton.Enabled = Not busy
+
+    Me.Repaint
+
+    DoEvents
+
+End Sub
+
+
+&#x27;=========================================================
+&#x27; READING THE NUMBER FIELDS
+&#x27;=========================================================
+
+&#x27; Accepts numbers like 12, 12.5, 12,5 and -3
+Private Function ReadNum( _
+        ByVal ctlName As String, _
+        ByRef result As Double) As Boolean
+
+    Dim textValue As String
+    Dim i As Long
+
+    ReadNum = False
+
+    textValue = Replace(Trim$(Me.Controls(ctlName).Text), &quot;,&quot;, &quot;.&quot;)
+
+    If Len(textValue) = 0 Then Exit Function
+
+    For i = 1 To Len(textValue)
+        If InStr(&quot;0123456789.-&quot;, Mid$(textValue, i, 1)) = 0 Then Exit Function
+    Next i
+
+    result = Val(textValue)
+
+    ReadNum = True
+
+End Function
+
+
+&#x27;=========================================================
+&#x27; PREVIEW AND CREATE BUTTONS
+&#x27;=========================================================
+
+Private Sub RunBuild(ByVal makeSolid As Boolean)
+
+    Dim letterHeight As Double
+    Dim spacing As Double
+    Dim angleDeg As Double
+    Dim diameter As Double
+    Dim posH As Double
+    Dim posV As Double
+    Dim depth As Double
+    Dim radial As Boolean
+    Dim numbersOk As Boolean
+    Dim resultMessage As String
+
+    If Len(Trim$(mTextBox.Text)) = 0 Then
+        ShowStatus TGTxt(&quot;msgNoText&quot;)
+        Exit Sub
+    End If
+
+    radial = (mOptRadial.Value = True)
+
+    numbersOk = ReadNum(&quot;txtHeight&quot;, letterHeight)
+
+    If numbersOk Then numbersOk = ReadNum(&quot;txtSpacing&quot;, spacing)
+    If numbersOk Then numbersOk = ReadNum(&quot;txtAngle&quot;, angleDeg)
+    If numbersOk Then numbersOk = ReadNum(&quot;txtPosH&quot;, posH)
+    If numbersOk Then numbersOk = ReadNum(&quot;txtPosV&quot;, posV)
+    If numbersOk Then numbersOk = ReadNum(&quot;txtDepth&quot;, depth)
+    If numbersOk Then numbersOk = (letterHeight &gt; 0 And depth &gt; 0)
+
+    If numbersOk And radial Then
+        numbersOk = ReadNum(&quot;txtDia&quot;, diameter)
+        If numbersOk Then numbersOk = (diameter &gt; 0)
+    End If
+
+    If Not numbersOk Then
+        ShowStatus TGTxt(&quot;msgBadNumber&quot;)
+        Exit Sub
+    End If
+
+    TGSaveText &quot;Font&quot;, mFontCombo.Text
+
+    ShowStatus TGTxt(&quot;stWorking&quot;)
+    SetBusy True
+
+    On Error Resume Next
+
+    TGBuildText _
+        mTextBox.Text, _
+        mFontCombo.Text, _
+        (mBold.Value = True), _
+        (mItalic.Value = True), _
+        letterHeight, _
+        spacing, _
+        radial, _
+        angleDeg, _
+        diameter, _
+        (Me.Controls(&quot;optInside&quot;).Value = True), _
+        (Me.Controls(&quot;chkCenter&quot;).Value = True), _
+        posH, _
+        posV, _
+        (Me.Controls(&quot;chkMirror&quot;).Value = True), _
+        makeSolid, _
+        (Me.Controls(&quot;optPocket&quot;).Value = True), _
+        depth, _
+        (Me.Controls(&quot;chkReverse&quot;).Value = True), _
+        mSupport, _
+        resultMessage
+
+    If Err.Number &lt;&gt; 0 Then
+        resultMessage = TGFmt(TGTxt(&quot;msgError&quot;), Err.Description)
+        Err.Clear
+    End If
+
+    On Error GoTo 0
+
+    SetBusy False
+    ShowStatus resultMessage
+
+End Sub
+
+
+Private Sub mPreviewButton_Click()
+
+    RunBuild False
+
+End Sub
+
+
+Private Sub mCreateButton_Click()
+
+    RunBuild True
+
+End Sub
+
+
+&#x27;=========================================================
+&#x27; CLOSE
+&#x27;=========================================================
+
+Private Sub mCloseButton_Click()
+
+    Unload Me
+
+End Sub
+
+
+Private Sub UserForm_QueryClose(Cancel As Integer, CloseMode As Integer)
+
+    If mBusy Then
+        Cancel = True
+        Exit Sub
+    End If
+
+    &#x27; A preview sketch is not left behind
+    TGDiscardPreview
+
+End Sub</code></pre>
+  </section>
+
+  <section>
+    <div class="code-head"><h2>Module code</h2><div class="right"><span class="filetag">TextGenerator</span><button class="copy" data-target="module">Copy code</button></div></div>
+    <p>The long block of letters and numbers at the bottom is the credit image. Do not edit it.</p>
+    <pre><code id="module">Option Explicit
+
+&#x27;=========================================================
+&#x27; CATIA TEXT GENERATOR - MAIN MODULE
+&#x27; Module name: TextGenerator
+&#x27; Run CATMain to open the window.
+&#x27;
+&#x27; How it works: Windows is asked for the outline of each
+&#x27; letter in the chosen font. The outlines are drawn in a
+&#x27; sketch as short lines, then padded or pocketed.
+&#x27;=========================================================
+
+Private Type POINTAPI
+    x As Long
+    y As Long
+End Type
+
+Private Type SIZEAPI
+    cx As Long
+    cy As Long
+End Type
+
+Private Type LOGFONTW
+    lfHeight As Long
+    lfWidth As Long
+    lfEscapement As Long
+    lfOrientation As Long
+    lfWeight As Long
+    lfItalic As Byte
+    lfUnderline As Byte
+    lfStrikeOut As Byte
+    lfCharSet As Byte
+    lfOutPrecision As Byte
+    lfClipPrecision As Byte
+    lfQuality As Byte
+    lfPitchAndFamily As Byte
+    lfFaceName(0 To 63) As Byte
+End Type
+
+&#x27; Windows drawing functions. The first set is for newer VBA
+&#x27; (VBA 7, 32-bit or 64-bit), the second for older VBA 6.
+&#x27; The set that does not apply may show in red in the editor.
+&#x27; That is normal and it still compiles.
+#If VBA7 Then
+    Private Declare PtrSafe Function CreateCompatibleDC Lib &quot;gdi32&quot; (ByVal hdc As LongPtr) As LongPtr
+    Private Declare PtrSafe Function DeleteDC Lib &quot;gdi32&quot; (ByVal hdc As LongPtr) As Long
+    Private Declare PtrSafe Function CreateFontW Lib &quot;gdi32&quot; ( _
+        ByVal nHeight As Long, ByVal nWidth As Long, ByVal nEscapement As Long, _
+        ByVal nOrientation As Long, ByVal fnWeight As Long, ByVal fdwItalic As Long, _
+        ByVal fdwUnderline As Long, ByVal fdwStrikeOut As Long, ByVal fdwCharSet As Long, _
+        ByVal fdwOutputPrecision As Long, ByVal fdwClipPrecision As Long, _
+        ByVal fdwQuality As Long, ByVal fdwPitchAndFamily As Long, _
+        ByVal lpszFace As LongPtr) As LongPtr
+    Private Declare PtrSafe Function SelectObject Lib &quot;gdi32&quot; (ByVal hdc As LongPtr, ByVal hObject As LongPtr) As LongPtr
+    Private Declare PtrSafe Function DeleteObject Lib &quot;gdi32&quot; (ByVal hObject As LongPtr) As Long
+    Private Declare PtrSafe Function SetBkMode Lib &quot;gdi32&quot; (ByVal hdc As LongPtr, ByVal nBkMode As Long) As Long
+    Private Declare PtrSafe Function SetTextAlign Lib &quot;gdi32&quot; (ByVal hdc As LongPtr, ByVal wFlags As Long) As Long
+    Private Declare PtrSafe Function BeginPath Lib &quot;gdi32&quot; (ByVal hdc As LongPtr) As Long
+    Private Declare PtrSafe Function EndPath Lib &quot;gdi32&quot; (ByVal hdc As LongPtr) As Long
+    Private Declare PtrSafe Function FlattenPath Lib &quot;gdi32&quot; (ByVal hdc As LongPtr) As Long
+    Private Declare PtrSafe Function GetPath Lib &quot;gdi32&quot; (ByVal hdc As LongPtr, lpPoint As Any, lpTypes As Any, ByVal nSize As Long) As Long
+    Private Declare PtrSafe Function TextOutW Lib &quot;gdi32&quot; (ByVal hdc As LongPtr, ByVal x As Long, ByVal y As Long, ByVal lpString As LongPtr, ByVal nCount As Long) As Long
+    Private Declare PtrSafe Function GetTextExtentPoint32W Lib &quot;gdi32&quot; (ByVal hdc As LongPtr, ByVal lpsz As LongPtr, ByVal cbString As Long, lpSize As SIZEAPI) As Long
+    Private Declare PtrSafe Function EnumFontFamiliesExW Lib &quot;gdi32&quot; (ByVal hdc As LongPtr, lpLogfont As LOGFONTW, ByVal lpProc As LongPtr, ByVal lParam As LongPtr, ByVal dwFlags As Long) As Long
+    Private Declare PtrSafe Sub RtlMoveMemory Lib &quot;kernel32&quot; (Destination As Any, ByVal Source As LongPtr, ByVal Length As LongPtr)
+#Else
+    &#x27; Older VBA has no LongPtr type, so it is defined here as a Long
+    Private Enum LongPtr
+        [_]
+    End Enum
+    Private Declare Function CreateCompatibleDC Lib &quot;gdi32&quot; (ByVal hdc As Long) As Long
+    Private Declare Function DeleteDC Lib &quot;gdi32&quot; (ByVal hdc As Long) As Long
+    Private Declare Function CreateFontW Lib &quot;gdi32&quot; ( _
+        ByVal nHeight As Long, ByVal nWidth As Long, ByVal nEscapement As Long, _
+        ByVal nOrientation As Long, ByVal fnWeight As Long, ByVal fdwItalic As Long, _
+        ByVal fdwUnderline As Long, ByVal fdwStrikeOut As Long, ByVal fdwCharSet As Long, _
+        ByVal fdwOutputPrecision As Long, ByVal fdwClipPrecision As Long, _
+        ByVal fdwQuality As Long, ByVal fdwPitchAndFamily As Long, _
+        ByVal lpszFace As Long) As Long
+    Private Declare Function SelectObject Lib &quot;gdi32&quot; (ByVal hdc As Long, ByVal hObject As Long) As Long
+    Private Declare Function DeleteObject Lib &quot;gdi32&quot; (ByVal hObject As Long) As Long
+    Private Declare Function SetBkMode Lib &quot;gdi32&quot; (ByVal hdc As Long, ByVal nBkMode As Long) As Long
+    Private Declare Function SetTextAlign Lib &quot;gdi32&quot; (ByVal hdc As Long, ByVal wFlags As Long) As Long
+    Private Declare Function BeginPath Lib &quot;gdi32&quot; (ByVal hdc As Long) As Long
+    Private Declare Function EndPath Lib &quot;gdi32&quot; (ByVal hdc As Long) As Long
+    Private Declare Function FlattenPath Lib &quot;gdi32&quot; (ByVal hdc As Long) As Long
+    Private Declare Function GetPath Lib &quot;gdi32&quot; (ByVal hdc As Long, lpPoint As Any, lpTypes As Any, ByVal nSize As Long) As Long
+    Private Declare Function TextOutW Lib &quot;gdi32&quot; (ByVal hdc As Long, ByVal x As Long, ByVal y As Long, ByVal lpString As Long, ByVal nCount As Long) As Long
+    Private Declare Function GetTextExtentPoint32W Lib &quot;gdi32&quot; (ByVal hdc As Long, ByVal lpsz As Long, ByVal cbString As Long, lpSize As SIZEAPI) As Long
+    Private Declare Function EnumFontFamiliesExW Lib &quot;gdi32&quot; (ByVal hdc As Long, lpLogfont As LOGFONTW, ByVal lpProc As Long, ByVal lParam As Long, ByVal dwFlags As Long) As Long
+    Private Declare Sub RtlMoveMemory Lib &quot;kernel32&quot; (Destination As Any, ByVal Source As Long, ByVal Length As Long)
+#End If
+
+&#x27; Size used when reading letter shapes from Windows.
+&#x27; Larger means more detail before scaling to mm.
+Private Const FONT_UNITS As Long = 1000
+
+&#x27; Shortest line allowed in the sketch, as a fraction of the
+&#x27; letter height. Smaller gives smoother curves but more lines.
+Private Const DETAIL As Double = 0.015
+
+&#x27; Longest text allowed
+Public Const TG_MAX_CHARS As Long = 100
+
+Private Const PI As Double = 3.14159265358979
+
+Private Const REG_APP As String = &quot;CatiaTextGenerator&quot;
+Private Const REG_SEC As String = &quot;Settings&quot;
+
+&#x27; &quot;EN&quot; or &quot;KO&quot;
+Public gTGLang As String
+
+&#x27; Font names collected from Windows
+Private mFontDict As Object
+
+&#x27; The sketch made by the Preview button, removed on the next run
+Private mPreviewSketch As Object
+Private mPreviewDocName As String
+
+
+&#x27;=========================================================
+&#x27; ENTRY POINT
+&#x27;=========================================================
+
+Sub CATMain()
+
+    TGLoadLanguage
+    frmTextGenerator.Show
+
+End Sub
+
+
+&#x27;=========================================================
+&#x27; FONT LIST
+&#x27;=========================================================
+
+&#x27; Windows calls this once for every installed font
+Private Function TGEnumFontProc( _
+        ByVal lpelf As LongPtr, _
+        ByVal lpntm As LongPtr, _
+        ByVal fontType As Long, _
+        ByVal lParam As LongPtr) As Long
+
+    Dim buf(0 To 63) As Byte
+    Dim faceName As String
+    Dim p As Long
+
+    On Error Resume Next
+
+    &#x27; 1 = keep going
+    TGEnumFontProc = 1
+
+    &#x27; Only TrueType fonts have outlines that can be read
+    If (fontType And 4) = 0 Then Exit Function
+
+    RtlMoveMemory buf(0), lpelf + 28, 64
+
+    faceName = buf
+
+    p = InStr(faceName, vbNullChar)
+
+    If p &gt; 0 Then faceName = Left$(faceName, p - 1)
+
+    If Len(faceName) = 0 Then Exit Function
+    If Left$(faceName, 1) = &quot;@&quot; Then Exit Function
+
+    mFontDict(faceName) = 1
+
+End Function
+
+
+&#x27; Returns the installed TrueType font names, sorted
+Public Function TGGetFontNames() As Variant
+
+    Dim hdc As LongPtr
+    Dim lf As LOGFONTW
+    Dim names As Variant
+    Dim i As Long
+    Dim j As Long
+    Dim temp As String
+
+    Set mFontDict = CreateObject(&quot;Scripting.Dictionary&quot;)
+
+    On Error Resume Next
+
+    hdc = CreateCompatibleDC(0)
+
+    If hdc &lt;&gt; 0 Then
+
+        &#x27; 1 = every character set
+        lf.lfCharSet = 1
+
+        EnumFontFamiliesExW hdc, lf, AddressOf TGEnumFontProc, 0, 0
+
+        DeleteDC hdc
+
+    End If
+
+    On Error GoTo 0
+
+    If mFontDict.Count = 0 Then
+        TGGetFontNames = Array(&quot;Arial&quot;, &quot;Courier New&quot;, &quot;Malgun Gothic&quot;, _
+            &quot;Tahoma&quot;, &quot;Times New Roman&quot;, &quot;Verdana&quot;)
+        Exit Function
+    End If
+
+    names = mFontDict.Keys
+
+    For i = LBound(names) + 1 To UBound(names)
+
+        temp = names(i)
+        j = i - 1
+
+        Do While j &gt;= LBound(names)
+            If StrComp(names(j), temp, vbTextCompare) &lt;= 0 Then Exit Do
+            names(j + 1) = names(j)
+            j = j - 1
+        Loop
+
+        names(j + 1) = temp
+
+    Next i
+
+    TGGetFontNames = names
+
+End Function
+
+
+&#x27;=========================================================
+&#x27; LETTER OUTLINES
+&#x27;=========================================================
+
+Private Function OpenFontDC( _
+        ByVal fontName As String, _
+        ByVal isBold As Boolean, _
+        ByVal isItalic As Boolean, _
+        ByRef hdc As LongPtr, _
+        ByRef hFont As LongPtr, _
+        ByRef hOld As LongPtr) As Boolean
+
+    Dim weight As Long
+    Dim italicFlag As Long
+
+    OpenFontDC = False
+
+    hdc = CreateCompatibleDC(0)
+
+    If hdc = 0 Then Exit Function
+
+    If isBold Then weight = 700 Else weight = 400
+    If isItalic Then italicFlag = 1 Else italicFlag = 0
+
+    &#x27; Character set 1 = default, output precision 7 = TrueType only
+    hFont = CreateFontW(-FONT_UNITS, 0, 0, 0, weight, italicFlag, _
+        0, 0, 1, 7, 0, 0, 0, StrPtr(fontName))
+
+    If hFont = 0 Then
+        DeleteDC hdc
+        hdc = 0
+        Exit Function
+    End If
+
+    hOld = SelectObject(hdc, hFont)
+
+    &#x27; 1 = transparent background, so only the letters are outlined
+    SetBkMode hdc, 1
+
+    &#x27; 24 = position letters by their baseline
+    SetTextAlign hdc, 24
+
+    OpenFontDC = True
+
+End Function
+
+
+Private Sub CloseFontDC( _
+        ByRef hdc As LongPtr, _
+        ByRef hFont As LongPtr, _
+        ByRef hOld As LongPtr)
+
+    On Error Resume Next
+
+    If hdc &lt;&gt; 0 Then
+
+        If hOld &lt;&gt; 0 Then SelectObject hdc, hOld
+        If hFont &lt;&gt; 0 Then DeleteObject hFont
+
+        DeleteDC hdc
+
+    End If
+
+    hdc = 0
+    hFont = 0
+    hOld = 0
+
+End Sub
+
+
+&#x27; Reads the outline of one letter as straight line points.
+&#x27; pointCount is 0 for a space or a letter the font does not have.
+Private Sub CharOutline( _
+        ByVal hdc As LongPtr, _
+        ByVal letter As String, _
+        ByRef pts() As POINTAPI, _
+        ByRef types() As Byte, _
+        ByRef pointCount As Long, _
+        ByRef advance As Long)
+
+    Dim sz As SIZEAPI
+
+    pointCount = 0
+    advance = 0
+
+    GetTextExtentPoint32W hdc, StrPtr(letter), Len(letter), sz
+
+    advance = sz.cx
+
+    BeginPath hdc
+    TextOutW hdc, 0, 0, StrPtr(letter), Len(letter)
+    EndPath hdc
+
+    &#x27; Turn curves into short straight lines
+    FlattenPath hdc
+
+    pointCount = GetPath(hdc, ByVal 0&amp;, ByVal 0&amp;, 0)
+
+    If pointCount &lt;= 0 Then
+        pointCount = 0
+        Exit Sub
+    End If
+
+    ReDim pts(0 To pointCount - 1)
+    ReDim types(0 To pointCount - 1)
+
+    pointCount = GetPath(hdc, pts(0), types(0), pointCount)
+
+    If pointCount &lt; 0 Then pointCount = 0
+
+End Sub
+
+
+&#x27;=========================================================
+&#x27; SKETCH SUPPORT
+&#x27; Whatever was selected before the macro started is used
+&#x27; as the sketch plane. With nothing selected, the XY plane.
+&#x27;=========================================================
+
+Public Function TGGetSupport( _
+        ByRef support As Object, _
+        ByRef supportName As String) As Boolean
+
+    Dim doc As Object
+    Dim sel As Object
+
+    TGGetSupport = False
+
+    Set support = Nothing
+    supportName = &quot;&quot;
+
+    On Error Resume Next
+
+    If CATIA.Documents.Count = 0 Then Exit Function
+
+    Set doc = CATIA.ActiveDocument
+
+    If TypeName(doc) &lt;&gt; &quot;PartDocument&quot; Then Exit Function
+
+    Set sel = doc.Selection
+
+    If sel.Count &gt; 0 Then
+
+        Set support = sel.Item(1).Reference
+
+        If support Is Nothing Then Set support = sel.Item(1).Value
+
+        supportName = sel.Item(1).Value.Name
+
+        If Len(supportName) = 0 Then supportName = &quot;?&quot;
+
+    End If
+
+    If support Is Nothing Then
+        Set support = doc.Part.OriginElements.PlaneXY
+        supportName = &quot;&quot;
+    End If
+
+    Err.Clear
+
+    TGGetSupport = Not (support Is Nothing)
+
+End Function
+
+
+&#x27;=========================================================
+&#x27; BUILD THE TEXT
+&#x27; makeSolid = False : draw the sketch only (preview)
+&#x27; makeSolid = True  : draw the sketch, then pad or pocket it
+&#x27;=========================================================
+
+Public Function TGBuildText( _
+        ByVal textValue As String, _
+        ByVal fontName As String, _
+        ByVal isBold As Boolean, _
+        ByVal isItalic As Boolean, _
+        ByVal letterHeight As Double, _
+        ByVal spacing As Double, _
+        ByVal isRadial As Boolean, _
+        ByVal angleDeg As Double, _
+        ByVal diameter As Double, _
+        ByVal isInside As Boolean, _
+        ByVal topsToCenter As Boolean, _
+        ByVal posH As Double, _
+        ByVal posV As Double, _
+        ByVal mirrorText As Boolean, _
+        ByVal makeSolid As Boolean, _
+        ByVal engrave As Boolean, _
+        ByVal depth As Double, _
+        ByVal reverseDir As Boolean, _
+        ByVal support As Object, _
+        ByRef resultMessage As String) As Boolean
+
+    Dim doc As Object
+    Dim partObj As Object
+    Dim bodyObj As Object
+    Dim skt As Object
+    Dim fact As Object
+    Dim feat As Object
+
+    Dim hdc As LongPtr
+    Dim hFont As LongPtr
+    Dim hOld As LongPtr
+
+    Dim pts() As POINTAPI
+    Dim types() As Byte
+    Dim pointCount As Long
+    Dim advance As Long
+
+    Dim charCount As Long
+    Dim advs() As Double
+    Dim letter As String
+
+    Dim capUnits As Double
+    Dim sc As Double
+    Dim totalW As Double
+    Dim pen As Double
+    Dim center As Double
+    Dim baseRadius As Double
+    Dim minDist As Double
+
+    Dim angleRad As Double
+    Dim cosA As Double
+    Dim sinA As Double
+    Dim alpha As Double
+    Dim ux As Double
+    Dim uy As Double
+    Dim tx As Double
+    Dim ty As Double
+    Dim r As Double
+
+    Dim lx As Double
+    Dim ly As Double
+    Dim px As Double
+    Dim py As Double
+
+    Dim cx() As Double
+    Dim cy() As Double
+    Dim cn As Long
+
+    Dim lineCount As Long
+    Dim i As Long
+    Dim k As Long
+
+    Dim stage As Integer
+    Dim editing As Boolean
+    Dim errText As String
+
+    TGBuildText = False
+    stage = 0
+    editing = False
+
+    On Error GoTo Failed
+
+    &#x27;---------------------------------------
+    &#x27; Check the document
+    &#x27;---------------------------------------
+
+    If CATIA.Documents.Count = 0 Then
+        resultMessage = TGTxt(&quot;stNoPart&quot;)
+        Exit Function
+    End If
+
+    Set doc = CATIA.ActiveDocument
+
+    If TypeName(doc) &lt;&gt; &quot;PartDocument&quot; Then
+        resultMessage = TGTxt(&quot;stNoPart&quot;)
+        Exit Function
+    End If
+
+    Set partObj = doc.Part
+
+    charCount = Len(textValue)
+
+    If charCount = 0 Then
+        resultMessage = TGTxt(&quot;msgNoText&quot;)
+        Exit Function
+    End If
+
+    &#x27;---------------------------------------
+    &#x27; Open the font and measure it.
+    &#x27; The height of a capital H sets the scale, so
+    &#x27; &quot;letter height&quot; means the height of capitals.
+    &#x27;---------------------------------------
+
+    If Not OpenFontDC(fontName, isBold, isItalic, hdc, hFont, hOld) Then
+        resultMessage = TGTxt(&quot;msgFont&quot;)
+        Exit Function
+    End If
+
+    CharOutline hdc, &quot;H&quot;, pts, types, pointCount, advance
+
+    capUnits = 0
+
+    For k = 0 To pointCount - 1
+        If -pts(k).y &gt; capUnits Then capUnits = -pts(k).y
+    Next k
+
+    If capUnits &lt;= 0 Then
+        resultMessage = TGTxt(&quot;msgFont&quot;)
+        GoTo Done
+    End If
+
+    sc = letterHeight / capUnits
+
+    minDist = letterHeight * DETAIL
+
+    If minDist &lt; 0.01 Then minDist = 0.01
+
+    &#x27; Width of every letter, and of the whole text, in mm
+    ReDim advs(1 To charCount)
+
+    totalW = 0
+
+    For i = 1 To charCount
+
+        letter = Mid$(textValue, i, 1)
+
+        CharOutline hdc, letter, pts, types, pointCount, advance
+
+        advs(i) = advance * sc
+        totalW = totalW + advs(i)
+
+    Next i
+
+    totalW = totalW + spacing * (charCount - 1)
+
+    &#x27;---------------------------------------
+    &#x27; Layout values
+    &#x27;---------------------------------------
+
+    angleRad = angleDeg * PI / 180#
+
+    If isRadial Then
+
+        &#x27; baseRadius is the radius where the bottoms of the letters sit
+        If topsToCenter Then
+            If isInside Then
+                baseRadius = diameter / 2#
+            Else
+                baseRadius = diameter / 2# + letterHeight
+            End If
+        Else
+            If isInside Then
+                baseRadius = diameter / 2# - letterHeight
+            Else
+                baseRadius = diameter / 2#
+            End If
+        End If
+
+        If baseRadius &lt;= 0 Then
+            resultMessage = TGTxt(&quot;msgTooLong&quot;)
+            GoTo Done
+        End If
+
+        If totalW &gt;= 2# * PI * baseRadius * 0.98 Then
+            resultMessage = TGTxt(&quot;msgTooLong&quot;)
+            GoTo Done
+        End If
+
+    Else
+
+        cosA = Cos(angleRad)
+        sinA = Sin(angleRad)
+
+    End If
+
+    &#x27;---------------------------------------
+    &#x27; Remove the last preview, then start a new sketch
+    &#x27;---------------------------------------
+
+    TGDiscardPreview
+
+    Set bodyObj = Nothing
+
+    On Error Resume Next
+    If TypeName(partObj.InWorkObject) = &quot;Body&quot; Then
+        Set bodyObj = partObj.InWorkObject
+    End If
+    Err.Clear
+    On Error GoTo Failed
+
+    If bodyObj Is Nothing Then Set bodyObj = partObj.MainBody
+
+    stage = 1
+
+    Set skt = bodyObj.Sketches.Add(support)
+
+    stage = 2
+
+    On Error Resume Next
+    skt.Name = &quot;Text_&quot; &amp; Left$(textValue, 20)
+    Err.Clear
+    On Error GoTo Failed
+
+    Set fact = skt.OpenEdition()
+    editing = True
+
+    &#x27;---------------------------------------
+    &#x27; Draw every letter
+    &#x27;---------------------------------------
+
+    ReDim cx(1 To 256)
+    ReDim cy(1 To 256)
+
+    lineCount = 0
+    pen = -totalW / 2#
+
+    For i = 1 To charCount
+
+        letter = Mid$(textValue, i, 1)
+
+        &#x27; Middle of this letter, measured along the text from its center
+        center = pen + advs(i) / 2#
+
+        If isRadial Then
+
+            &#x27; alpha is the direction from the circle center to the
+            &#x27; letter. Angle 0 puts the text at the top of the circle.
+            If topsToCenter Then
+                alpha = PI / 2# - angleRad + center / baseRadius
+            Else
+                alpha = PI / 2# - angleRad - center / baseRadius
+            End If
+
+            ux = Cos(alpha)
+            uy = Sin(alpha)
+
+            If topsToCenter Then
+                tx = -uy
+                ty = ux
+            Else
+                tx = uy
+                ty = -ux
+            End If
+
+        End If
+
+        CharOutline hdc, letter, pts, types, pointCount, advance
+
+        cn = 0
+
+        For k = 0 To pointCount - 1
+
+            &#x27; 6 = start of a new closed shape
+            If (types(k) And 6) = 6 Then
+                DrawContour fact, cx, cy, cn, minDist, lineCount
+                cn = 0
+            End If
+
+            &#x27; Letter-local position in mm. Windows measures y downward.
+            lx = (pts(k).x - advance / 2#) * sc
+            ly = -pts(k).y * sc
+
+            If isRadial Then
+
+                If topsToCenter Then
+                    r = baseRadius - ly
+                Else
+                    r = baseRadius + ly
+                End If
+
+                px = r * ux + lx * tx
+                py = r * uy + lx * ty
+
+            Else
+
+                lx = lx + center
+                ly = ly - letterHeight / 2#
+
+                px = lx * cosA - ly * sinA
+                py = lx * sinA + ly * cosA
+
+            End If
+
+            If mirrorText Then px = -px
+
+            AddPoint cx, cy, cn, px + posH, py + posV, minDist
+
+            &#x27; 1 = this point closes the shape
+            If (types(k) And 1) = 1 Then
+                DrawContour fact, cx, cy, cn, minDist, lineCount
+                cn = 0
+            End If
+
+        Next k
+
+        DrawContour fact, cx, cy, cn, minDist, lineCount
+        cn = 0
+
+        pen = pen + advs(i) + spacing
+
+    Next i
+
+    skt.CloseEdition
+    editing = False
+
+    If lineCount = 0 Then
+        RemoveFeature doc, skt
+        resultMessage = TGTxt(&quot;msgNothing&quot;)
+        GoTo Done
+    End If
+
+    &#x27;---------------------------------------
+    &#x27; Preview: keep the sketch and stop here
+    &#x27;---------------------------------------
+
+    If Not makeSolid Then
+
+        On Error Resume Next
+        partObj.Update
+        Err.Clear
+        On Error GoTo Failed
+
+        Set mPreviewSketch = skt
+        mPreviewDocName = doc.FullName
+
+        resultMessage = TGFmt(TGTxt(&quot;msgPreview&quot;), CStr(lineCount))
+
+        TGBuildText = True
+
+        GoTo Done
+
+    End If
+
+    &#x27;---------------------------------------
+    &#x27; Pad (raised) or pocket (engraved)
+    &#x27;---------------------------------------
+
+    stage = 3
+
+    On Error Resume Next
+
+    partObj.InWorkObject = bodyObj
+    Err.Clear
+
+    If engrave Then
+        Set feat = partObj.ShapeFactory.AddNewPocket(skt, depth)
+    Else
+        Set feat = partObj.ShapeFactory.AddNewPad(skt, depth)
+    End If
+
+    If Err.Number = 0 Then
+
+        &#x27; 1 = inverse orientation
+        If reverseDir Then feat.DirectionOrientation = 1
+
+    End If
+
+    If Err.Number = 0 Then partObj.Update
+
+    If Err.Number &lt;&gt; 0 Then
+
+        errText = Err.Description
+        Err.Clear
+
+        &#x27; Take the failed solid away, but keep the sketch
+        If Not feat Is Nothing Then RemoveFeature doc, feat
+
+        partObj.Update
+        Err.Clear
+
+        On Error GoTo Failed
+
+        resultMessage = TGFmt(TGTxt(&quot;msgSolid&quot;), errText)
+
+        GoTo Done
+
+    End If
+
+    On Error GoTo Failed
+
+    resultMessage = TGFmt(TGTxt(&quot;msgDone&quot;), CStr(lineCount))
+
+    TGBuildText = True
+
+Done:
+
+    On Error Resume Next
+
+    If editing Then skt.CloseEdition
+
+    CloseFontDC hdc, hFont, hOld
+
+    Exit Function
+
+Failed:
+
+    If stage = 1 Then
+        resultMessage = TGTxt(&quot;msgSupport&quot;)
+    Else
+        resultMessage = TGFmt(TGTxt(&quot;msgError&quot;), Err.Description)
+    End If
+
+    Resume Done
+
+End Function
+
+
+&#x27; Adds a point to the current shape, skipping points that
+&#x27; are too close to the one before.
+Private Sub AddPoint( _
+        ByRef cx() As Double, _
+        ByRef cy() As Double, _
+        ByRef cn As Long, _
+        ByVal px As Double, _
+        ByVal py As Double, _
+        ByVal minDist As Double)
+
+    If cn &gt; 0 Then
+        If Abs(px - cx(cn)) &lt; minDist Then
+            If Abs(py - cy(cn)) &lt; minDist Then Exit Sub
+        End If
+    End If
+
+    If cn &gt;= UBound(cx) Then
+        ReDim Preserve cx(1 To UBound(cx) * 2)
+        ReDim Preserve cy(1 To UBound(cy) * 2)
+    End If
+
+    cn = cn + 1
+
+    cx(cn) = px
+    cy(cn) = py
+
+End Sub
+
+
+&#x27; Draws one closed shape as lines that share their end points
+Private Sub DrawContour( _
+        ByVal fact As Object, _
+        ByRef cx() As Double, _
+        ByRef cy() As Double, _
+        ByVal cn As Long, _
+        ByVal minDist As Double, _
+        ByRef lineCount As Long)
+
+    Dim p() As Object
+    Dim ln As Object
+    Dim i As Long
+    Dim j As Long
+
+    &#x27; The last point often repeats the first one
+    Do While cn &gt; 1
+
+        If Abs(cx(cn) - cx(1)) &gt;= minDist Then Exit Do
+        If Abs(cy(cn) - cy(1)) &gt;= minDist Then Exit Do
+
+        cn = cn - 1
+
+    Loop
+
+    If cn &lt; 3 Then Exit Sub
+
+    ReDim p(1 To cn)
+
+    For i = 1 To cn
+        Set p(i) = fact.CreatePoint(cx(i), cy(i))
+    Next i
+
+    For i = 1 To cn
+
+        j = (i Mod cn) + 1
+
+        Set ln = fact.CreateLine(cx(i), cy(i), cx(j), cy(j))
+
+        ln.StartPoint = p(i)
+        ln.EndPoint = p(j)
+
+        lineCount = lineCount + 1
+
+    Next i
+
+End Sub
+
+
+Private Sub RemoveFeature(ByVal doc As Object, ByVal item As Object)
+
+    Dim sel As Object
+
+    On Error Resume Next
+
+    Set sel = doc.Selection
+
+    sel.Clear
+    sel.Add item
+    sel.Delete
+    sel.Clear
+
+    Err.Clear
+
+End Sub
+
+
+&#x27; Removes the sketch left by the Preview button, if any
+Public Sub TGDiscardPreview()
+
+    Dim doc As Object
+
+    On Error Resume Next
+
+    If Not mPreviewSketch Is Nothing Then
+
+        Set doc = CATIA.ActiveDocument
+
+        If doc.FullName = mPreviewDocName Then
+
+            RemoveFeature doc, mPreviewSketch
+
+            doc.Part.Update
+
+        End If
+
+    End If
+
+    Set mPreviewSketch = Nothing
+    mPreviewDocName = &quot;&quot;
+
+    Err.Clear
+
+End Sub
+
+
+&#x27;=========================================================
+&#x27; SETTINGS (remembered between runs)
+&#x27;=========================================================
+
+Public Sub TGLoadLanguage()
+
+    gTGLang = UCase$(GetSetting(REG_APP, REG_SEC, &quot;Lang&quot;, &quot;EN&quot;))
+
+    If gTGLang &lt;&gt; &quot;KO&quot; Then gTGLang = &quot;EN&quot;
+
+End Sub
+
+
+Public Sub TGSetLanguage(ByVal langCode As String)
+
+    gTGLang = langCode
+
+    SaveSetting REG_APP, REG_SEC, &quot;Lang&quot;, gTGLang
+
+End Sub
+
+
+Public Function TGLoadText( _
+        ByVal settingName As String, _
+        ByVal defaultValue As String) As String
+
+    TGLoadText = GetSetting(REG_APP, REG_SEC, settingName, defaultValue)
+
+End Function
+
+
+Public Sub TGSaveText( _
+        ByVal settingName As String, _
+        ByVal settingValue As String)
+
+    SaveSetting REG_APP, REG_SEC, settingName, settingValue
+
+End Sub
+
+
+&#x27;=========================================================
+&#x27; TEXT (ENGLISH AND KOREAN)
+&#x27;=========================================================
+
+Public Function TGTxt(ByVal key As String) As String
+
+    If gTGLang = &quot;KO&quot; Then
+        TGTxt = TextKO(key)
+    Else
+        TGTxt = TextEN(key)
+    End If
+
+    If Len(TGTxt) = 0 Then TGTxt = TextEN(key)
+    If Len(TGTxt) = 0 Then TGTxt = key
+
+End Function
+
+
+Public Function TGUiFontName() As String
+
+    If gTGLang = &quot;KO&quot; Then
+        TGUiFontName = &quot;Malgun Gothic&quot;
+    Else
+        TGUiFontName = &quot;Tahoma&quot;
+    End If
+
+End Function
+
+
+&#x27; Fills {0} and {1} in a text
+Public Function TGFmt( _
+        ByVal template As String, _
+        Optional ByVal a As String = &quot;&quot;, _
+        Optional ByVal b As String = &quot;&quot;) As String
+
+    TGFmt = Replace(Replace(template, &quot;{0}&quot;, a), &quot;{1}&quot;, b)
+
+End Function
+
+
+&#x27; Turns \uXXXX codes into real characters
+Private Function U(ByVal coded As String) As String
+
+    Dim i As Long
+    Dim result As String
+
+    i = 1
+
+    Do While i &lt;= Len(coded)
+
+        If Mid$(coded, i, 2) = &quot;\u&quot; And i + 5 &lt;= Len(coded) Then
+            result = result &amp; ChrW$(CLng(&quot;&amp;H&quot; &amp; Mid$(coded, i + 2, 4)))
+            i = i + 6
+        Else
+            result = result &amp; Mid$(coded, i, 1)
+            i = i + 1
+        End If
+
+    Loop
+
+    U = result
+
+End Function
+
+
+Private Function TextEN(ByVal key As String) As String
+
+    Select Case key
+        Case &quot;title&quot;: TextEN = &quot;CATIA Text Generator&quot;
+        Case &quot;subtitle&quot;: TextEN = &quot;Raised or engraved text on a plane or flat face&quot;
+        Case &quot;text&quot;: TextEN = &quot;Text:&quot;
+        Case &quot;font&quot;: TextEN = &quot;Font:&quot;
+        Case &quot;bold&quot;: TextEN = &quot;Bold&quot;
+        Case &quot;italic&quot;: TextEN = &quot;Italic&quot;
+        Case &quot;height&quot;: TextEN = &quot;Letter height (mm):&quot;
+        Case &quot;spacing&quot;: TextEN = &quot;Extra spacing (mm):&quot;
+        Case &quot;layout&quot;: TextEN = &quot;Layout:&quot;
+        Case &quot;optStraight&quot;: TextEN = &quot;Straight line&quot;
+        Case &quot;optRadial&quot;: TextEN = &quot;Around a circle&quot;
+        Case &quot;angle&quot;: TextEN = &quot;Angle (degrees):&quot;
+        Case &quot;hintStraight&quot;: TextEN = &quot;Counterclockwise&quot;
+        Case &quot;hintRadial&quot;: TextEN = &quot;Clockwise from top, 180 = bottom&quot;
+        Case &quot;dia&quot;: TextEN = &quot;Circle diameter (mm):&quot;
+        Case &quot;optOutside&quot;: TextEN = &quot;Outside&quot;
+        Case &quot;optInside&quot;: TextEN = &quot;Inside&quot;
+        Case &quot;toCenter&quot;: TextEN = &quot;Letter tops point to the center (for text along the bottom)&quot;
+        Case &quot;pos&quot;: TextEN = &quot;Position H, V (mm):&quot;
+        Case &quot;mirror&quot;: TextEN = &quot;Mirror text&quot;
+        Case &quot;type&quot;: TextEN = &quot;Result:&quot;
+        Case &quot;optPad&quot;: TextEN = &quot;Raised (pad)&quot;
+        Case &quot;optPocket&quot;: TextEN = &quot;Engraved (pocket)&quot;
+        Case &quot;depth&quot;: TextEN = &quot;Depth (mm):&quot;
+        Case &quot;reverse&quot;: TextEN = &quot;Reverse direction&quot;
+        Case &quot;support&quot;: TextEN = &quot;Sketch support: {0}&quot;
+        Case &quot;supDefault&quot;: TextEN = &quot;XY plane (nothing was selected)&quot;
+        Case &quot;btnPreview&quot;: TextEN = &quot;Preview in CATIA&quot;
+        Case &quot;btnCreate&quot;: TextEN = &quot;Create Text&quot;
+        Case &quot;btnClose&quot;: TextEN = &quot;Close&quot;
+        Case &quot;btnLang&quot;: TextEN = U(&quot;\ud55c\uad6d\uc5b4&quot;)
+        Case &quot;status&quot;: TextEN = &quot;Status: &quot;
+        Case &quot;stReady&quot;: TextEN = &quot;Ready&quot;
+        Case &quot;stNoPart&quot;: TextEN = &quot;Open a CATPart first&quot;
+        Case &quot;stWorking&quot;: TextEN = &quot;Drawing the text...&quot;
+        Case &quot;msgPreview&quot;: TextEN = &quot;Preview sketch drawn ({0} lines). Click Create Text to finish.&quot;
+        Case &quot;msgDone&quot;: TextEN = &quot;Text created ({0} lines).&quot;
+        Case &quot;msgNoText&quot;: TextEN = &quot;Enter some text.&quot;
+        Case &quot;msgBadNumber&quot;: TextEN = &quot;Check the numbers. Height, depth and diameter must be greater than 0.&quot;
+        Case &quot;msgTooLong&quot;: TextEN = &quot;The text does not fit this circle. Use a larger diameter or smaller letters.&quot;
+        Case &quot;msgFont&quot;: TextEN = &quot;Windows could not read this font. Try another font.&quot;
+        Case &quot;msgSupport&quot;: TextEN = &quot;Could not start a sketch there. Select a plane or flat face before running the macro.&quot;
+        Case &quot;msgSolid&quot;: TextEN = &quot;CATIA could not make the solid ({0}). The sketch was kept so you can check it.&quot;
+        Case &quot;msgNothing&quot;: TextEN = &quot;No outlines were found for this text.&quot;
+        Case &quot;msgError&quot;: TextEN = &quot;Error: {0}&quot;
+    End Select
+
+End Function
+
+
+Private Function TextKO(ByVal key As String) As String
+
+    Select Case key
+        Case &quot;title&quot;: TextKO = U(&quot;CATIA \ud14d\uc2a4\ud2b8 \uc0dd\uc131\uae30&quot;)
+        Case &quot;subtitle&quot;: TextKO = U(&quot;\ud3c9\uba74 \ub610\ub294 \ud3c9\ud3c9\ud55c \uba74\uc5d0 \uc591\uac01 \ub610\ub294 \uc74c\uac01 \ud14d\uc2a4\ud2b8 \uc0dd\uc131&quot;)
+        Case &quot;text&quot;: TextKO = U(&quot;\ud14d\uc2a4\ud2b8:&quot;)
+        Case &quot;font&quot;: TextKO = U(&quot;\uae00\uaf34:&quot;)
+        Case &quot;bold&quot;: TextKO = U(&quot;\uad75\uac8c&quot;)
+        Case &quot;italic&quot;: TextKO = U(&quot;\uae30\uc6b8\uc784&quot;)
+        Case &quot;height&quot;: TextKO = U(&quot;\uae00\uc790 \ub192\uc774 (mm):&quot;)
+        Case &quot;spacing&quot;: TextKO = U(&quot;\ucd94\uac00 \uc790\uac04 (mm):&quot;)
+        Case &quot;layout&quot;: TextKO = U(&quot;\ubc30\uce58:&quot;)
+        Case &quot;optStraight&quot;: TextKO = U(&quot;\uc9c1\uc120&quot;)
+        Case &quot;optRadial&quot;: TextKO = U(&quot;\uc6d0\ud615 \ubc30\uce58&quot;)
+        Case &quot;angle&quot;: TextKO = U(&quot;\uac01\ub3c4 (\ub3c4):&quot;)
+        Case &quot;hintStraight&quot;: TextKO = U(&quot;\ubc18\uc2dc\uacc4 \ubc29\ud5a5&quot;)
+        Case &quot;hintRadial&quot;: TextKO = U(&quot;\uc704\uc5d0\uc11c \uc2dc\uacc4 \ubc29\ud5a5, 180 = \uc544\ub798&quot;)
+        Case &quot;dia&quot;: TextKO = U(&quot;\uc6d0 \uc9c0\ub984 (mm):&quot;)
+        Case &quot;optOutside&quot;: TextKO = U(&quot;\uc6d0 \ubc14\uae65\ucabd&quot;)
+        Case &quot;optInside&quot;: TextKO = U(&quot;\uc6d0 \uc548\ucabd&quot;)
+        Case &quot;toCenter&quot;: TextKO = U(&quot;\uae00\uc790 \uc717\ubd80\ubd84\uc774 \uc911\uc2ec\uc744 \ud5a5\ud568 (\uc544\ub798\ucabd \ud14d\uc2a4\ud2b8\uc6a9)&quot;)
+        Case &quot;pos&quot;: TextKO = U(&quot;\uc704\uce58 H, V (mm):&quot;)
+        Case &quot;mirror&quot;: TextKO = U(&quot;\ud14d\uc2a4\ud2b8 \ubc18\uc804&quot;)
+        Case &quot;type&quot;: TextKO = U(&quot;\uacb0\uacfc:&quot;)
+        Case &quot;optPad&quot;: TextKO = U(&quot;\uc591\uac01 (\ud328\ub4dc)&quot;)
+        Case &quot;optPocket&quot;: TextKO = U(&quot;\uc74c\uac01 (\ud3ec\ucf13)&quot;)
+        Case &quot;depth&quot;: TextKO = U(&quot;\uae4a\uc774 (mm):&quot;)
+        Case &quot;reverse&quot;: TextKO = U(&quot;\ubc29\ud5a5 \ubc18\uc804&quot;)
+        Case &quot;support&quot;: TextKO = U(&quot;\uc2a4\ucf00\uce58 \uc9c0\uc9c0\uba74: {0}&quot;)
+        Case &quot;supDefault&quot;: TextKO = U(&quot;XY \ud3c9\uba74 (\uc120\ud0dd \uc5c6\uc74c)&quot;)
+        Case &quot;btnPreview&quot;: TextKO = U(&quot;CATIA\uc5d0\uc11c \ubbf8\ub9ac\ubcf4\uae30&quot;)
+        Case &quot;btnCreate&quot;: TextKO = U(&quot;\ud14d\uc2a4\ud2b8 \uc0dd\uc131&quot;)
+        Case &quot;btnClose&quot;: TextKO = U(&quot;\ub2eb\uae30&quot;)
+        Case &quot;btnLang&quot;: TextKO = &quot;English&quot;
+        Case &quot;status&quot;: TextKO = U(&quot;\uc0c1\ud0dc: &quot;)
+        Case &quot;stReady&quot;: TextKO = U(&quot;\uc900\ube44\ub428&quot;)
+        Case &quot;stNoPart&quot;: TextKO = U(&quot;\uba3c\uc800 CATPart\ub97c \uc5ec\uc138\uc694&quot;)
+        Case &quot;stWorking&quot;: TextKO = U(&quot;\ud14d\uc2a4\ud2b8 \uadf8\ub9ac\ub294 \uc911...&quot;)
+        Case &quot;msgPreview&quot;: TextKO = U(&quot;\ubbf8\ub9ac\ubcf4\uae30 \uc2a4\ucf00\uce58\ub97c \uadf8\ub838\uc2b5\ub2c8\ub2e4 (\uc120 {0}\uac1c). \ud14d\uc2a4\ud2b8 \uc0dd\uc131\uc744 \ub20c\ub7ec \uc644\ub8cc\ud558\uc138\uc694.&quot;)
+        Case &quot;msgDone&quot;: TextKO = U(&quot;\ud14d\uc2a4\ud2b8\ub97c \uc0dd\uc131\ud588\uc2b5\ub2c8\ub2e4 (\uc120 {0}\uac1c).&quot;)
+        Case &quot;msgNoText&quot;: TextKO = U(&quot;\ud14d\uc2a4\ud2b8\ub97c \uc785\ub825\ud558\uc138\uc694.&quot;)
+        Case &quot;msgBadNumber&quot;: TextKO = U(&quot;\uc22b\uc790\ub97c \ud655\uc778\ud558\uc138\uc694. \ub192\uc774, \uae4a\uc774, \uc9c0\ub984\uc740 0\ubcf4\ub2e4 \ucee4\uc57c \ud569\ub2c8\ub2e4.&quot;)
+        Case &quot;msgTooLong&quot;: TextKO = U(&quot;\ud14d\uc2a4\ud2b8\uac00 \uc774 \uc6d0\uc5d0 \ub9de\uc9c0 \uc54a\uc2b5\ub2c8\ub2e4. \uc9c0\ub984\uc744 \ud0a4\uc6b0\uac70\ub098 \uae00\uc790\ub97c \uc904\uc774\uc138\uc694.&quot;)
+        Case &quot;msgFont&quot;: TextKO = U(&quot;Windows\uc5d0\uc11c \uc774 \uae00\uaf34\uc744 \uc77d\uc744 \uc218 \uc5c6\uc2b5\ub2c8\ub2e4. \ub2e4\ub978 \uae00\uaf34\uc744 \uc0ac\uc6a9\ud558\uc138\uc694.&quot;)
+        Case &quot;msgSupport&quot;: TextKO = U(&quot;\ud574\ub2f9 \uc704\uce58\uc5d0 \uc2a4\ucf00\uce58\ub97c \ub9cc\ub4e4 \uc218 \uc5c6\uc2b5\ub2c8\ub2e4. \ub9e4\ud06c\ub85c \uc2e4\ud589 \uc804\uc5d0 \ud3c9\uba74 \ub610\ub294 \ud3c9\ud3c9\ud55c \uba74\uc744 \uc120\ud0dd\ud558\uc138\uc694.&quot;)
+        Case &quot;msgSolid&quot;: TextKO = U(&quot;CATIA\uc5d0\uc11c \uc194\ub9ac\ub4dc\ub97c \ub9cc\ub4e4\uc9c0 \ubabb\ud588\uc2b5\ub2c8\ub2e4 ({0}). \ud655\uc778\ud560 \uc218 \uc788\ub3c4\ub85d \uc2a4\ucf00\uce58\ub294 \ub0a8\uaca8 \ub450\uc5c8\uc2b5\ub2c8\ub2e4.&quot;)
+        Case &quot;msgNothing&quot;: TextKO = U(&quot;\uc774 \ud14d\uc2a4\ud2b8\uc758 \uc724\uacfd\uc120\uc744 \ucc3e\uc9c0 \ubabb\ud588\uc2b5\ub2c8\ub2e4.&quot;)
+        Case &quot;msgError&quot;: TextKO = U(&quot;\uc624\ub958: {0}&quot;)
+    End Select
+
+End Function
+
+
+&#x27;=========================================================
+&#x27; LOGO
+&#x27; The logo picture is stored below as text.
+&#x27;=========================================================
+
+&#x27; Puts the logo into an Image control.
+&#x27; Returns False if the picture could not be loaded.
+Public Function TGLoadLogo(ByVal target As Object) As Boolean
+
+    Dim data() As Byte
+    Dim filePath As String
+    Dim fileNo As Integer
+
+    TGLoadLogo = False
+
+    On Error GoTo Failed
+
+    data = HexToBytes(LogoHex())
+
+    &#x27; VBA can only load a picture from a file, so the data is
+    &#x27; written to the Windows temp folder, loaded, then deleted.
+    filePath = Environ$(&quot;TEMP&quot;) &amp; &quot;\catia_macro_logo.gif&quot;
+
+    If Len(Dir$(filePath)) &gt; 0 Then Kill filePath
+
+    fileNo = FreeFile
+
+    Open filePath For Binary Access Write As #fileNo
+    Put #fileNo, , data
+    Close #fileNo
+
+    Set target.Picture = LoadPicture(filePath)
+
+    TGLoadLogo = True
+
+    On Error Resume Next
+    Kill filePath
+
+    Exit Function
+
+Failed:
+
+    On Error Resume Next
+    Close #fileNo
+
+End Function
+
+
+&#x27; Turns pairs of hex characters back into bytes
+Private Function HexToBytes(ByVal hexText As String) As Byte()
+
+    Dim count As Long
+    Dim i As Long
+    Dim data() As Byte
+
+    count = Len(hexText) \ 2
+
+    ReDim data(0 To count - 1)
+
+    For i = 0 To count - 1
+        data(i) = CByte(&quot;&amp;H&quot; &amp; Mid$(hexText, i * 2 + 1, 2))
+    Next i
+
+    HexToBytes = data
+
+End Function
+
+
+&#x27; The logo picture (a GIF image, 195 x 15 pixels) written as hex text
+Private Function LogoHex() As String
+
+    Dim s As String
+
+    s = s &amp; &quot;474946383761C3000F00840000F0F0F0D7DCE0C4CCD4B5C0CBA7B4C29AA9BA8D9FB27F92A97288A06B829D657D9957719048&quot;
+    s = s &amp; &quot;65863B5A7F2C4E751E426C0F3562002A5A000000000000000000000000000000000000000000000000000000000000000000&quot;
+    s = s &amp; &quot;0000000000000000002C00000000C3000F000008FF0001081C48B0A0C18308132A5CC8B0A1C38710234A9C48B1A2C58B1833&quot;
+    s = s &amp; &quot;6ADCE810418401041F34187820820082061E4480B02000008F11562A20A9320283930463C674504020019D3113402058E001&quot;
+    s = s &amp; &quot;00A011101C2550F040CD9B021BE87CD013A6CE973A59BA1CF8332604A50D940A44309260499C4B010C7010B32580B0041B30&quot;
+    s = s &amp; &quot;15C8C0E840010C623E38E0330241044AADC6FC1BA12C8092861D34E02BD029D3000B1CBC2C1BE08181970FE62280B0556084&quot;
+    s = s &amp; &quot;B90620F4FC5950F4C005333F17543D1041E6B19CDF8A2DC0996C41DB00F04AE6EA37B7E801B10340983B5031E3B47B010460&quot;
+    s = s &amp; &quot;B04076DCB9C21D80540E4181CBB54A49B70E6CF87683063D2B2BFF282BE08180DD00868724801BC002A5EA07C21DC81A404A&quot;
+    s = s &amp; &quot;00DA4FCF140801647DCFC4A517205CF32DD5DE58DD59C69B7C4ABDF752730495771E7D4C992490009715F816680B18B0DF01&quot;
+    s = s &amp; &quot;DD11C0597E2F71871059033C0019606521C09774F8F5E6DD85999138594E017E64635102F198168E0BFE35D27C3F0970E08D&quot;
+    s = s &amp; &quot;AD311024702709F01104688DF5E274AA2DB0175A1ACA15D500C245251685240286A441B62D602592E6D937938D6301C5978D&quot;
+    s = s &amp; &quot;0474F7DF675D5D05C00320A1E61950151207E790535505D44807B657A74D5B29509D41697A08A04006E4D500485221C55479&quot;
+    s = s &amp; &quot;022DD093861B8619D8A0425257D548030065149B480217808D200249DF006C2AFF3013948FBA1A6353437E89E08C49060919&quot;
+    s = s &amp; &quot;6511742650A953D52A50008A3A271F5325E9D41CA7C3793A26AFAD8DA4C071930AB85E7B0E5C169F97B6DEC7668A05A0F7DF&quot;
+    s = s &amp; &quot;8FFC0D0896AED34EAB605F411E65D0B5F2F947C000722A1B155330F27758889C95DA1903261E74A46D6936D6DC010E3C16D9&quot;
+    s = s &amp; &quot;9808348740BF07C446618FA6A1FA8003C79DFBDFC4D355EC12A70793F770BC0AD8256F41091FD6DC67C25D76D850591280E9&quot;
+    s = s &amp; &quot;400C18209C58E789E5805B45B65BAD773E0E3B947D2A6935A68F4EC504554E3AF1D4179F022960E19E3A2965E9614FE14432&quot;
+    s = s &amp; &quot;525879E5166F3A3130DDCA0315ADD650AAE1EB34A5BACAA500848D2989975EC72DB7534F61DB24C9D1DF80072EF845043810&quot;
+    s = s &amp; &quot;E5E08827AEF8E21D412023E390472EF9E494576EF9E51B0504003B&quot;
+
+    LogoHex = s
+
+End Function</code></pre>
+  </section>
+
+  <section>
+    <h2>English and Korean text</h2>
+    <p>All wording lives in <code>TextEN</code> and <code>TextKO</code> in the module. Korean is stored as <code>\uXXXX</code> codes so it pastes safely into the VBA editor on any PC. Please have a Korean-speaking CATIA user check the terms.</p>
+    <div class="wrapx"><table>
+      <tr><th>Key</th><th>English</th><th>Korean</th></tr>
+      <tr><td><code>title</code></td><td>CATIA Text Generator</td><td lang="ko">CATIA 텍스트 생성기</td></tr><tr><td><code>subtitle</code></td><td>Raised or engraved text on a plane or flat face</td><td lang="ko">평면 또는 평평한 면에 양각 또는 음각 텍스트 생성</td></tr><tr><td><code>text</code></td><td>Text:</td><td lang="ko">텍스트:</td></tr><tr><td><code>font</code></td><td>Font:</td><td lang="ko">글꼴:</td></tr><tr><td><code>bold</code></td><td>Bold</td><td lang="ko">굵게</td></tr><tr><td><code>italic</code></td><td>Italic</td><td lang="ko">기울임</td></tr><tr><td><code>height</code></td><td>Letter height (mm):</td><td lang="ko">글자 높이 (mm):</td></tr><tr><td><code>spacing</code></td><td>Extra spacing (mm):</td><td lang="ko">추가 자간 (mm):</td></tr><tr><td><code>layout</code></td><td>Layout:</td><td lang="ko">배치:</td></tr><tr><td><code>optStraight</code></td><td>Straight line</td><td lang="ko">직선</td></tr><tr><td><code>optRadial</code></td><td>Around a circle</td><td lang="ko">원형 배치</td></tr><tr><td><code>angle</code></td><td>Angle (degrees):</td><td lang="ko">각도 (도):</td></tr><tr><td><code>hintStraight</code></td><td>Counterclockwise</td><td lang="ko">반시계 방향</td></tr><tr><td><code>hintRadial</code></td><td>Clockwise from top, 180 = bottom</td><td lang="ko">위에서 시계 방향, 180 = 아래</td></tr><tr><td><code>dia</code></td><td>Circle diameter (mm):</td><td lang="ko">원 지름 (mm):</td></tr><tr><td><code>optOutside</code></td><td>Outside</td><td lang="ko">원 바깥쪽</td></tr><tr><td><code>optInside</code></td><td>Inside</td><td lang="ko">원 안쪽</td></tr><tr><td><code>toCenter</code></td><td>Letter tops point to the center (for text along the bottom)</td><td lang="ko">글자 윗부분이 중심을 향함 (아래쪽 텍스트용)</td></tr><tr><td><code>pos</code></td><td>Position H, V (mm):</td><td lang="ko">위치 H, V (mm):</td></tr><tr><td><code>mirror</code></td><td>Mirror text</td><td lang="ko">텍스트 반전</td></tr><tr><td><code>type</code></td><td>Result:</td><td lang="ko">결과:</td></tr><tr><td><code>optPad</code></td><td>Raised (pad)</td><td lang="ko">양각 (패드)</td></tr><tr><td><code>optPocket</code></td><td>Engraved (pocket)</td><td lang="ko">음각 (포켓)</td></tr><tr><td><code>depth</code></td><td>Depth (mm):</td><td lang="ko">깊이 (mm):</td></tr><tr><td><code>reverse</code></td><td>Reverse direction</td><td lang="ko">방향 반전</td></tr><tr><td><code>support</code></td><td>Sketch support: {0}</td><td lang="ko">스케치 지지면: {0}</td></tr><tr><td><code>supDefault</code></td><td>XY plane (nothing was selected)</td><td lang="ko">XY 평면 (선택 없음)</td></tr><tr><td><code>btnPreview</code></td><td>Preview in CATIA</td><td lang="ko">CATIA에서 미리보기</td></tr><tr><td><code>btnCreate</code></td><td>Create Text</td><td lang="ko">텍스트 생성</td></tr><tr><td><code>btnClose</code></td><td>Close</td><td lang="ko">닫기</td></tr><tr><td><code>btnLang</code></td><td>한국어 (button label)</td><td lang="ko">English (button label)</td></tr><tr><td><code>status</code></td><td>Status: </td><td lang="ko">상태: </td></tr><tr><td><code>stReady</code></td><td>Ready</td><td lang="ko">준비됨</td></tr><tr><td><code>stNoPart</code></td><td>Open a CATPart first</td><td lang="ko">먼저 CATPart를 여세요</td></tr><tr><td><code>stWorking</code></td><td>Drawing the text...</td><td lang="ko">텍스트 그리는 중...</td></tr><tr><td><code>msgPreview</code></td><td>Preview sketch drawn ({0} lines). Click Create Text to finish.</td><td lang="ko">미리보기 스케치를 그렸습니다 (선 {0}개). 텍스트 생성을 눌러 완료하세요.</td></tr><tr><td><code>msgDone</code></td><td>Text created ({0} lines).</td><td lang="ko">텍스트를 생성했습니다 (선 {0}개).</td></tr><tr><td><code>msgNoText</code></td><td>Enter some text.</td><td lang="ko">텍스트를 입력하세요.</td></tr><tr><td><code>msgBadNumber</code></td><td>Check the numbers. Height, depth and diameter must be greater than 0.</td><td lang="ko">숫자를 확인하세요. 높이, 깊이, 지름은 0보다 커야 합니다.</td></tr><tr><td><code>msgTooLong</code></td><td>The text does not fit this circle. Use a larger diameter or smaller letters.</td><td lang="ko">텍스트가 이 원에 맞지 않습니다. 지름을 키우거나 글자를 줄이세요.</td></tr><tr><td><code>msgFont</code></td><td>Windows could not read this font. Try another font.</td><td lang="ko">Windows에서 이 글꼴을 읽을 수 없습니다. 다른 글꼴을 사용하세요.</td></tr><tr><td><code>msgSupport</code></td><td>Could not start a sketch there. Select a plane or flat face before running the macro.</td><td lang="ko">해당 위치에 스케치를 만들 수 없습니다. 매크로 실행 전에 평면 또는 평평한 면을 선택하세요.</td></tr><tr><td><code>msgSolid</code></td><td>CATIA could not make the solid ({0}). The sketch was kept so you can check it.</td><td lang="ko">CATIA에서 솔리드를 만들지 못했습니다 ({0}). 확인할 수 있도록 스케치는 남겨 두었습니다.</td></tr><tr><td><code>msgNothing</code></td><td>No outlines were found for this text.</td><td lang="ko">이 텍스트의 윤곽선을 찾지 못했습니다.</td></tr><tr><td><code>msgError</code></td><td>Error: {0}</td><td lang="ko">오류: {0}</td></tr>
+    </table></div>
+    <p class="note"><code>{0}</code> is filled in with a count, a name or an error detail. The window title bar stays in English in both languages.</p>
+  </section>
+
+  <section>
+    <h2>Known limitations</h2>
+    <ul>
+      <li>The preview box in the window shows the font only. It cannot show the angle or the circle; use Preview in CATIA for that.</li>
+      <li>You cannot rotate or zoom the CATIA view while the window is open, and the plane or face must be selected before the macro starts.</li>
+      <li>Flat planes and flat faces only. Text cannot wrap around a cylinder or other curved surface.</li>
+      <li>Curves are drawn as short straight lines. To make them smoother, lower <code>DETAIL</code> near the top of the module; this adds lines and slows the update.</li>
+      <li>Script and decorative fonts often have overlapping outlines that CATIA will not pad. If that happens, the sketch is kept and the status line shows CATIA's error. Plain fonts such as Arial are the safest.</li>
+      <li>Engraved text needs existing material under the sketch. A pocket in an empty body fails.</li>
+      <li>The text goes into the body that is in work, or the main body if the in-work object is not a body.</li>
+      <li>Letter spacing follows each letter's standard width. Kerning pairs are not applied.</li>
+      <li>Long text makes a heavy sketch. The limit is 100 characters.</li>
+      <li>If the credit image cannot be loaded, the window opens without it.</li>
+    </ul>
+  </section>
+</main>
+<footer>Prepared for CATIA V5 R21 VBA. Creates raised or engraved text from installed Windows fonts.</footer>
+</div>
+<script>
+document.querySelectorAll('.copy').forEach(function (btn) {
+  btn.addEventListener('click', function () {
+    var text = document.getElementById(btn.dataset.target).textContent;
+    function done(ok) {
+      btn.textContent = ok ? 'Copied' : 'Select and copy manually';
+      setTimeout(function () { btn.textContent = 'Copy code'; }, 1800);
+    }
+    function fallback() {
+      var ta = document.createElement('textarea');
+      ta.value = text; document.body.appendChild(ta); ta.select();
+      var ok = false;
+      try { ok = document.execCommand('copy'); } catch (e) {}
+      document.body.removeChild(ta); done(ok);
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () { done(true); }, fallback);
+    } else { fallback(); }
+  });
+});
+</script>
+</body>
+</html>
