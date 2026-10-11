@@ -1,0 +1,1535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>CATIA Screenshot Generator - VBA Package</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono&display=swap">
+<style>
+:root {
+  --bg:#eef1f5; --panel:#ffffff; --ink:#16202c; --muted:#566475; --line:#d3dae3;
+  --accent:#2c5aa0; --accent2:#1f437a; --code-bg:#f6f8fb; --note:#fff6dc; --note-line:#d9a400;
+  box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --bg:#141a22; --panel:#1c242f; --ink:#e6ebf2; --muted:#9aa8b9; --line:#324052; --accent:#6f9fe6; --accent2:#8fb5ee; --code-bg:#151c25; --note:#3a3216; --note-line:#d9a400; }
+}
+:root[data-theme="dark"] { --bg:#141a22; --panel:#1c242f; --ink:#e6ebf2; --muted:#9aa8b9; --line:#324052; --accent:#6f9fe6; --accent2:#8fb5ee; --code-bg:#151c25; --note:#3a3216; --note-line:#d9a400; }
+*, *::before, *::after { box-sizing:inherit; }
+html { scroll-padding-top:env(safe-area-inset-top,0px); }
+body { margin:0; background:var(--bg); color:var(--ink); font-family:"IBM Plex Sans","Segoe UI","Malgun Gothic",Arial,sans-serif; font-size:16px; line-height:1.6; }
+.wrap { max-width:920px; margin:0 auto; padding:0 20px; }
+header { padding:40px 0 8px; }
+h1 { font-size:2rem; line-height:1.2; margin:0 0 6px; font-weight:600; letter-spacing:-0.01em; }
+.subtitle { margin:0; color:var(--muted); max-width:62ch; }
+.palettes { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:14px 22px; margin:26px 0 8px; }
+.strip { display:flex; height:34px; border:1px solid var(--line); }
+.strip span { flex:1; }
+.pal p { margin:4px 0 0; font-size:.85rem; color:var(--muted); }
+section { background:var(--panel); border:1px solid var(--line); border-radius:6px; padding:22px 24px; margin:18px 0; }
+h2 { font-size:1.15rem; margin:0 0 10px; font-weight:600; }
+p { margin:0 0 10px; max-width:72ch; }
+ul, ol { margin:0; padding-left:22px; max-width:72ch; }
+li { margin-bottom:6px; }
+code, pre { font-family:"IBM Plex Mono",Consolas,monospace; }
+code { font-size:.9em; }
+.code-head { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:10px; margin-bottom:10px; }
+.code-head h2 { margin:0; }
+.right { display:flex; align-items:center; gap:10px; }
+.filetag { font-size:.8rem; color:var(--muted); border:1px solid var(--line); border-radius:4px; padding:3px 8px; }
+.copy { background:var(--accent); color:#fff; border:0; border-radius:4px; padding:8px 16px; font:inherit; font-size:.9rem; font-weight:500; cursor:pointer; }
+.copy:hover { background:var(--accent2); }
+.copy:focus-visible { outline:3px solid var(--note-line); outline-offset:2px; }
+:root[data-theme="dark"] .copy { color:#10161e; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .copy { color:#10161e; } }
+pre { margin:0; background:var(--code-bg); border:1px solid var(--line); border-radius:4px; padding:14px; max-height:520px; overflow:auto; font-size:.8rem; line-height:1.5; }
+.logo { display:block; max-width:100%; height:auto; margin:10px 0 0; border:1px solid var(--line); }
+.note { background:var(--note); border-left:4px solid var(--note-line); padding:10px 14px; margin:12px 0 0; }
+.wrapx { overflow-x:auto; }
+table { border-collapse:collapse; width:100%; font-size:.88rem; }
+th, td { text-align:left; padding:6px 10px; border-bottom:1px solid var(--line); vertical-align:top; }
+th { color:var(--muted); font-weight:500; }
+footer { color:var(--muted); font-size:.85rem; padding:8px 0 40px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>CATIA Screenshot Generator</h1>
+  <p class="subtitle">Saves isometric, front, top and right-side images of the active document, or of every part in an assembly, for reports, work instructions and Power Apps records. Two code blocks to paste: the form and the module.</p>
+</header>
+<main>
+  <section>
+    <h2>What it does</h2>
+    <ul>
+      <li><strong>Two sources.</strong> The active document exactly as it is shown, or each part of the active product, opened in its own window one at a time.</li>
+      <li><strong>Four views.</strong> Isometric, front, top and right side. Tick the ones you want. Each view is fitted to the screen before the capture.</li>
+      <li><strong>White background and no tree</strong> if you tick those boxes. The screen is put back the way it was afterwards.</li>
+      <li><strong>File names</strong> come from the part number: <code>BRKT-001_ISO.jpg</code>, <code>BRKT-001_FRONT.jpg</code> and so on.</li>
+      <li><strong>JPG, BMP or TIFF.</strong></li>
+      <li><strong>English / Korean button</strong> in the top right corner. The language is remembered for next time.</li>
+      <li><strong>Credit image centered at the bottom</strong>, stored inside the module as text, the same as your other macros. <img class="logo" src="data:image/gif;base64,R0lGODdhwwAPAIQAAPDw8Nfc4MTM1LXAy6e0wpqpuo2fsn+SqXKIoGuCnWV9mVdxkEhlhjtafyxOdR5CbA81YgAqWgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACwAAAAAwwAPAAAI/wABCBxIsKDBgwgTKlzIsKHDhxAjSpxIsaLFixgzatzoEEGEAQQfNBh4IIIAggYeRICwIAAAjxFWKiCpMgKDkwRjxnRQQCABnTETQCBY4AEAoBEQHCVQ8EDNmwIb6HzQE6bOlzpZuhz4MyYEpQ2UCkQwkmBJnEsBDHAQsyWAsAQbMBXIwOhAAQxiPjjgMwJBBEqtxvwboSyAkoYdNOAr0CnTAAscvCwb4IGBlw/mIoCwVWCEuQYg9PxZUPTABTM/F1Q9EEHmsZzfii3AmWxB2wDwSubqN7foAbEDQJg7UDHjtHsBBGCwQHbcucIdgFQOQYHLtUpJtw5s+HaDBj0rK/8oK+CBgN0AhockgBvAAqXqB8IdyBpASgDaT88UCAFkfc/EpRcgXPMt1d5Y3VnGm3xKvfdScwSVdx59TJkkkACXFfgWaAsYsN8B3RHAWX4vcYcQWQM8ABlgZSHAl3T49ebdhZmROFlOAX5kY1EC8ZgWjgv+NdJ8Pwlw4I2tMRAkcCcJ8BEEaI314nSqLbAXWhrKFdUAwkUlFoUkAoakQbYtYCWS5tk3k41jAcWXjQR0999nXV0FwAMgoeYZUBUSB+eQU1UF1EgHtlenTVspUJ1BaXoIoEAG5NUASFIhxVR5Ai3Qk4YbhhnYoEJSV9VIAwBlFJtIAheAjSACSd8AbCr/MBOUj7oaY1NDfongjEkGCRllEXQmUKlT1SpQAIo6Jx9TJenUHKfDeTomr62NpMBxkwq4XnsOXBafl7bex2aKBaD334/8DQiWrtNOq2BfQR5l0LXy+UfAAHIqGxVTMPJ3WIicldoZAyYedKRtaTbW3AEOPBbZmAg0h0C/B8RGYY+mofqAA8ed+9/E01XsEqcHk/dwvArYJW9BCR/W3GfCXXbYUFkSgOlADBggnFjnieWAW0W2W613Pg47lH0qaTWmj07FBFVOOvHUF58CKWDhnjopZelhT+FEMlJYeeUWbzoxMN3KAxWt1lCq4es0pbrKpQCEjSmJl17HLbdTT2HbJMnR34AHLvhFBDgQ5eCIJ6744h1BICPjkEcu+eSUV2755RsFBAA7" alt="Credit image with the line: macro developed by AISHAQUE" width="195" height="15"></li>
+      <li><strong>Works beside your other macros.</strong> Every shared name starts with <code>Shot</code>, so it does not clash with the other macros in the same VBA project.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Setup</h2>
+    <ol>
+      <li>In the VBA editor, use Insert, UserForm. In the Properties window set its <code>(Name)</code> to <code>frmScreenshots</code>. Leave the form empty in the designer.</li>
+      <li>Open the form's code (right-click the form, View Code), select all, delete, and paste the Form code below.</li>
+      <li>Use Insert, Module. In the Properties window set its <code>(Name)</code> to <code>ScreenshotGenerator</code>, then paste the Module code below.</li>
+      <li>Use Debug, Compile VBAProject.</li>
+      <li>Open a CATProduct or CATPart, then run <code>CATMain</code> from the <code>ScreenshotGenerator</code> module.</li>
+    </ol>
+    <p class="note"><strong>First run:</strong> this code was written and checked for structure, but not run inside CATIA. Try it on one part first and check that the front, top and right views match what your team calls front, top and right.</p>
+  </section>
+
+  <section>
+    <div class="code-head"><h2>Form code</h2><div class="right"><span class="filetag">frmScreenshots</span><button class="copy" data-target="form">Copy code</button></div></div>
+    <pre><code id="form">Option Explicit
+
+'=========================================================
+' CATIA SCREENSHOT GENERATOR - FORM
+' Form name: frmScreenshots
+' The form is empty in the designer. Every control is
+' created here in code.
+'=========================================================
+
+Private WithEvents mLangButton As MSForms.CommandButton
+Private WithEvents mCloseButton As MSForms.CommandButton
+Private WithEvents mBrowse1 As MSForms.CommandButton
+Private WithEvents mAct1 As MSForms.CommandButton
+
+Private mBusy As Boolean
+
+
+'=========================================================
+' FORM INITIALIZATION
+'=========================================================
+
+Private Sub UserForm_Initialize()
+
+    ShotLoadLanguage
+
+    Me.Caption = "CATIA Screenshot Generator"
+    Me.Width = 440
+    Me.Height = 434
+
+    BuildControls
+    ApplyLanguage
+    LoadInputs
+    ShowDocStatus
+
+End Sub
+
+
+Private Function AddCtl( _
+        ByVal progId As String, _
+        ByVal ctlName As String, _
+        ByVal x As Single, _
+        ByVal y As Single, _
+        ByVal w As Single, _
+        ByVal h As Single) As Object
+
+    Dim c As Object
+
+    Set c = Me.Controls.Add(progId, ctlName, True)
+
+    c.Left = x
+    c.Top = y
+    c.Width = w
+    c.Height = h
+
+    Set AddCtl = c
+
+End Function
+
+
+Private Sub BuildControls()
+
+    Dim c As Object
+
+    ' Title and language button
+    Set c = AddCtl("Forms.Label.1", "lblTitle", 20, 12, 300, 24)
+    c.Font.Size = 14
+    c.Font.Bold = True
+
+    Set mLangButton = AddCtl("Forms.CommandButton.1", "cmdLang", 330, 12, 80, 24)
+
+    Set c = AddCtl("Forms.Label.1", "lblSubtitle", 20, 40, 390, 28)
+    c.WordWrap = True
+
+    Set c = AddCtl("Forms.Label.1", "lbl_cboSource", 20, 77, 150, 16)
+    Set c = AddCtl("Forms.ComboBox.1", "cboSource", 175, 74, 235, 20)
+    c.Style = 2
+
+    Set c = AddCtl("Forms.Label.1", "lblHead1", 20, 102, 390, 16)
+    c.Font.Bold = True
+
+    Set c = AddCtl("Forms.CheckBox.1", "chkIso", 20, 122, 390, 18)
+
+    Set c = AddCtl("Forms.CheckBox.1", "chkFront", 20, 143, 390, 18)
+
+    Set c = AddCtl("Forms.CheckBox.1", "chkTop", 20, 164, 390, 18)
+
+    Set c = AddCtl("Forms.CheckBox.1", "chkRight", 20, 185, 390, 18)
+
+    Set c = AddCtl("Forms.Label.1", "lbl_cboFormat", 20, 209, 150, 16)
+    Set c = AddCtl("Forms.ComboBox.1", "cboFormat", 175, 206, 235, 20)
+    c.Style = 2
+
+    Set c = AddCtl("Forms.CheckBox.1", "chkWhite", 20, 234, 390, 18)
+
+    Set c = AddCtl("Forms.CheckBox.1", "chkTree", 20, 255, 390, 18)
+
+    Set c = AddCtl("Forms.Label.1", "lbl_txtOut", 20, 276, 390, 16)
+    Set c = AddCtl("Forms.TextBox.1", "txtOut", 20, 293, 310, 20)
+    Set mBrowse1 = AddCtl("Forms.CommandButton.1", "cmdBrowse1", 336, 292, 74, 22)
+
+    ' Status
+    Set c = AddCtl("Forms.Label.1", "lblStatus", 20, 322, 390, 34)
+    c.WordWrap = True
+    c.Font.Bold = True
+
+    ' Buttons
+    Set mAct1 = AddCtl("Forms.CommandButton.1", "cmdAct1", 20, 362, 191, 30)
+    Set mCloseButton = AddCtl("Forms.CommandButton.1", "cmdClose", 219, 362, 191, 30)
+
+    ' Logo, centered at the bottom. The picture data is at the bottom of the module.
+    Set c = AddCtl("Forms.Image.1", "imgLogo", 20, 400, 10, 10)
+    c.BorderStyle = 0
+    c.BackStyle = 0
+    c.AutoSize = True
+
+    If ShotLoadLogo(c) Then
+        c.Left = 215 - c.Width / 2
+        Me.Height = 434 + c.Height + 8
+    Else
+        c.Visible = False
+    End If
+
+End Sub
+
+
+'=========================================================
+' LANGUAGE
+'=========================================================
+
+Private Sub ApplyLanguage()
+
+    Dim c As Object
+
+    Me.Controls("lblTitle").Caption = ShotTxt("title")
+    Me.Controls("lblSubtitle").Caption = ShotTxt("subtitle")
+
+    Me.Controls("lbl_cboSource").Caption = ShotTxt("source")
+    FillCombo "cboSource", Array("srcActive", "srcParts")
+    Me.Controls("lblHead1").Caption = ShotTxt("views")
+    Me.Controls("chkIso").Caption = ShotTxt("vIso")
+    Me.Controls("chkFront").Caption = ShotTxt("vFront")
+    Me.Controls("chkTop").Caption = ShotTxt("vTop")
+    Me.Controls("chkRight").Caption = ShotTxt("vRight")
+    Me.Controls("lbl_cboFormat").Caption = ShotTxt("format")
+    FillCombo "cboFormat", Array("fmtJpg", "fmtBmp", "fmtTif")
+    Me.Controls("chkWhite").Caption = ShotTxt("chkWhite")
+    Me.Controls("chkTree").Caption = ShotTxt("chkTree")
+    Me.Controls("lbl_txtOut").Caption = ShotTxt("outFolder")
+    mBrowse1.Caption = ShotTxt("btnBrowse")
+    mAct1.Caption = ShotTxt("btnRun")
+    mCloseButton.Caption = ShotTxt("btnClose")
+    mLangButton.Caption = ShotTxt("btnLang")
+
+    ' A font that can show the selected language
+    On Error Resume Next
+
+    For Each c In Me.Controls
+        c.Font.Name = ShotUiFontName()
+    Next c
+
+    On Error GoTo 0
+
+End Sub
+
+
+Private Sub FillCombo(ByVal ctlName As String, ByVal keys As Variant)
+
+    Dim c As Object
+    Dim keep As Long
+    Dim i As Long
+
+    Set c = Me.Controls(ctlName)
+
+    keep = c.ListIndex
+
+    c.Clear
+
+    For i = LBound(keys) To UBound(keys)
+        c.AddItem ShotTxt(CStr(keys(i)))
+    Next i
+
+    If keep &lt; 0 Or keep &gt; c.ListCount - 1 Then keep = 0
+
+    c.ListIndex = keep
+
+End Sub
+
+
+Private Sub SetComboIndex(ByVal ctlName As String, ByVal index As Long)
+
+    Dim c As Object
+
+    Set c = Me.Controls(ctlName)
+
+    If index &lt; 0 Or index &gt; c.ListCount - 1 Then index = 0
+
+    c.ListIndex = index
+
+End Sub
+
+
+Private Sub mLangButton_Click()
+
+    If gShotLang = "KO" Then
+        ShotSetLanguage "EN"
+    Else
+        ShotSetLanguage "KO"
+    End If
+
+    ApplyLanguage
+    ShowDocStatus
+
+End Sub
+
+
+'=========================================================
+' REMEMBERED INPUTS
+'=========================================================
+
+Private Sub LoadInputs()
+
+    On Error Resume Next
+
+    SetComboIndex "cboSource", CLng(Val(ShotLoadText("cboSource", "0")))
+    Me.Controls("chkIso").Value = (ShotLoadText("chkIso", "1") = "1")
+    Me.Controls("chkFront").Value = (ShotLoadText("chkFront", "1") = "1")
+    Me.Controls("chkTop").Value = (ShotLoadText("chkTop", "1") = "1")
+    Me.Controls("chkRight").Value = (ShotLoadText("chkRight", "1") = "1")
+    SetComboIndex "cboFormat", CLng(Val(ShotLoadText("cboFormat", "0")))
+    Me.Controls("chkWhite").Value = (ShotLoadText("chkWhite", "1") = "1")
+    Me.Controls("chkTree").Value = (ShotLoadText("chkTree", "1") = "1")
+    Me.Controls("txtOut").Text = ShotLoadText("txtOut", "")
+
+End Sub
+
+
+Private Sub SaveInputs()
+
+    On Error Resume Next
+
+    ShotSaveText "cboSource", CStr(Me.Controls("cboSource").ListIndex)
+    ShotSaveText "chkIso", IIf(Me.Controls("chkIso").Value = True, "1", "0")
+    ShotSaveText "chkFront", IIf(Me.Controls("chkFront").Value = True, "1", "0")
+    ShotSaveText "chkTop", IIf(Me.Controls("chkTop").Value = True, "1", "0")
+    ShotSaveText "chkRight", IIf(Me.Controls("chkRight").Value = True, "1", "0")
+    ShotSaveText "cboFormat", CStr(Me.Controls("cboFormat").ListIndex)
+    ShotSaveText "chkWhite", IIf(Me.Controls("chkWhite").Value = True, "1", "0")
+    ShotSaveText "chkTree", IIf(Me.Controls("chkTree").Value = True, "1", "0")
+    ShotSaveText "txtOut", Me.Controls("txtOut").Text
+
+End Sub
+
+
+'=========================================================
+' ACTIVE DOCUMENT AND STATUS
+'=========================================================
+
+Private Function DocReady() As Boolean
+
+    Dim kind As String
+
+    kind = ShotDocKind()
+
+    DocReady = (Len(kind) &gt; 0 And InStr("|Product|Part|", "|" &amp; kind &amp; "|") &gt; 0)
+
+End Function
+
+
+Private Sub ShowDocStatus()
+
+    If DocReady() Then
+        ShowStatus ShotFmt(ShotTxt("stReady"), ShotDocName())
+    Else
+        ShowStatus ShotTxt("stNeed")
+    End If
+
+End Sub
+
+
+Private Sub ShowStatus(ByVal message As String)
+
+    Me.Controls("lblStatus").Caption = ShotTxt("status") &amp; message
+
+End Sub
+
+
+' Called by the module while it works
+Public Sub Progress(ByVal message As String)
+
+    ShowStatus message
+
+    Me.Repaint
+
+    DoEvents
+
+End Sub
+
+
+Private Sub SetBusy(ByVal busy As Boolean)
+
+    Dim c As Object
+
+    mBusy = busy
+
+    For Each c In Me.Controls
+        If TypeName(c) = "CommandButton" Then c.Enabled = Not busy
+    Next c
+
+    Me.Repaint
+
+    DoEvents
+
+End Sub
+
+
+'=========================================================
+' BUTTONS
+'=========================================================
+
+Private Sub DoAction(ByVal actionId As Long)
+
+    Dim message As String
+    Dim ok As Boolean
+
+    If mBusy Then Exit Sub
+
+    If Not DocReady() Then
+        ShowDocStatus
+        Exit Sub
+    End If
+
+    SaveInputs
+
+    SetBusy True
+
+    ShowStatus ShotTxt("stWorking")
+
+    On Error GoTo Failed
+
+    ok = ShotRun(Me, actionId, message)
+
+    On Error Resume Next
+
+    CATIA.RefreshDisplay = True
+    CATIA.DisplayFileAlerts = True
+
+    SetBusy False
+
+    ShowStatus message
+
+    Exit Sub
+
+Failed:
+
+    message = Err.Description
+
+    On Error Resume Next
+
+    CATIA.RefreshDisplay = True
+    CATIA.DisplayFileAlerts = True
+
+    SetBusy False
+
+    ShowStatus ShotFmt(ShotTxt("msgError"), message)
+
+End Sub
+
+
+Private Sub mAct1_Click()
+
+    DoAction 1
+
+End Sub
+
+
+Private Sub mBrowse1_Click()
+
+    Dim picked As String
+
+    picked = ShotBrowseFolder(ShotTxt("outFolder"))
+
+    If Len(picked) &gt; 0 Then Me.Controls("txtOut").Text = picked
+
+End Sub
+
+
+
+'=========================================================
+' CLOSE
+'=========================================================
+
+Private Sub mCloseButton_Click()
+
+    Unload Me
+
+End Sub
+
+
+' The window cannot be closed while the macro is working
+Private Sub UserForm_QueryClose(Cancel As Integer, CloseMode As Integer)
+
+    If mBusy Then Cancel = True
+
+End Sub</code></pre>
+  </section>
+
+  <section>
+    <div class="code-head"><h2>Module code</h2><div class="right"><span class="filetag">ScreenshotGenerator</span><button class="copy" data-target="module">Copy code</button></div></div>
+    <p>The long block of letters and numbers at the bottom is the credit image. Do not edit it.</p>
+    <pre><code id="module">Option Explicit
+
+'=========================================================
+' CATIA SCREENSHOT GENERATOR - MAIN MODULE
+' Module name: ScreenshotGenerator
+' Run CATMain to open the window.
+'=========================================================
+
+Private Const REG_APP As String = "CatiaScreenshotGenerator"
+Private Const REG_SEC As String = "Settings"
+
+' "EN" or "KO"
+Public gShotLang As String
+
+
+'=========================================================
+' ENTRY POINT
+'=========================================================
+
+Sub CATMain()
+
+    ShotLoadLanguage
+    frmScreenshots.Show
+
+End Sub
+
+'=========================================================
+' CAPTURE
+'=========================================================
+
+Public Function ShotRun( _
+        ByVal frm As Object, _
+        ByVal actionId As Long, _
+        ByRef message As String) As Boolean
+
+    Dim docs As Object
+    Dim keys As Variant
+    Dim d As Object
+    Dim homeWindow As Object
+    Dim outFolder As String
+    Dim ext As String
+    Dim fmt As Long
+    Dim i As Long
+    Dim made As Long
+    Dim shots As Long
+    Dim skipped As Long
+    Dim before As Long
+    Dim opened As Boolean
+
+    ShotRun = False
+
+    outFolder = WithSlash(CtlText(frm, "txtOut"))
+
+    If Not FolderExists(outFolder) Then
+        message = ShotTxt("msgNoOut")
+        Exit Function
+    End If
+
+    If Not (CtlOn(frm, "chkIso") Or CtlOn(frm, "chkFront") Or CtlOn(frm, "chkTop") Or CtlOn(frm, "chkRight")) Then
+        message = ShotTxt("msgNoView")
+        Exit Function
+    End If
+
+    ' CATIA capture formats: 2 = TIFF, 4 = BMP, 5 = JPEG
+    Select Case CtlIndex(frm, "cboFormat")
+        Case 1: ext = "bmp": fmt = 4
+        Case 2: ext = "tif": fmt = 2
+        Case Else: ext = "jpg": fmt = 5
+    End Select
+
+    Set d = CATIA.ActiveDocument
+    Set homeWindow = CATIA.ActiveWindow
+
+    If CtlIndex(frm, "cboSource") = 1 And TypeName(d) = "ProductDocument" Then
+
+        '---------------------------------------
+        ' Each part in its own window
+        '---------------------------------------
+
+        On Error Resume Next
+        d.Product.ApplyWorkMode 2
+        On Error GoTo 0
+
+        Set docs = CreateObject("Scripting.Dictionary")
+
+        CollectDocs d.Product, docs, True, False
+
+        If docs.Count = 0 Then
+            message = ShotTxt("msgNothing")
+            Exit Function
+        End If
+
+        keys = docs.Keys
+
+        For i = 0 To docs.Count - 1
+
+            Set d = docs.Item(keys(i))
+
+            Say frm, ShotFmt(ShotTxt("stItem"), CStr(i + 1), CStr(docs.Count)) &amp; " " &amp; d.Name
+
+            made = 0
+
+            If Len(d.Path) &gt; 0 Then
+
+                opened = False
+
+                On Error Resume Next
+                before = CATIA.Windows.Count
+                CATIA.Documents.Open d.FullName
+                opened = (CATIA.Windows.Count &gt; before)
+                On Error GoTo 0
+
+                made = ShootDoc(d, frm, outFolder, ext, fmt)
+
+                On Error Resume Next
+                If opened Then CATIA.ActiveWindow.Close
+                On Error GoTo 0
+
+            End If
+
+            If made &gt; 0 Then
+                shots = shots + made
+            Else
+                skipped = skipped + 1
+            End If
+
+        Next i
+
+        On Error Resume Next
+        homeWindow.Activate
+        On Error GoTo 0
+
+    Else
+
+        shots = ShootDoc(d, frm, outFolder, ext, fmt)
+
+    End If
+
+    message = ShotFmt(ShotTxt("msgDone"), CStr(shots), CStr(skipped))
+
+    ShotRun = True
+
+End Function
+
+
+' Captures the ticked views of the document shown in the active
+' window. Returns the number of images saved.
+Private Function ShootDoc( _
+        ByVal d As Object, _
+        ByVal frm As Object, _
+        ByVal outFolder As String, _
+        ByVal ext As String, _
+        ByVal fmt As Long) As Long
+
+    Dim win As Object
+    Dim viewer As Object
+    Dim vp As Object
+    Dim oldColor(2) As Variant
+    Dim white(2) As Variant
+    Dim oldSight(2) As Variant
+    Dim oldUp(2) As Variant
+    Dim oldLayout As Long
+    Dim baseName As String
+    Dim made As Long
+
+    On Error GoTo Failed
+
+    Set win = CATIA.ActiveWindow
+    Set viewer = win.ActiveViewer
+    Set vp = viewer.Viewpoint3D
+
+    On Error Resume Next
+    baseName = d.Product.PartNumber
+    On Error GoTo Failed
+
+    If Len(baseName) = 0 Then baseName = StripExt(d.Name)
+
+    baseName = outFolder &amp; CleanName(baseName)
+
+    ' Remember the screen as it was
+    oldLayout = win.Layout
+    viewer.GetBackgroundColor oldColor
+    vp.GetSightDirection oldSight
+    vp.GetUpDirection oldUp
+
+    ' Layout 1 = geometry only, no specification tree
+    If CtlOn(frm, "chkTree") Then win.Layout = 1
+
+    If CtlOn(frm, "chkWhite") Then
+        white(0) = 1
+        white(1) = 1
+        white(2) = 1
+        viewer.PutBackgroundColor white
+    End If
+
+    ' Sight direction (where the camera looks) and up direction
+    If CtlOn(frm, "chkIso") Then made = made + Shoot(viewer, vp, -1, -1, -1, 0, 0, 1, baseName &amp; "_ISO." &amp; ext, fmt)
+    If CtlOn(frm, "chkFront") Then made = made + Shoot(viewer, vp, -1, 0, 0, 0, 0, 1, baseName &amp; "_FRONT." &amp; ext, fmt)
+    If CtlOn(frm, "chkTop") Then made = made + Shoot(viewer, vp, 0, 0, -1, 0, 1, 0, baseName &amp; "_TOP." &amp; ext, fmt)
+    If CtlOn(frm, "chkRight") Then made = made + Shoot(viewer, vp, 0, -1, 0, 0, 0, 1, baseName &amp; "_RIGHT." &amp; ext, fmt)
+
+    ' Put the screen back
+    On Error Resume Next
+
+    viewer.PutBackgroundColor oldColor
+    vp.PutSightDirection oldSight
+    vp.PutUpDirection oldUp
+    win.Layout = oldLayout
+    viewer.Reframe
+    viewer.Update
+
+    ShootDoc = made
+
+    Exit Function
+
+Failed:
+
+    ShootDoc = made
+
+    On Error Resume Next
+
+    viewer.PutBackgroundColor oldColor
+    win.Layout = oldLayout
+
+End Function
+
+
+' Turns the camera, fits the model and saves one image.
+' Returns 1 when the image was saved, otherwise 0.
+Private Function Shoot( _
+        ByVal viewer As Object, _
+        ByVal vp As Object, _
+        ByVal sx As Double, _
+        ByVal sy As Double, _
+        ByVal sz As Double, _
+        ByVal ux As Double, _
+        ByVal uy As Double, _
+        ByVal uz As Double, _
+        ByVal filePath As String, _
+        ByVal fmt As Long) As Long
+
+    Dim sight(2) As Variant
+    Dim up(2) As Variant
+
+    On Error GoTo Failed
+
+    sight(0) = sx
+    sight(1) = sy
+    sight(2) = sz
+
+    up(0) = ux
+    up(1) = uy
+    up(2) = uz
+
+    vp.PutSightDirection sight
+    vp.PutUpDirection up
+
+    viewer.Reframe
+    viewer.Update
+
+    DeleteFile filePath
+
+    viewer.CaptureToFile fmt, filePath
+
+    If FileExists(filePath) Then Shoot = 1
+
+    Exit Function
+
+Failed:
+
+End Function
+
+
+'=========================================================
+' SHARED HELPERS
+'=========================================================
+
+' "" = nothing open, otherwise Product, Part, Drawing or Other
+Public Function ShotDocKind() As String
+
+    Dim t As String
+
+    On Error Resume Next
+
+    If CATIA.Documents.Count &gt; 0 Then t = TypeName(CATIA.ActiveDocument)
+
+    On Error GoTo 0
+
+    Select Case t
+        Case "ProductDocument": ShotDocKind = "Product"
+        Case "PartDocument": ShotDocKind = "Part"
+        Case "DrawingDocument": ShotDocKind = "Drawing"
+        Case "": ShotDocKind = ""
+        Case Else: ShotDocKind = "Other"
+    End Select
+
+End Function
+
+
+Public Function ShotDocName() As String
+
+    On Error Resume Next
+
+    ShotDocName = CATIA.ActiveDocument.Name
+
+End Function
+
+
+' Folder picker. Returns "" when cancelled.
+Public Function ShotBrowseFolder(ByVal title As String) As String
+
+    Dim sh As Object
+    Dim picked As Object
+
+    On Error Resume Next
+
+    Set sh = CreateObject("Shell.Application")
+    Set picked = sh.BrowseForFolder(0, title, 1)
+
+    If Not picked Is Nothing Then ShotBrowseFolder = picked.Self.Path
+
+End Function
+
+
+Private Function CtlText(ByVal frm As Object, ByVal ctlName As String) As String
+
+    CtlText = Trim$(frm.Controls(ctlName).Text)
+
+End Function
+
+
+Private Function CtlOn(ByVal frm As Object, ByVal ctlName As String) As Boolean
+
+    CtlOn = (frm.Controls(ctlName).Value = True)
+
+End Function
+
+
+Private Function CtlIndex(ByVal frm As Object, ByVal ctlName As String) As Long
+
+    CtlIndex = frm.Controls(ctlName).ListIndex
+
+End Function
+
+
+' Shows progress on the status line of the window
+Private Sub Say(ByVal frm As Object, ByVal message As String)
+
+    frm.Progress message
+
+End Sub
+
+
+' Replaces characters that are not allowed in a file name
+Private Function CleanName(ByVal rawName As String) As String
+
+    Dim i As Long
+    Dim ch As String
+    Dim code As Long
+    Dim result As String
+
+    For i = 1 To Len(rawName)
+
+        ch = Mid$(rawName, i, 1)
+        code = AscW(ch)
+
+        If InStr("\/:*?""&lt;&gt;|", ch) &gt; 0 Or (code &gt;= 0 And code &lt; 32) Then
+            result = result &amp; "_"
+        Else
+            result = result &amp; ch
+        End If
+
+    Next i
+
+    If Len(result) = 0 Then result = "Unnamed"
+
+    CleanName = result
+
+End Function
+
+
+Private Function StripExt(ByVal fileName As String) As String
+
+    Dim p As Long
+
+    p = InStrRev(fileName, ".")
+
+    If p &gt; 1 Then
+        StripExt = Left$(fileName, p - 1)
+    Else
+        StripExt = fileName
+    End If
+
+End Function
+
+
+Private Function FileNameOf(ByVal filePath As String) As String
+
+    FileNameOf = Mid$(filePath, InStrRev(filePath, "\") + 1)
+
+End Function
+
+
+Private Function WithSlash(ByVal folderPath As String) As String
+
+    If Len(folderPath) &gt; 0 And Right$(folderPath, 1) &lt;&gt; "\" Then folderPath = folderPath &amp; "\"
+
+    WithSlash = folderPath
+
+End Function
+
+
+Private Function FolderExists(ByVal folderPath As String) As Boolean
+
+    Dim fso As Object
+
+    If Len(folderPath) = 0 Then Exit Function
+
+    On Error Resume Next
+
+    Set fso = CreateObject("Scripting.FileSystemObject")
+
+    FolderExists = fso.FolderExists(folderPath)
+
+End Function
+
+
+Private Function FileExists(ByVal filePath As String) As Boolean
+
+    Dim fso As Object
+
+    If Len(filePath) = 0 Then Exit Function
+
+    On Error Resume Next
+
+    Set fso = CreateObject("Scripting.FileSystemObject")
+
+    FileExists = fso.FileExists(filePath)
+
+End Function
+
+
+Private Sub DeleteFile(ByVal filePath As String)
+
+    Dim fso As Object
+
+    On Error Resume Next
+
+    Set fso = CreateObject("Scripting.FileSystemObject")
+
+    If fso.FileExists(filePath) Then fso.DeleteFile filePath, True
+
+End Sub
+
+
+Private Sub OpenFile(ByVal filePath As String)
+
+    Dim sh As Object
+
+    On Error Resume Next
+
+    Set sh = CreateObject("WScript.Shell")
+
+    sh.Run """" &amp; filePath &amp; """"
+
+End Sub
+
+
+Private Function IsDocOpen(ByVal fileName As String) As Boolean
+
+    Dim d As Object
+
+    On Error Resume Next
+
+    Set d = CATIA.Documents.Item(fileName)
+
+    IsDocOpen = (Err.Number = 0) And Not (d Is Nothing)
+
+    Err.Clear
+
+End Function
+
+
+' One CSV field, always in quotes
+Private Function Csv(ByVal fieldText As String) As String
+
+    Csv = """" &amp; Replace(fieldText, """", """""") &amp; """"
+
+End Function
+
+
+' A number written with a decimal point on every PC
+Private Function Num(ByVal numberValue As Variant, Optional ByVal decimals As Long = 3) As String
+
+    Dim pattern As String
+
+    On Error Resume Next
+
+    pattern = "0"
+
+    If decimals &gt; 0 Then pattern = "0." &amp; String$(decimals, "0")
+
+    Num = Replace(Format$(CDbl(numberValue), pattern), ",", ".")
+
+End Function
+
+
+' Saves text as UTF-8 so Excel shows Korean correctly
+Private Function WriteTextFile(ByVal filePath As String, ByVal content As String) As Boolean
+
+    Dim stm As Object
+
+    On Error GoTo Failed
+
+    Set stm = CreateObject("ADODB.Stream")
+
+    stm.Type = 2
+    stm.Charset = "utf-8"
+    stm.Open
+    stm.WriteText content
+    stm.SaveToFile filePath, 2
+    stm.Close
+
+    WriteTextFile = True
+
+    Exit Function
+
+Failed:
+
+    On Error Resume Next
+    stm.Close
+
+End Function
+
+
+Private Function ReadTextFile(ByVal filePath As String) As String
+
+    Dim stm As Object
+
+    On Error GoTo Failed
+
+    Set stm = CreateObject("ADODB.Stream")
+
+    stm.Type = 2
+    stm.Charset = "utf-8"
+    stm.Open
+    stm.LoadFromFile filePath
+
+    ReadTextFile = stm.ReadText
+
+    stm.Close
+
+    Exit Function
+
+Failed:
+
+    On Error Resume Next
+    stm.Close
+
+End Function
+
+
+' Splits one CSV line into its fields
+Private Function CsvSplit(ByVal lineText As String) As Collection
+
+    Dim fields As New Collection
+    Dim i As Long
+    Dim ch As String
+    Dim cur As String
+    Dim inQuotes As Boolean
+
+    i = 1
+
+    Do While i &lt;= Len(lineText)
+
+        ch = Mid$(lineText, i, 1)
+
+        If inQuotes Then
+            If ch = """" Then
+                If Mid$(lineText, i + 1, 1) = """" Then
+                    cur = cur &amp; """"
+                    i = i + 1
+                Else
+                    inQuotes = False
+                End If
+            Else
+                cur = cur &amp; ch
+            End If
+        ElseIf ch = """" Then
+            inQuotes = True
+        ElseIf ch = "," Then
+            fields.Add cur
+            cur = ""
+        Else
+            cur = cur &amp; ch
+        End If
+
+        i = i + 1
+
+    Loop
+
+    fields.Add cur
+
+    Set CsvSplit = fields
+
+End Function
+
+
+' The name of a component, even when it is not loaded
+Private Function SafeName(ByVal prod As Object) As String
+
+    On Error Resume Next
+
+    SafeName = prod.Name
+
+End Function
+
+
+' The reference product behind an instance, or Nothing when
+' its file is missing or not loaded
+Private Function RefOf(ByVal prod As Object) As Object
+
+    On Error Resume Next
+
+    Set RefOf = prod.ReferenceProduct
+
+End Function
+
+
+' The document behind a component, or Nothing when it has none
+Private Function DocOf(ByVal prod As Object) As Object
+
+    Dim d As Object
+
+    On Error Resume Next
+
+    Set d = prod.ReferenceProduct.Parent
+
+    If d Is Nothing Then Exit Function
+
+    If Right$(TypeName(d), 8) = "Document" Then Set DocOf = d
+
+End Function
+
+
+Private Sub AddDoc(ByVal docs As Object, ByVal d As Object)
+
+    Dim key As String
+
+    key = UCase$(d.FullName)
+
+    If Not docs.Exists(key) Then docs.Add key, d
+
+End Sub
+
+
+' Fills docs (a Dictionary) with every loaded document under prod
+Private Sub CollectDocs( _
+        ByVal prod As Object, _
+        ByVal docs As Object, _
+        ByVal wantParts As Boolean, _
+        ByVal wantProducts As Boolean)
+
+    Dim kids As Object
+    Dim child As Object
+    Dim d As Object
+    Dim kind As String
+    Dim i As Long
+
+    On Error Resume Next
+    Set kids = prod.Products
+    On Error GoTo 0
+
+    If kids Is Nothing Then Exit Sub
+
+    For i = 1 To kids.Count
+
+        Set child = kids.Item(i)
+        Set d = DocOf(child)
+
+        If Not d Is Nothing Then
+
+            kind = TypeName(d)
+
+            If kind = "PartDocument" And wantParts Then AddDoc docs, d
+            If kind = "ProductDocument" And wantProducts Then AddDoc docs, d
+
+            CollectDocs child, docs, wantParts, wantProducts
+
+        End If
+
+    Next i
+
+End Sub
+
+
+' Text after the last backslash of a parameter name
+Private Function ShortName(ByVal fullName As String) As String
+
+    ShortName = Mid$(fullName, InStrRev(fullName, "\") + 1)
+
+End Function
+
+
+'=========================================================
+' SETTINGS (remembered between runs)
+'=========================================================
+
+Public Sub ShotLoadLanguage()
+
+    gShotLang = UCase$(GetSetting(REG_APP, REG_SEC, "Lang", "EN"))
+
+    If gShotLang &lt;&gt; "KO" Then gShotLang = "EN"
+
+End Sub
+
+
+Public Sub ShotSetLanguage(ByVal langCode As String)
+
+    gShotLang = langCode
+
+    SaveSetting REG_APP, REG_SEC, "Lang", gShotLang
+
+End Sub
+
+
+Public Function ShotLoadText( _
+        ByVal choiceName As String, _
+        ByVal defaultValue As String) As String
+
+    ShotLoadText = GetSetting(REG_APP, REG_SEC, choiceName, defaultValue)
+
+End Function
+
+
+Public Sub ShotSaveText( _
+        ByVal choiceName As String, _
+        ByVal choiceValue As String)
+
+    SaveSetting REG_APP, REG_SEC, choiceName, choiceValue
+
+End Sub
+
+
+'=========================================================
+' TEXT (ENGLISH AND KOREAN)
+'=========================================================
+
+Public Function ShotTxt(ByVal key As String) As String
+
+    If gShotLang = "KO" Then
+        ShotTxt = TextKO(key)
+    Else
+        ShotTxt = TextEN(key)
+    End If
+
+    If Len(ShotTxt) = 0 Then ShotTxt = TextEN(key)
+    If Len(ShotTxt) = 0 Then ShotTxt = key
+
+End Function
+
+
+Public Function ShotUiFontName() As String
+
+    If gShotLang = "KO" Then
+        ShotUiFontName = "Malgun Gothic"
+    Else
+        ShotUiFontName = "Tahoma"
+    End If
+
+End Function
+
+
+' Fills {0}, {1} and {2} in a text
+Public Function ShotFmt( _
+        ByVal template As String, _
+        Optional ByVal a As String = "", _
+        Optional ByVal b As String = "", _
+        Optional ByVal c As String = "") As String
+
+    ShotFmt = Replace(Replace(Replace(template, "{0}", a), "{1}", b), "{2}", c)
+
+End Function
+
+
+' Turns \uXXXX codes into real characters
+Private Function U(ByVal coded As String) As String
+
+    Dim i As Long
+    Dim result As String
+
+    i = 1
+
+    Do While i &lt;= Len(coded)
+
+        If Mid$(coded, i, 2) = "\u" And i + 5 &lt;= Len(coded) Then
+            result = result &amp; ChrW$(CLng("&amp;H" &amp; Mid$(coded, i + 2, 4)))
+            i = i + 6
+        Else
+            result = result &amp; Mid$(coded, i, 1)
+            i = i + 1
+        End If
+
+    Loop
+
+    U = result
+
+End Function
+
+
+Private Function TextEN(ByVal key As String) As String
+
+    Select Case key
+        Case "btnClose": TextEN = "Close"
+        Case "btnLang": TextEN = U("\ud55c\uad6d\uc5b4")
+        Case "btnBrowse": TextEN = "Browse..."
+        Case "status": TextEN = "Status: "
+        Case "stWorking": TextEN = "Working..."
+        Case "msgError": TextEN = "Error: {0}"
+        Case "stNeed": TextEN = "Open a CATProduct or CATPart first"
+        Case "stReady": TextEN = "Ready. Active document: {0}"
+        Case "title": TextEN = "CATIA Screenshot Generator"
+        Case "subtitle": TextEN = "Saves standard views of a part or of every part in an assembly as images"
+        Case "source": TextEN = "Capture:"
+        Case "srcActive": TextEN = "The active document as shown"
+        Case "srcParts": TextEN = "Each part of the active product"
+        Case "views": TextEN = "Views to capture:"
+        Case "vIso": TextEN = "Isometric"
+        Case "vFront": TextEN = "Front"
+        Case "vTop": TextEN = "Top"
+        Case "vRight": TextEN = "Right side"
+        Case "format": TextEN = "Image format:"
+        Case "fmtJpg": TextEN = "JPG (.jpg)"
+        Case "fmtBmp": TextEN = "BMP (.bmp)"
+        Case "fmtTif": TextEN = "TIFF (.tif)"
+        Case "chkWhite": TextEN = "White background"
+        Case "chkTree": TextEN = "Hide the specification tree"
+        Case "outFolder": TextEN = "Save images in:"
+        Case "btnRun": TextEN = "Capture"
+        Case "stItem": TextEN = "Capturing {0} of {1}:"
+        Case "msgNoOut": TextEN = "Choose an existing folder to save the images in."
+        Case "msgNoView": TextEN = "Tick at least one view."
+        Case "msgNothing": TextEN = "No saved parts found in the product."
+        Case "msgDone": TextEN = "Saved {0} images. Parts skipped: {1}."
+    End Select
+
+End Function
+
+
+Private Function TextKO(ByVal key As String) As String
+
+    Select Case key
+        Case "btnClose": TextKO = U("\ub2eb\uae30")
+        Case "btnLang": TextKO = "English"
+        Case "btnBrowse": TextKO = U("\ucc3e\uc544\ubcf4\uae30...")
+        Case "status": TextKO = U("\uc0c1\ud0dc: ")
+        Case "stWorking": TextKO = U("\uc791\uc5c5 \uc911...")
+        Case "msgError": TextKO = U("\uc624\ub958: {0}")
+        Case "stNeed": TextKO = U("\uba3c\uc800 CATProduct \ub610\ub294 CATPart\ub97c \uc5ec\uc138\uc694")
+        Case "stReady": TextKO = U("\uc900\ube44\ub428. \ud65c\uc131 \ubb38\uc11c: {0}")
+        Case "title": TextKO = U("CATIA \uc2a4\ud06c\ub9b0\uc0f7 \uc0dd\uc131\uae30")
+        Case "subtitle": TextKO = U("\ud30c\ud2b8 \ub610\ub294 \uc5b4\uc148\ube14\ub9ac\uc758 \ubaa8\ub4e0 \ud30c\ud2b8\ub97c \ud45c\uc900 \ubdf0 \uc774\ubbf8\uc9c0\ub85c \uc800\uc7a5\ud569\ub2c8\ub2e4")
+        Case "source": TextKO = U("\ucea1\ucc98 \ub300\uc0c1:")
+        Case "srcActive": TextKO = U("\ud604\uc7ac \ud45c\uc2dc\ub41c \ud65c\uc131 \ubb38\uc11c")
+        Case "srcParts": TextKO = U("\ud65c\uc131 Product\uc758 \uac01 \ud30c\ud2b8")
+        Case "views": TextKO = U("\ucea1\ucc98\ud560 \ubdf0:")
+        Case "vIso": TextKO = U("\ub4f1\uac01 \ubdf0")
+        Case "vFront": TextKO = U("\uc815\uba74 \ubdf0")
+        Case "vTop": TextKO = U("\ud3c9\uba74 \ubdf0")
+        Case "vRight": TextKO = U("\uc6b0\uce21\uba74 \ubdf0")
+        Case "format": TextKO = U("\uc774\ubbf8\uc9c0 \ud615\uc2dd:")
+        Case "fmtJpg": TextKO = "JPG (.jpg)"
+        Case "fmtBmp": TextKO = "BMP (.bmp)"
+        Case "fmtTif": TextKO = "TIFF (.tif)"
+        Case "chkWhite": TextKO = U("\ud770\uc0c9 \ubc30\uacbd")
+        Case "chkTree": TextKO = U("\uc0ac\uc591 \ud2b8\ub9ac \uc228\uae30\uae30")
+        Case "outFolder": TextKO = U("\uc774\ubbf8\uc9c0 \uc800\uc7a5 \ud3f4\ub354:")
+        Case "btnRun": TextKO = U("\ucea1\ucc98")
+        Case "stItem": TextKO = U("\ucea1\ucc98 \uc911 {0} / {1}:")
+        Case "msgNoOut": TextKO = U("\uc774\ubbf8\uc9c0\ub97c \uc800\uc7a5\ud560 \uae30\uc874 \ud3f4\ub354\ub97c \uc120\ud0dd\ud558\uc138\uc694.")
+        Case "msgNoView": TextKO = U("\ubdf0\ub97c \ud558\ub098 \uc774\uc0c1 \uc120\ud0dd\ud558\uc138\uc694.")
+        Case "msgNothing": TextKO = U("Product\uc5d0\uc11c \uc800\uc7a5\ub41c \ud30c\ud2b8\ub97c \ucc3e\uc744 \uc218 \uc5c6\uc2b5\ub2c8\ub2e4.")
+        Case "msgDone": TextKO = U("\uc774\ubbf8\uc9c0 {0}\uac1c\ub97c \uc800\uc7a5\ud588\uc2b5\ub2c8\ub2e4. \uac74\ub108\ub6f4 \ud30c\ud2b8: {1}.")
+    End Select
+
+End Function
+
+
+'=========================================================
+' LOGO
+' The logo picture is stored below as text.
+' The form shows it with:
+'     ShotLoadLogo Me.Controls("imgLogo")
+'=========================================================
+
+' Puts the logo into an Image control.
+' Returns False if the picture could not be loaded.
+Public Function ShotLoadLogo(ByVal target As Object) As Boolean
+
+    Dim data() As Byte
+    Dim filePath As String
+    Dim fileNo As Integer
+
+    ShotLoadLogo = False
+
+    On Error GoTo Failed
+
+    data = HexToBytes(LogoHex())
+
+    ' VBA can only load a picture from a file, so the data is
+    ' written to the Windows temp folder, loaded, then deleted.
+    filePath = Environ$("TEMP") &amp; "\catia_macro_logo.gif"
+
+    If Len(Dir$(filePath)) &gt; 0 Then Kill filePath
+
+    fileNo = FreeFile
+
+    Open filePath For Binary Access Write As #fileNo
+    Put #fileNo, , data
+    Close #fileNo
+
+    Set target.Picture = LoadPicture(filePath)
+
+    ShotLoadLogo = True
+
+    On Error Resume Next
+    Kill filePath
+
+    Exit Function
+
+Failed:
+
+    On Error Resume Next
+    Close #fileNo
+
+End Function
+
+
+' Turns pairs of hex characters back into bytes
+Private Function HexToBytes(ByVal hexText As String) As Byte()
+
+    Dim count As Long
+    Dim i As Long
+    Dim data() As Byte
+
+    count = Len(hexText) \ 2
+
+    ReDim data(0 To count - 1)
+
+    For i = 0 To count - 1
+        data(i) = CByte("&amp;H" &amp; Mid$(hexText, i * 2 + 1, 2))
+    Next i
+
+    HexToBytes = data
+
+End Function
+
+
+' The logo picture (a GIF image, 195 x 15 pixels) written as hex text
+Private Function LogoHex() As String
+
+    Dim s As String
+
+    s = s &amp; "474946383761C3000F00840000F0F0F0D7DCE0C4CCD4B5C0CBA7B4C29AA9BA8D9FB27F92A97288A06B829D657D9957719048"
+    s = s &amp; "65863B5A7F2C4E751E426C0F3562002A5A000000000000000000000000000000000000000000000000000000000000000000"
+    s = s &amp; "0000000000000000002C00000000C3000F000008FF0001081C48B0A0C18308132A5CC8B0A1C38710234A9C48B1A2C58B1833"
+    s = s &amp; "6ADCE810418401041F34187820820082061E4480B02000008F11562A20A9320283930463C674504020019D3113402058E001"
+    s = s &amp; "00A011101C2550F040CD9B021BE87CD013A6CE973A59BA1CF8332604A50D940A44309260499C4B010C7010B32580B0041B30"
+    s = s &amp; "15C8C0E840010C623E38E0330241044AADC6FC1BA12C8092861D34E02BD029D3000B1CBC2C1BE08181970FE62280B0556084"
+    s = s &amp; "B90620F4FC5950F4C005333F17543D1041E6B19CDF8A2DC0996C41DB00F04AE6EA37B7E801B10340983B5031E3B47B010460"
+    s = s &amp; "B04076DCB9C21D80540E4181CBB54A49B70E6CF87683063D2B2BFF282BE08180DD00868724801BC002A5EA07C21DC81A404A"
+    s = s &amp; "00DA4FCF140801647DCFC4A517205CF32DD5DE58DD59C69B7C4ABDF752730495771E7D4C992490009715F816680B18B0DF01"
+    s = s &amp; "DD11C0597E2F71871059033C0019606521C09774F8F5E6DD85999138594E017E64635102F198168E0BFE35D27C3F0970E08D"
+    s = s &amp; "AD311024702709F01104688DF5E274AA2DB0175A1ACA15D500C245251685240286A441B62D602592E6D937938D6301C5978D"
+    s = s &amp; "0474F7DF675D5D05C00320A1E61950151207E790535505D44807B657A74D5B29509D41697A08A04006E4D500485221C55479"
+    s = s &amp; "022DD093861B8619D8A0425257D548030065149B480217808D200249DF006C2AFF3013948FBA1A6353437E89E08C49060919"
+    s = s &amp; "6511742650A953D52A50008A3A271F5325E9D41CA7C3793A26AFAD8DA4C071930AB85E7B0E5C169F97B6DEC7668A05A0F7DF"
+    s = s &amp; "8FFC0D0896AED34EAB605F411E65D0B5F2F947C000722A1B155330F27758889C95DA1903261E74A46D6936D6DC010E3C16D9"
+    s = s &amp; "9808348740BF07C446618FA6A1FA8003C79DFBDFC4D355EC12A70793F770BC0AD8256F41091FD6DC67C25D76D850591280E9"
+    s = s &amp; "400C18209C58E789E5805B45B65BAD773E0E3B947D2A6935A68F4EC504554E3AF1D4179F022960E19E3A2965E9614FE14432"
+    s = s &amp; "525879E5166F3A3130DDCA0315ADD650AAE1EB34A5BACAA500848D2989975EC72DB7534F61DB24C9D1DF80072EF845043810"
+    s = s &amp; "E5E08827AEF8E21D412023E390472EF9E494576EF9E51B0504003B"
+
+    LogoHex = s
+
+End Function</code></pre>
+  </section>
+
+  <section>
+    <h2>English and Korean text</h2>
+    <p>All wording lives in <code>TextEN</code> and <code>TextKO</code> in the module. Korean is stored as <code>\uXXXX</code> codes so it pastes safely into the VBA editor on any PC. Please have a Korean-speaking CATIA user check the terms.</p>
+    <div class="wrapx"><table>
+      <tr><th>Key</th><th>English</th><th>Korean</th></tr>
+      <tr><td><code>btnClose</code></td><td>Close</td><td lang="ko">닫기</td></tr><tr><td><code>btnLang</code></td><td>한국어 (button label)</td><td lang="ko">English (button label)</td></tr><tr><td><code>btnBrowse</code></td><td>Browse...</td><td lang="ko">찾아보기...</td></tr><tr><td><code>status</code></td><td>Status: </td><td lang="ko">상태: </td></tr><tr><td><code>stWorking</code></td><td>Working...</td><td lang="ko">작업 중...</td></tr><tr><td><code>msgError</code></td><td>Error: {0}</td><td lang="ko">오류: {0}</td></tr><tr><td><code>stNeed</code></td><td>Open a CATProduct or CATPart first</td><td lang="ko">먼저 CATProduct 또는 CATPart를 여세요</td></tr><tr><td><code>stReady</code></td><td>Ready. Active document: {0}</td><td lang="ko">준비됨. 활성 문서: {0}</td></tr><tr><td><code>title</code></td><td>CATIA Screenshot Generator</td><td lang="ko">CATIA 스크린샷 생성기</td></tr><tr><td><code>subtitle</code></td><td>Saves standard views of a part or of every part in an assembly as images</td><td lang="ko">파트 또는 어셈블리의 모든 파트를 표준 뷰 이미지로 저장합니다</td></tr><tr><td><code>source</code></td><td>Capture:</td><td lang="ko">캡처 대상:</td></tr><tr><td><code>srcActive</code></td><td>The active document as shown</td><td lang="ko">현재 표시된 활성 문서</td></tr><tr><td><code>srcParts</code></td><td>Each part of the active product</td><td lang="ko">활성 Product의 각 파트</td></tr><tr><td><code>views</code></td><td>Views to capture:</td><td lang="ko">캡처할 뷰:</td></tr><tr><td><code>vIso</code></td><td>Isometric</td><td lang="ko">등각 뷰</td></tr><tr><td><code>vFront</code></td><td>Front</td><td lang="ko">정면 뷰</td></tr><tr><td><code>vTop</code></td><td>Top</td><td lang="ko">평면 뷰</td></tr><tr><td><code>vRight</code></td><td>Right side</td><td lang="ko">우측면 뷰</td></tr><tr><td><code>format</code></td><td>Image format:</td><td lang="ko">이미지 형식:</td></tr><tr><td><code>fmtJpg</code></td><td>JPG (.jpg)</td><td lang="ko">JPG (.jpg)</td></tr><tr><td><code>fmtBmp</code></td><td>BMP (.bmp)</td><td lang="ko">BMP (.bmp)</td></tr><tr><td><code>fmtTif</code></td><td>TIFF (.tif)</td><td lang="ko">TIFF (.tif)</td></tr><tr><td><code>chkWhite</code></td><td>White background</td><td lang="ko">흰색 배경</td></tr><tr><td><code>chkTree</code></td><td>Hide the specification tree</td><td lang="ko">사양 트리 숨기기</td></tr><tr><td><code>outFolder</code></td><td>Save images in:</td><td lang="ko">이미지 저장 폴더:</td></tr><tr><td><code>btnRun</code></td><td>Capture</td><td lang="ko">캡처</td></tr><tr><td><code>stItem</code></td><td>Capturing {0} of {1}:</td><td lang="ko">캡처 중 {0} / {1}:</td></tr><tr><td><code>msgNoOut</code></td><td>Choose an existing folder to save the images in.</td><td lang="ko">이미지를 저장할 기존 폴더를 선택하세요.</td></tr><tr><td><code>msgNoView</code></td><td>Tick at least one view.</td><td lang="ko">뷰를 하나 이상 선택하세요.</td></tr><tr><td><code>msgNothing</code></td><td>No saved parts found in the product.</td><td lang="ko">Product에서 저장된 파트를 찾을 수 없습니다.</td></tr><tr><td><code>msgDone</code></td><td>Saved {0} images. Parts skipped: {1}.</td><td lang="ko">이미지 {0}개를 저장했습니다. 건너뛴 파트: {1}.</td></tr>
+    </table></div>
+    <p class="note"><code>{0}</code>, <code>{1}</code> and <code>{2}</code> are filled in with numbers, names and error details. The window title bar stays in English in both languages.</p>
+  </section>
+
+  <section>
+    <h2>Known limitations</h2>
+    <ul>
+      <li>I said PNG when I suggested this macro. CATIA's own capture command does not offer PNG in R21, so the choices are JPG, BMP and TIFF.</li>
+      <li>The image size is the size of the CATIA window. Maximize CATIA for larger images.</li>
+      <li>The view directions follow the part axes: front looks along X, top looks down Z, right looks along Y. If your parts are modeled in another orientation, change the six numbers in the four <code>Shoot</code> lines of <code>ShootDoc</code>.</li>
+      <li>The compass and the small axis symbol in the corner are not hidden. Turn them off in the View menu before running if you do not want them in the images.</li>
+      <li>Parts that were never saved are skipped in the each-part mode, because they cannot be opened in their own window.</li>
+      <li>A white background works best with the graduated background option turned off in Tools, Options, General, Display, Visualization.</li>
+      <li>The window is modal, so CATIA cannot be clicked while it is open. Anything that must be selected in CATIA has to be selected before running the macro.</li>
+      <li>If the credit image cannot be loaded, for example when the Windows temp folder is not writable, the window opens without it.</li>
+    </ul>
+  </section>
+</main>
+<footer>Prepared for CATIA V5 R21 and later, VBA. Captures standard views as images.</footer>
+</div>
+<script>
+document.querySelectorAll('.copy').forEach(function (btn) {
+  btn.addEventListener('click', function () {
+    var text = document.getElementById(btn.dataset.target).textContent;
+    function done(ok) {
+      btn.textContent = ok ? 'Copied' : 'Select and copy manually';
+      setTimeout(function () { btn.textContent = 'Copy code'; }, 1800);
+    }
+    function fallback() {
+      var ta = document.createElement('textarea');
+      ta.value = text; document.body.appendChild(ta); ta.select();
+      var ok = false;
+      try { ok = document.execCommand('copy'); } catch (e) {}
+      document.body.removeChild(ta); done(ok);
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () { done(true); }, fallback);
+    } else { fallback(); }
+  });
+});
+</script>
+</body>
+</html>

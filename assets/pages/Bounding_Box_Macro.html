@@ -1,0 +1,1691 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>CATIA Bounding Box Calculator - VBA Package</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono&display=swap">
+<style>
+:root {
+  --bg:#eef1f5; --panel:#ffffff; --ink:#16202c; --muted:#566475; --line:#d3dae3;
+  --accent:#2c5aa0; --accent2:#1f437a; --code-bg:#f6f8fb; --note:#fff6dc; --note-line:#d9a400;
+  box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --bg:#141a22; --panel:#1c242f; --ink:#e6ebf2; --muted:#9aa8b9; --line:#324052; --accent:#6f9fe6; --accent2:#8fb5ee; --code-bg:#151c25; --note:#3a3216; --note-line:#d9a400; }
+}
+:root[data-theme="dark"] { --bg:#141a22; --panel:#1c242f; --ink:#e6ebf2; --muted:#9aa8b9; --line:#324052; --accent:#6f9fe6; --accent2:#8fb5ee; --code-bg:#151c25; --note:#3a3216; --note-line:#d9a400; }
+*, *::before, *::after { box-sizing:inherit; }
+html { scroll-padding-top:env(safe-area-inset-top,0px); }
+body { margin:0; background:var(--bg); color:var(--ink); font-family:"IBM Plex Sans","Segoe UI","Malgun Gothic",Arial,sans-serif; font-size:16px; line-height:1.6; }
+.wrap { max-width:920px; margin:0 auto; padding:0 20px; }
+header { padding:40px 0 8px; }
+h1 { font-size:2rem; line-height:1.2; margin:0 0 6px; font-weight:600; letter-spacing:-0.01em; }
+.subtitle { margin:0; color:var(--muted); max-width:62ch; }
+.palettes { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:14px 22px; margin:26px 0 8px; }
+.strip { display:flex; height:34px; border:1px solid var(--line); }
+.strip span { flex:1; }
+.pal p { margin:4px 0 0; font-size:.85rem; color:var(--muted); }
+section { background:var(--panel); border:1px solid var(--line); border-radius:6px; padding:22px 24px; margin:18px 0; }
+h2 { font-size:1.15rem; margin:0 0 10px; font-weight:600; }
+p { margin:0 0 10px; max-width:72ch; }
+ul, ol { margin:0; padding-left:22px; max-width:72ch; }
+li { margin-bottom:6px; }
+code, pre { font-family:"IBM Plex Mono",Consolas,monospace; }
+code { font-size:.9em; }
+.code-head { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:10px; margin-bottom:10px; }
+.code-head h2 { margin:0; }
+.right { display:flex; align-items:center; gap:10px; }
+.filetag { font-size:.8rem; color:var(--muted); border:1px solid var(--line); border-radius:4px; padding:3px 8px; }
+.copy { background:var(--accent); color:#fff; border:0; border-radius:4px; padding:8px 16px; font:inherit; font-size:.9rem; font-weight:500; cursor:pointer; }
+.copy:hover { background:var(--accent2); }
+.copy:focus-visible { outline:3px solid var(--note-line); outline-offset:2px; }
+:root[data-theme="dark"] .copy { color:#10161e; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .copy { color:#10161e; } }
+pre { margin:0; background:var(--code-bg); border:1px solid var(--line); border-radius:4px; padding:14px; max-height:520px; overflow:auto; font-size:.8rem; line-height:1.5; }
+.logo { display:block; max-width:100%; height:auto; margin:10px 0 0; border:1px solid var(--line); }
+.note { background:var(--note); border-left:4px solid var(--note-line); padding:10px 14px; margin:12px 0 0; }
+.wrapx { overflow-x:auto; }
+table { border-collapse:collapse; width:100%; font-size:.88rem; }
+th, td { text-align:left; padding:6px 10px; border-bottom:1px solid var(--line); vertical-align:top; }
+th { color:var(--muted); font-weight:500; }
+footer { color:var(--muted); font-size:.85rem; padding:8px 0 40px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>CATIA Bounding Box Calculator</h1>
+  <p class="subtitle">Measures the overall size of the active part, or of every part in an assembly, and writes length, width and height into each part as parameters and as a "Stock Size" property that can be added to the bill of material. Two code blocks to paste: the form and the module.</p>
+</header>
+<main>
+  <section>
+    <h2>What it does</h2>
+    <ul>
+      <li><strong>One part or the whole assembly.</strong> Each part is measured once.</li>
+      <li><strong>Largest size first.</strong> The three sizes are sorted, so Length is always the longest. An optional allowance in mm is added to each one.</li>
+      <li><strong>Written into the part.</strong> Parameters <code>BBx_Length</code>, <code>BBx_Width</code> and <code>BBx_Height</code>, and a property called <code>Stock Size</code> such as <code>120.0 x 80.0 x 25.0</code>. Running again updates them instead of adding copies.</li>
+      <li><strong>CSV list</strong> with the raw sizes along X, Y and Z and the sorted stock size, saved as <code>DocumentName_StockSize.csv</code>.</li>
+      <li><strong>Leaves the part clean.</strong> The six temporary points used for the measurement are deleted afterwards.</li>
+      <li><strong>English / Korean button</strong> in the top right corner. The language is remembered for next time.</li>
+      <li><strong>Credit image centered at the bottom</strong>, stored inside the module as text, the same as your other macros. <img class="logo" src="data:image/gif;base64,R0lGODdhwwAPAIQAAPDw8Nfc4MTM1LXAy6e0wpqpuo2fsn+SqXKIoGuCnWV9mVdxkEhlhjtafyxOdR5CbA81YgAqWgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACwAAAAAwwAPAAAI/wABCBxIsKDBgwgTKlzIsKHDhxAjSpxIsaLFixgzatzoEEGEAQQfNBh4IIIAggYeRICwIAAAjxFWKiCpMgKDkwRjxnRQQCABnTETQCBY4AEAoBEQHCVQ8EDNmwIb6HzQE6bOlzpZuhz4MyYEpQ2UCkQwkmBJnEsBDHAQsyWAsAQbMBXIwOhAAQxiPjjgMwJBBEqtxvwboSyAkoYdNOAr0CnTAAscvCwb4IGBlw/mIoCwVWCEuQYg9PxZUPTABTM/F1Q9EEHmsZzfii3AmWxB2wDwSubqN7foAbEDQJg7UDHjtHsBBGCwQHbcucIdgFQOQYHLtUpJtw5s+HaDBj0rK/8oK+CBgN0AhockgBvAAqXqB8IdyBpASgDaT88UCAFkfc/EpRcgXPMt1d5Y3VnGm3xKvfdScwSVdx59TJkkkACXFfgWaAsYsN8B3RHAWX4vcYcQWQM8ABlgZSHAl3T49ebdhZmROFlOAX5kY1EC8ZgWjgv+NdJ8Pwlw4I2tMRAkcCcJ8BEEaI314nSqLbAXWhrKFdUAwkUlFoUkAoakQbYtYCWS5tk3k41jAcWXjQR0999nXV0FwAMgoeYZUBUSB+eQU1UF1EgHtlenTVspUJ1BaXoIoEAG5NUASFIhxVR5Ai3Qk4YbhhnYoEJSV9VIAwBlFJtIAheAjSACSd8AbCr/MBOUj7oaY1NDfongjEkGCRllEXQmUKlT1SpQAIo6Jx9TJenUHKfDeTomr62NpMBxkwq4XnsOXBafl7bex2aKBaD334/8DQiWrtNOq2BfQR5l0LXy+UfAAHIqGxVTMPJ3WIicldoZAyYedKRtaTbW3AEOPBbZmAg0h0C/B8RGYY+mofqAA8ed+9/E01XsEqcHk/dwvArYJW9BCR/W3GfCXXbYUFkSgOlADBggnFjnieWAW0W2W613Pg47lH0qaTWmj07FBFVOOvHUF58CKWDhnjopZelhT+FEMlJYeeUWbzoxMN3KAxWt1lCq4es0pbrKpQCEjSmJl17HLbdTT2HbJMnR34AHLvhFBDgQ5eCIJ6744h1BICPjkEcu+eSUV2755RsFBAA7" alt="Credit image with the line: macro developed by AISHAQUE" width="195" height="15"></li>
+      <li><strong>Works beside your other macros.</strong> Every shared name starts with <code>BBx</code>, so it does not clash with the other macros in the same VBA project.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Setup</h2>
+    <ol>
+      <li>In the VBA editor, use Insert, UserForm. In the Properties window set its <code>(Name)</code> to <code>frmBoundingBox</code>. Leave the form empty in the designer.</li>
+      <li>Open the form's code (right-click the form, View Code), select all, delete, and paste the Form code below.</li>
+      <li>Use Insert, Module. In the Properties window set its <code>(Name)</code> to <code>BoundingBox</code>, then paste the Module code below.</li>
+      <li>Use Debug, Compile VBAProject.</li>
+      <li>Open a CATPart or CATProduct, then run <code>CATMain</code> from the <code>BoundingBox</code> module.</li>
+    </ol>
+    <p class="note"><strong>First run:</strong> this code was written and checked for structure, but not run inside CATIA. Try it on a simple block of known size first, and check the three numbers and that no "BBx_Temp" set is left in the tree.</p>
+  </section>
+
+  <section>
+    <div class="code-head"><h2>Form code</h2><div class="right"><span class="filetag">frmBoundingBox</span><button class="copy" data-target="form">Copy code</button></div></div>
+    <pre><code id="form">Option Explicit
+
+'=========================================================
+' CATIA BOUNDING BOX CALCULATOR - FORM
+' Form name: frmBoundingBox
+' The form is empty in the designer. Every control is
+' created here in code.
+'=========================================================
+
+Private WithEvents mLangButton As MSForms.CommandButton
+Private WithEvents mCloseButton As MSForms.CommandButton
+Private WithEvents mBrowse1 As MSForms.CommandButton
+Private WithEvents mAct1 As MSForms.CommandButton
+
+Private mBusy As Boolean
+
+
+'=========================================================
+' FORM INITIALIZATION
+'=========================================================
+
+Private Sub UserForm_Initialize()
+
+    BBxLoadLanguage
+
+    Me.Caption = "CATIA Bounding Box Calculator"
+    Me.Width = 460
+    Me.Height = 351
+
+    BuildControls
+    ApplyLanguage
+    LoadInputs
+    ShowDocStatus
+
+End Sub
+
+
+Private Function AddCtl( _
+        ByVal progId As String, _
+        ByVal ctlName As String, _
+        ByVal x As Single, _
+        ByVal y As Single, _
+        ByVal w As Single, _
+        ByVal h As Single) As Object
+
+    Dim c As Object
+
+    Set c = Me.Controls.Add(progId, ctlName, True)
+
+    c.Left = x
+    c.Top = y
+    c.Width = w
+    c.Height = h
+
+    Set AddCtl = c
+
+End Function
+
+
+Private Sub BuildControls()
+
+    Dim c As Object
+
+    ' Title and language button
+    Set c = AddCtl("Forms.Label.1", "lblTitle", 20, 12, 320, 24)
+    c.Font.Size = 14
+    c.Font.Bold = True
+
+    Set mLangButton = AddCtl("Forms.CommandButton.1", "cmdLang", 350, 12, 80, 24)
+
+    Set c = AddCtl("Forms.Label.1", "lblSubtitle", 20, 40, 410, 28)
+    c.WordWrap = True
+
+    Set c = AddCtl("Forms.Label.1", "lbl_cboScope", 20, 77, 150, 16)
+    Set c = AddCtl("Forms.ComboBox.1", "cboScope", 175, 74, 255, 20)
+    c.Style = 2
+
+    Set c = AddCtl("Forms.Label.1", "lbl_txtAllow", 20, 105, 320, 16)
+    Set c = AddCtl("Forms.TextBox.1", "txtAllow", 350, 102, 80, 20)
+    c.TextAlign = 3
+
+    Set c = AddCtl("Forms.CheckBox.1", "chkParam", 20, 130, 410, 18)
+
+    Set c = AddCtl("Forms.CheckBox.1", "chkProp", 20, 151, 410, 18)
+
+    Set c = AddCtl("Forms.CheckBox.1", "chkCsv", 20, 172, 410, 18)
+
+    Set c = AddCtl("Forms.Label.1", "lbl_txtOut", 20, 193, 410, 16)
+    Set c = AddCtl("Forms.TextBox.1", "txtOut", 20, 210, 330, 20)
+    Set mBrowse1 = AddCtl("Forms.CommandButton.1", "cmdBrowse1", 356, 209, 74, 22)
+
+    ' Status
+    Set c = AddCtl("Forms.Label.1", "lblStatus", 20, 239, 410, 34)
+    c.WordWrap = True
+    c.Font.Bold = True
+
+    ' Buttons
+    Set mAct1 = AddCtl("Forms.CommandButton.1", "cmdAct1", 20, 279, 201, 30)
+    Set mCloseButton = AddCtl("Forms.CommandButton.1", "cmdClose", 229, 279, 201, 30)
+
+    ' Logo, centered at the bottom. The picture data is at the bottom of the module.
+    Set c = AddCtl("Forms.Image.1", "imgLogo", 20, 317, 10, 10)
+    c.BorderStyle = 0
+    c.BackStyle = 0
+    c.AutoSize = True
+
+    If BBxLoadLogo(c) Then
+        c.Left = 225 - c.Width / 2
+        Me.Height = 351 + c.Height + 8
+    Else
+        c.Visible = False
+    End If
+
+End Sub
+
+
+'=========================================================
+' LANGUAGE
+'=========================================================
+
+Private Sub ApplyLanguage()
+
+    Dim c As Object
+
+    Me.Controls("lblTitle").Caption = BBxTxt("title")
+    Me.Controls("lblSubtitle").Caption = BBxTxt("subtitle")
+
+    Me.Controls("lbl_cboScope").Caption = BBxTxt("scope")
+    FillCombo "cboScope", Array("scopeActive", "scopeAll")
+    Me.Controls("lbl_txtAllow").Caption = BBxTxt("allow")
+    Me.Controls("chkParam").Caption = BBxTxt("chkParam")
+    Me.Controls("chkProp").Caption = BBxTxt("chkProp")
+    Me.Controls("chkCsv").Caption = BBxTxt("chkCsv")
+    Me.Controls("lbl_txtOut").Caption = BBxTxt("outFolder")
+    mBrowse1.Caption = BBxTxt("btnBrowse")
+    mAct1.Caption = BBxTxt("btnRun")
+    mCloseButton.Caption = BBxTxt("btnClose")
+    mLangButton.Caption = BBxTxt("btnLang")
+
+    ' A font that can show the selected language
+    On Error Resume Next
+
+    For Each c In Me.Controls
+        c.Font.Name = BBxUiFontName()
+    Next c
+
+    On Error GoTo 0
+
+End Sub
+
+
+Private Sub FillCombo(ByVal ctlName As String, ByVal keys As Variant)
+
+    Dim c As Object
+    Dim keep As Long
+    Dim i As Long
+
+    Set c = Me.Controls(ctlName)
+
+    keep = c.ListIndex
+
+    c.Clear
+
+    For i = LBound(keys) To UBound(keys)
+        c.AddItem BBxTxt(CStr(keys(i)))
+    Next i
+
+    If keep &lt; 0 Or keep &gt; c.ListCount - 1 Then keep = 0
+
+    c.ListIndex = keep
+
+End Sub
+
+
+Private Sub SetComboIndex(ByVal ctlName As String, ByVal index As Long)
+
+    Dim c As Object
+
+    Set c = Me.Controls(ctlName)
+
+    If index &lt; 0 Or index &gt; c.ListCount - 1 Then index = 0
+
+    c.ListIndex = index
+
+End Sub
+
+
+Private Sub mLangButton_Click()
+
+    If gBBxLang = "KO" Then
+        BBxSetLanguage "EN"
+    Else
+        BBxSetLanguage "KO"
+    End If
+
+    ApplyLanguage
+    ShowDocStatus
+
+End Sub
+
+
+'=========================================================
+' REMEMBERED INPUTS
+'=========================================================
+
+Private Sub LoadInputs()
+
+    On Error Resume Next
+
+    SetComboIndex "cboScope", CLng(Val(BBxLoadText("cboScope", "0")))
+    Me.Controls("txtAllow").Text = BBxLoadText("txtAllow", "0")
+    Me.Controls("chkParam").Value = (BBxLoadText("chkParam", "1") = "1")
+    Me.Controls("chkProp").Value = (BBxLoadText("chkProp", "1") = "1")
+    Me.Controls("chkCsv").Value = (BBxLoadText("chkCsv", "1") = "1")
+    Me.Controls("txtOut").Text = BBxLoadText("txtOut", "")
+
+End Sub
+
+
+Private Sub SaveInputs()
+
+    On Error Resume Next
+
+    BBxSaveText "cboScope", CStr(Me.Controls("cboScope").ListIndex)
+    BBxSaveText "txtAllow", Me.Controls("txtAllow").Text
+    BBxSaveText "chkParam", IIf(Me.Controls("chkParam").Value = True, "1", "0")
+    BBxSaveText "chkProp", IIf(Me.Controls("chkProp").Value = True, "1", "0")
+    BBxSaveText "chkCsv", IIf(Me.Controls("chkCsv").Value = True, "1", "0")
+    BBxSaveText "txtOut", Me.Controls("txtOut").Text
+
+End Sub
+
+
+'=========================================================
+' ACTIVE DOCUMENT AND STATUS
+'=========================================================
+
+Private Function DocReady() As Boolean
+
+    Dim kind As String
+
+    kind = BBxDocKind()
+
+    DocReady = (Len(kind) &gt; 0 And InStr("|Product|Part|", "|" &amp; kind &amp; "|") &gt; 0)
+
+End Function
+
+
+Private Sub ShowDocStatus()
+
+    If DocReady() Then
+        ShowStatus BBxFmt(BBxTxt("stReady"), BBxDocName())
+    Else
+        ShowStatus BBxTxt("stNeed")
+    End If
+
+End Sub
+
+
+Private Sub ShowStatus(ByVal message As String)
+
+    Me.Controls("lblStatus").Caption = BBxTxt("status") &amp; message
+
+End Sub
+
+
+' Called by the module while it works
+Public Sub Progress(ByVal message As String)
+
+    ShowStatus message
+
+    Me.Repaint
+
+    DoEvents
+
+End Sub
+
+
+Private Sub SetBusy(ByVal busy As Boolean)
+
+    Dim c As Object
+
+    mBusy = busy
+
+    For Each c In Me.Controls
+        If TypeName(c) = "CommandButton" Then c.Enabled = Not busy
+    Next c
+
+    Me.Repaint
+
+    DoEvents
+
+End Sub
+
+
+'=========================================================
+' BUTTONS
+'=========================================================
+
+Private Sub DoAction(ByVal actionId As Long)
+
+    Dim message As String
+    Dim ok As Boolean
+
+    If mBusy Then Exit Sub
+
+    If Not DocReady() Then
+        ShowDocStatus
+        Exit Sub
+    End If
+
+    SaveInputs
+
+    SetBusy True
+
+    ShowStatus BBxTxt("stWorking")
+
+    On Error GoTo Failed
+
+    ok = BBxRun(Me, actionId, message)
+
+    On Error Resume Next
+
+    CATIA.RefreshDisplay = True
+    CATIA.DisplayFileAlerts = True
+
+    SetBusy False
+
+    ShowStatus message
+
+    Exit Sub
+
+Failed:
+
+    message = Err.Description
+
+    On Error Resume Next
+
+    CATIA.RefreshDisplay = True
+    CATIA.DisplayFileAlerts = True
+
+    SetBusy False
+
+    ShowStatus BBxFmt(BBxTxt("msgError"), message)
+
+End Sub
+
+
+Private Sub mAct1_Click()
+
+    DoAction 1
+
+End Sub
+
+
+Private Sub mBrowse1_Click()
+
+    Dim picked As String
+
+    picked = BBxBrowseFolder(BBxTxt("outFolder"))
+
+    If Len(picked) &gt; 0 Then Me.Controls("txtOut").Text = picked
+
+End Sub
+
+
+
+'=========================================================
+' CLOSE
+'=========================================================
+
+Private Sub mCloseButton_Click()
+
+    Unload Me
+
+End Sub
+
+
+' The window cannot be closed while the macro is working
+Private Sub UserForm_QueryClose(Cancel As Integer, CloseMode As Integer)
+
+    If mBusy Then Cancel = True
+
+End Sub</code></pre>
+  </section>
+
+  <section>
+    <div class="code-head"><h2>Module code</h2><div class="right"><span class="filetag">BoundingBox</span><button class="copy" data-target="module">Copy code</button></div></div>
+    <p>The long block of letters and numbers at the bottom is the credit image. Do not edit it.</p>
+    <pre><code id="module">Option Explicit
+
+'=========================================================
+' CATIA BOUNDING BOX CALCULATOR - MAIN MODULE
+' Module name: BoundingBox
+' Run CATMain to open the window.
+'=========================================================
+
+Private Const REG_APP As String = "CatiaBoundingBox"
+Private Const REG_SEC As String = "Settings"
+
+' "EN" or "KO"
+Public gBBxLang As String
+
+' Names written into each part
+Private Const PARAM_L As String = "BBx_Length"
+Private Const PARAM_W As String = "BBx_Width"
+Private Const PARAM_H As String = "BBx_Height"
+Private Const PROP_STOCK As String = "Stock Size"
+Private Const TEMP_SET As String = "BBx_Temp"
+
+
+'=========================================================
+' ENTRY POINT
+'=========================================================
+
+Sub CATMain()
+
+    BBxLoadLanguage
+    frmBoundingBox.Show
+
+End Sub
+
+'=========================================================
+' MEASURE
+'=========================================================
+
+Public Function BBxRun( _
+        ByVal frm As Object, _
+        ByVal actionId As Long, _
+        ByRef message As String) As Boolean
+
+    Dim docs As Object
+    Dim keys As Variant
+    Dim d As Object
+    Dim outFolder As String
+    Dim target As String
+    Dim content As String
+    Dim allowText As String
+    Dim stock As String
+    Dim errText As String
+    Dim partNo As String
+    Dim allowance As Double
+    Dim sx As Double
+    Dim sy As Double
+    Dim sz As Double
+    Dim boxL As Double
+    Dim boxW As Double
+    Dim boxH As Double
+    Dim i As Long
+    Dim done As Long
+    Dim failed As Long
+    Dim wantCsv As Boolean
+
+    BBxRun = False
+
+    wantCsv = CtlOn(frm, "chkCsv")
+    outFolder = WithSlash(CtlText(frm, "txtOut"))
+
+    If wantCsv And Not FolderExists(outFolder) Then
+        message = BBxTxt("msgNoOut")
+        Exit Function
+    End If
+
+    allowText = Replace(CtlText(frm, "txtAllow"), ",", ".")
+
+    If Len(allowText) = 0 Then allowText = "0"
+
+    If Not IsNumeric(allowText) Then
+        message = BBxTxt("msgBadAllow")
+        Exit Function
+    End If
+
+    allowance = Val(allowText)
+
+    If allowance &lt; 0 Then
+        message = BBxTxt("msgBadAllow")
+        Exit Function
+    End If
+
+    Set d = CATIA.ActiveDocument
+    Set docs = CreateObject("Scripting.Dictionary")
+
+    If TypeName(d) = "PartDocument" Then
+
+        AddDoc docs, d
+
+    ElseIf CtlIndex(frm, "cboScope") = 1 Then
+
+        On Error Resume Next
+        d.Product.ApplyWorkMode 2
+        On Error GoTo 0
+
+        CollectDocs d.Product, docs, True, False
+
+    Else
+
+        message = BBxTxt("msgNeedPart")
+        Exit Function
+
+    End If
+
+    If docs.Count = 0 Then
+        message = BBxTxt("msgNothing")
+        Exit Function
+    End If
+
+    content = Csv(BBxTxt("hPN")) &amp; "," &amp; Csv(BBxTxt("hFile")) &amp; "," &amp; Csv(BBxTxt("hX")) &amp; "," &amp; _
+              Csv(BBxTxt("hY")) &amp; "," &amp; Csv(BBxTxt("hZ")) &amp; "," &amp; Csv(BBxTxt("hL")) &amp; "," &amp; _
+              Csv(BBxTxt("hW")) &amp; "," &amp; Csv(BBxTxt("hH")) &amp; "," &amp; Csv(BBxTxt("hStock")) &amp; "," &amp; _
+              Csv(BBxTxt("hNote")) &amp; vbCrLf
+
+    keys = docs.Keys
+
+    For i = 0 To docs.Count - 1
+
+        Set d = docs.Item(keys(i))
+
+        partNo = ""
+
+        On Error Resume Next
+        partNo = d.Product.PartNumber
+        On Error GoTo 0
+
+        Say frm, BBxFmt(BBxTxt("stItem"), CStr(i + 1), CStr(docs.Count)) &amp; " " &amp; partNo
+
+        errText = ""
+
+        If MeasureBox(d, sx, sy, sz, errText) Then
+
+            ' Largest size first, then the allowance on every side
+            SortThree sx, sy, sz, boxL, boxW, boxH
+
+            boxL = boxL + allowance
+            boxW = boxW + allowance
+            boxH = boxH + allowance
+
+            stock = Num(boxL, 1) &amp; " x " &amp; Num(boxW, 1) &amp; " x " &amp; Num(boxH, 1)
+
+            If CtlOn(frm, "chkParam") Then
+                SetLength d, PARAM_L, boxL
+                SetLength d, PARAM_W, boxW
+                SetLength d, PARAM_H, boxH
+            End If
+
+            If CtlOn(frm, "chkProp") Then SetStockProperty d, stock
+
+            content = content &amp; Csv(partNo) &amp; "," &amp; Csv(d.Name) &amp; "," &amp; Num(sx, 3) &amp; "," &amp; Num(sy, 3) &amp; "," &amp; _
+                      Num(sz, 3) &amp; "," &amp; Num(boxL, 3) &amp; "," &amp; Num(boxW, 3) &amp; "," &amp; Num(boxH, 3) &amp; "," &amp; _
+                      Csv(stock) &amp; "," &amp; vbCrLf
+
+            done = done + 1
+
+        Else
+
+            content = content &amp; Csv(partNo) &amp; "," &amp; Csv(d.Name) &amp; ",,,,,,,," &amp; Csv(errText) &amp; vbCrLf
+
+            failed = failed + 1
+
+        End If
+
+    Next i
+
+    If wantCsv Then
+
+        target = outFolder &amp; CleanName(StripExt(BBxDocName())) &amp; "_StockSize.csv"
+
+        If Not WriteTextFile(target, content) Then
+            message = BBxTxt("msgWriteFail")
+            Exit Function
+        End If
+
+        OpenFile target
+
+    End If
+
+    If docs.Count = 1 And done = 1 Then
+        message = BBxFmt(BBxTxt("msgOne"), partNo, stock)
+    Else
+        message = BBxFmt(BBxTxt("msgDone"), CStr(done), CStr(failed))
+    End If
+
+    BBxRun = True
+
+End Function
+
+
+' Puts three sizes in order, largest first
+Private Sub SortThree( _
+        ByVal a As Double, _
+        ByVal b As Double, _
+        ByVal c As Double, _
+        ByRef big As Double, _
+        ByRef middle As Double, _
+        ByRef small As Double)
+
+    Dim t As Double
+
+    If a &lt; b Then
+        t = a
+        a = b
+        b = t
+    End If
+
+    If a &lt; c Then
+        t = a
+        a = c
+        c = t
+    End If
+
+    If b &lt; c Then
+        t = b
+        b = c
+        c = t
+    End If
+
+    big = a
+    middle = b
+    small = c
+
+End Sub
+
+
+'=========================================================
+' BOUNDING BOX OF ONE PART
+' Six temporary extremum points are created on the main
+' body, measured and removed again. The sizes are along
+' the X, Y and Z axes of the part.
+'=========================================================
+
+Private Function MeasureBox( _
+        ByVal d As Object, _
+        ByRef sx As Double, _
+        ByRef sy As Double, _
+        ByRef sz As Double, _
+        ByRef errText As String) As Boolean
+
+    Dim prt As Object
+    Dim hsf As Object
+    Dim mainBody As Object
+    Dim tempSet As Object
+    Dim spa As Object
+    Dim bodyRef As Object
+    Dim ext As Object
+    Dim meas As Object
+    Dim keepWork As Object
+    Dim dirs(2) As Object
+    Dim lo(2) As Double
+    Dim hi(2) As Double
+    Dim pt(2) As Variant
+    Dim axis As Long
+    Dim side As Long
+    Dim other1 As Long
+    Dim other2 As Long
+
+    MeasureBox = False
+
+    On Error GoTo Failed
+
+    Set prt = d.Part
+    Set mainBody = prt.MainBody
+
+    If mainBody.Shapes.Count = 0 Then
+        errText = BBxTxt("dEmpty")
+        Exit Function
+    End If
+
+    Set hsf = prt.HybridShapeFactory
+    Set spa = d.GetWorkbench("SPAWorkbench")
+    Set bodyRef = prt.CreateReferenceFromObject(mainBody)
+
+    On Error Resume Next
+    Set keepWork = prt.InWorkObject
+    On Error GoTo Failed
+
+    Set dirs(0) = hsf.AddNewDirectionByCoord(1, 0, 0)
+    Set dirs(1) = hsf.AddNewDirectionByCoord(0, 1, 0)
+    Set dirs(2) = hsf.AddNewDirectionByCoord(0, 0, 1)
+
+    Set tempSet = prt.HybridBodies.Add
+
+    On Error Resume Next
+    tempSet.Name = TEMP_SET
+    On Error GoTo Failed
+
+    For axis = 0 To 2
+
+        other1 = (axis + 1) Mod 3
+        other2 = (axis + 2) Mod 3
+
+        ' side 0 = lowest point, side 1 = highest point
+        For side = 0 To 1
+
+            Set ext = hsf.AddNewExtremum(bodyRef, dirs(axis), side)
+
+            ' Two more directions so the result is always one point
+            ext.Direction2 = dirs(other1)
+            ext.ExtremumType2 = 1
+            ext.Direction3 = dirs(other2)
+            ext.ExtremumType3 = 1
+
+            tempSet.AppendHybridShape ext
+
+            prt.UpdateObject ext
+
+            Set meas = spa.GetMeasurable(prt.CreateReferenceFromObject(ext))
+
+            meas.GetPoint pt
+
+            If side = 0 Then
+                lo(axis) = CDbl(pt(axis))
+            Else
+                hi(axis) = CDbl(pt(axis))
+            End If
+
+        Next side
+
+    Next axis
+
+    sx = hi(0) - lo(0)
+    sy = hi(1) - lo(1)
+    sz = hi(2) - lo(2)
+
+    RemoveTemp prt, hsf, tempSet, keepWork
+
+    MeasureBox = True
+
+    Exit Function
+
+Failed:
+
+    errText = Err.Description
+
+    RemoveTemp prt, hsf, tempSet, keepWork
+
+End Function
+
+
+' Deletes the temporary geometrical set and puts the
+' in-work object back
+Private Sub RemoveTemp( _
+        ByVal prt As Object, _
+        ByVal hsf As Object, _
+        ByVal tempSet As Object, _
+        ByVal keepWork As Object)
+
+    On Error Resume Next
+
+    If Not tempSet Is Nothing Then
+        hsf.DeleteObjectForDatum prt.CreateReferenceFromObject(tempSet)
+    End If
+
+    If Not keepWork Is Nothing Then prt.InWorkObject = keepWork
+
+    prt.Update
+
+End Sub
+
+
+'=========================================================
+' WRITE THE RESULT INTO THE PART
+'=========================================================
+
+' Creates the length parameter, or changes it when it exists
+Private Sub SetLength(ByVal d As Object, ByVal paramName As String, ByVal sizeMm As Double)
+
+    Dim params As Object
+    Dim direct As Object
+    Dim p As Object
+    Dim i As Long
+
+    On Error Resume Next
+
+    Set params = d.Part.Parameters
+    Set direct = params.RootParameterSet.DirectParameters
+
+    If Not direct Is Nothing Then
+
+        For i = 1 To direct.Count
+
+            Set p = direct.Item(i)
+
+            If StrComp(ShortName(p.Name), paramName, vbTextCompare) = 0 Then
+                p.Value = sizeMm
+                Exit Sub
+            End If
+
+        Next i
+
+    End If
+
+    params.CreateDimension paramName, "LENGTH", sizeMm
+
+End Sub
+
+
+' Creates the Stock Size property, or changes it when it exists
+Private Sub SetStockProperty(ByVal d As Object, ByVal stock As String)
+
+    Dim props As Object
+    Dim p As Object
+    Dim i As Long
+
+    On Error Resume Next
+
+    Set props = d.Product.UserRefProperties
+
+    If props Is Nothing Then Exit Sub
+
+    For i = 1 To props.Count
+
+        Set p = props.Item(i)
+
+        If StrComp(ShortName(p.Name), PROP_STOCK, vbTextCompare) = 0 Then
+            p.ValuateFromString stock
+            Exit Sub
+        End If
+
+    Next i
+
+    props.CreateString PROP_STOCK, stock
+
+End Sub
+
+
+'=========================================================
+' SHARED HELPERS
+'=========================================================
+
+' "" = nothing open, otherwise Product, Part, Drawing or Other
+Public Function BBxDocKind() As String
+
+    Dim t As String
+
+    On Error Resume Next
+
+    If CATIA.Documents.Count &gt; 0 Then t = TypeName(CATIA.ActiveDocument)
+
+    On Error GoTo 0
+
+    Select Case t
+        Case "ProductDocument": BBxDocKind = "Product"
+        Case "PartDocument": BBxDocKind = "Part"
+        Case "DrawingDocument": BBxDocKind = "Drawing"
+        Case "": BBxDocKind = ""
+        Case Else: BBxDocKind = "Other"
+    End Select
+
+End Function
+
+
+Public Function BBxDocName() As String
+
+    On Error Resume Next
+
+    BBxDocName = CATIA.ActiveDocument.Name
+
+End Function
+
+
+' Folder picker. Returns "" when cancelled.
+Public Function BBxBrowseFolder(ByVal title As String) As String
+
+    Dim sh As Object
+    Dim picked As Object
+
+    On Error Resume Next
+
+    Set sh = CreateObject("Shell.Application")
+    Set picked = sh.BrowseForFolder(0, title, 1)
+
+    If Not picked Is Nothing Then BBxBrowseFolder = picked.Self.Path
+
+End Function
+
+
+Private Function CtlText(ByVal frm As Object, ByVal ctlName As String) As String
+
+    CtlText = Trim$(frm.Controls(ctlName).Text)
+
+End Function
+
+
+Private Function CtlOn(ByVal frm As Object, ByVal ctlName As String) As Boolean
+
+    CtlOn = (frm.Controls(ctlName).Value = True)
+
+End Function
+
+
+Private Function CtlIndex(ByVal frm As Object, ByVal ctlName As String) As Long
+
+    CtlIndex = frm.Controls(ctlName).ListIndex
+
+End Function
+
+
+' Shows progress on the status line of the window
+Private Sub Say(ByVal frm As Object, ByVal message As String)
+
+    frm.Progress message
+
+End Sub
+
+
+' Replaces characters that are not allowed in a file name
+Private Function CleanName(ByVal rawName As String) As String
+
+    Dim i As Long
+    Dim ch As String
+    Dim code As Long
+    Dim result As String
+
+    For i = 1 To Len(rawName)
+
+        ch = Mid$(rawName, i, 1)
+        code = AscW(ch)
+
+        If InStr("\/:*?""&lt;&gt;|", ch) &gt; 0 Or (code &gt;= 0 And code &lt; 32) Then
+            result = result &amp; "_"
+        Else
+            result = result &amp; ch
+        End If
+
+    Next i
+
+    If Len(result) = 0 Then result = "Unnamed"
+
+    CleanName = result
+
+End Function
+
+
+Private Function StripExt(ByVal fileName As String) As String
+
+    Dim p As Long
+
+    p = InStrRev(fileName, ".")
+
+    If p &gt; 1 Then
+        StripExt = Left$(fileName, p - 1)
+    Else
+        StripExt = fileName
+    End If
+
+End Function
+
+
+Private Function FileNameOf(ByVal filePath As String) As String
+
+    FileNameOf = Mid$(filePath, InStrRev(filePath, "\") + 1)
+
+End Function
+
+
+Private Function WithSlash(ByVal folderPath As String) As String
+
+    If Len(folderPath) &gt; 0 And Right$(folderPath, 1) &lt;&gt; "\" Then folderPath = folderPath &amp; "\"
+
+    WithSlash = folderPath
+
+End Function
+
+
+Private Function FolderExists(ByVal folderPath As String) As Boolean
+
+    Dim fso As Object
+
+    If Len(folderPath) = 0 Then Exit Function
+
+    On Error Resume Next
+
+    Set fso = CreateObject("Scripting.FileSystemObject")
+
+    FolderExists = fso.FolderExists(folderPath)
+
+End Function
+
+
+Private Function FileExists(ByVal filePath As String) As Boolean
+
+    Dim fso As Object
+
+    If Len(filePath) = 0 Then Exit Function
+
+    On Error Resume Next
+
+    Set fso = CreateObject("Scripting.FileSystemObject")
+
+    FileExists = fso.FileExists(filePath)
+
+End Function
+
+
+Private Sub DeleteFile(ByVal filePath As String)
+
+    Dim fso As Object
+
+    On Error Resume Next
+
+    Set fso = CreateObject("Scripting.FileSystemObject")
+
+    If fso.FileExists(filePath) Then fso.DeleteFile filePath, True
+
+End Sub
+
+
+Private Sub OpenFile(ByVal filePath As String)
+
+    Dim sh As Object
+
+    On Error Resume Next
+
+    Set sh = CreateObject("WScript.Shell")
+
+    sh.Run """" &amp; filePath &amp; """"
+
+End Sub
+
+
+Private Function IsDocOpen(ByVal fileName As String) As Boolean
+
+    Dim d As Object
+
+    On Error Resume Next
+
+    Set d = CATIA.Documents.Item(fileName)
+
+    IsDocOpen = (Err.Number = 0) And Not (d Is Nothing)
+
+    Err.Clear
+
+End Function
+
+
+' One CSV field, always in quotes
+Private Function Csv(ByVal fieldText As String) As String
+
+    Csv = """" &amp; Replace(fieldText, """", """""") &amp; """"
+
+End Function
+
+
+' A number written with a decimal point on every PC
+Private Function Num(ByVal numberValue As Variant, Optional ByVal decimals As Long = 3) As String
+
+    Dim pattern As String
+
+    On Error Resume Next
+
+    pattern = "0"
+
+    If decimals &gt; 0 Then pattern = "0." &amp; String$(decimals, "0")
+
+    Num = Replace(Format$(CDbl(numberValue), pattern), ",", ".")
+
+End Function
+
+
+' Saves text as UTF-8 so Excel shows Korean correctly
+Private Function WriteTextFile(ByVal filePath As String, ByVal content As String) As Boolean
+
+    Dim stm As Object
+
+    On Error GoTo Failed
+
+    Set stm = CreateObject("ADODB.Stream")
+
+    stm.Type = 2
+    stm.Charset = "utf-8"
+    stm.Open
+    stm.WriteText content
+    stm.SaveToFile filePath, 2
+    stm.Close
+
+    WriteTextFile = True
+
+    Exit Function
+
+Failed:
+
+    On Error Resume Next
+    stm.Close
+
+End Function
+
+
+Private Function ReadTextFile(ByVal filePath As String) As String
+
+    Dim stm As Object
+
+    On Error GoTo Failed
+
+    Set stm = CreateObject("ADODB.Stream")
+
+    stm.Type = 2
+    stm.Charset = "utf-8"
+    stm.Open
+    stm.LoadFromFile filePath
+
+    ReadTextFile = stm.ReadText
+
+    stm.Close
+
+    Exit Function
+
+Failed:
+
+    On Error Resume Next
+    stm.Close
+
+End Function
+
+
+' Splits one CSV line into its fields
+Private Function CsvSplit(ByVal lineText As String) As Collection
+
+    Dim fields As New Collection
+    Dim i As Long
+    Dim ch As String
+    Dim cur As String
+    Dim inQuotes As Boolean
+
+    i = 1
+
+    Do While i &lt;= Len(lineText)
+
+        ch = Mid$(lineText, i, 1)
+
+        If inQuotes Then
+            If ch = """" Then
+                If Mid$(lineText, i + 1, 1) = """" Then
+                    cur = cur &amp; """"
+                    i = i + 1
+                Else
+                    inQuotes = False
+                End If
+            Else
+                cur = cur &amp; ch
+            End If
+        ElseIf ch = """" Then
+            inQuotes = True
+        ElseIf ch = "," Then
+            fields.Add cur
+            cur = ""
+        Else
+            cur = cur &amp; ch
+        End If
+
+        i = i + 1
+
+    Loop
+
+    fields.Add cur
+
+    Set CsvSplit = fields
+
+End Function
+
+
+' The name of a component, even when it is not loaded
+Private Function SafeName(ByVal prod As Object) As String
+
+    On Error Resume Next
+
+    SafeName = prod.Name
+
+End Function
+
+
+' The reference product behind an instance, or Nothing when
+' its file is missing or not loaded
+Private Function RefOf(ByVal prod As Object) As Object
+
+    On Error Resume Next
+
+    Set RefOf = prod.ReferenceProduct
+
+End Function
+
+
+' The document behind a component, or Nothing when it has none
+Private Function DocOf(ByVal prod As Object) As Object
+
+    Dim d As Object
+
+    On Error Resume Next
+
+    Set d = prod.ReferenceProduct.Parent
+
+    If d Is Nothing Then Exit Function
+
+    If Right$(TypeName(d), 8) = "Document" Then Set DocOf = d
+
+End Function
+
+
+Private Sub AddDoc(ByVal docs As Object, ByVal d As Object)
+
+    Dim key As String
+
+    key = UCase$(d.FullName)
+
+    If Not docs.Exists(key) Then docs.Add key, d
+
+End Sub
+
+
+' Fills docs (a Dictionary) with every loaded document under prod
+Private Sub CollectDocs( _
+        ByVal prod As Object, _
+        ByVal docs As Object, _
+        ByVal wantParts As Boolean, _
+        ByVal wantProducts As Boolean)
+
+    Dim kids As Object
+    Dim child As Object
+    Dim d As Object
+    Dim kind As String
+    Dim i As Long
+
+    On Error Resume Next
+    Set kids = prod.Products
+    On Error GoTo 0
+
+    If kids Is Nothing Then Exit Sub
+
+    For i = 1 To kids.Count
+
+        Set child = kids.Item(i)
+        Set d = DocOf(child)
+
+        If Not d Is Nothing Then
+
+            kind = TypeName(d)
+
+            If kind = "PartDocument" And wantParts Then AddDoc docs, d
+            If kind = "ProductDocument" And wantProducts Then AddDoc docs, d
+
+            CollectDocs child, docs, wantParts, wantProducts
+
+        End If
+
+    Next i
+
+End Sub
+
+
+' Text after the last backslash of a parameter name
+Private Function ShortName(ByVal fullName As String) As String
+
+    ShortName = Mid$(fullName, InStrRev(fullName, "\") + 1)
+
+End Function
+
+
+'=========================================================
+' SETTINGS (remembered between runs)
+'=========================================================
+
+Public Sub BBxLoadLanguage()
+
+    gBBxLang = UCase$(GetSetting(REG_APP, REG_SEC, "Lang", "EN"))
+
+    If gBBxLang &lt;&gt; "KO" Then gBBxLang = "EN"
+
+End Sub
+
+
+Public Sub BBxSetLanguage(ByVal langCode As String)
+
+    gBBxLang = langCode
+
+    SaveSetting REG_APP, REG_SEC, "Lang", gBBxLang
+
+End Sub
+
+
+Public Function BBxLoadText( _
+        ByVal choiceName As String, _
+        ByVal defaultValue As String) As String
+
+    BBxLoadText = GetSetting(REG_APP, REG_SEC, choiceName, defaultValue)
+
+End Function
+
+
+Public Sub BBxSaveText( _
+        ByVal choiceName As String, _
+        ByVal choiceValue As String)
+
+    SaveSetting REG_APP, REG_SEC, choiceName, choiceValue
+
+End Sub
+
+
+'=========================================================
+' TEXT (ENGLISH AND KOREAN)
+'=========================================================
+
+Public Function BBxTxt(ByVal key As String) As String
+
+    If gBBxLang = "KO" Then
+        BBxTxt = TextKO(key)
+    Else
+        BBxTxt = TextEN(key)
+    End If
+
+    If Len(BBxTxt) = 0 Then BBxTxt = TextEN(key)
+    If Len(BBxTxt) = 0 Then BBxTxt = key
+
+End Function
+
+
+Public Function BBxUiFontName() As String
+
+    If gBBxLang = "KO" Then
+        BBxUiFontName = "Malgun Gothic"
+    Else
+        BBxUiFontName = "Tahoma"
+    End If
+
+End Function
+
+
+' Fills {0}, {1} and {2} in a text
+Public Function BBxFmt( _
+        ByVal template As String, _
+        Optional ByVal a As String = "", _
+        Optional ByVal b As String = "", _
+        Optional ByVal c As String = "") As String
+
+    BBxFmt = Replace(Replace(Replace(template, "{0}", a), "{1}", b), "{2}", c)
+
+End Function
+
+
+' Turns \uXXXX codes into real characters
+Private Function U(ByVal coded As String) As String
+
+    Dim i As Long
+    Dim result As String
+
+    i = 1
+
+    Do While i &lt;= Len(coded)
+
+        If Mid$(coded, i, 2) = "\u" And i + 5 &lt;= Len(coded) Then
+            result = result &amp; ChrW$(CLng("&amp;H" &amp; Mid$(coded, i + 2, 4)))
+            i = i + 6
+        Else
+            result = result &amp; Mid$(coded, i, 1)
+            i = i + 1
+        End If
+
+    Loop
+
+    U = result
+
+End Function
+
+
+Private Function TextEN(ByVal key As String) As String
+
+    Select Case key
+        Case "btnClose": TextEN = "Close"
+        Case "btnLang": TextEN = U("\ud55c\uad6d\uc5b4")
+        Case "btnBrowse": TextEN = "Browse..."
+        Case "status": TextEN = "Status: "
+        Case "stWorking": TextEN = "Working..."
+        Case "msgError": TextEN = "Error: {0}"
+        Case "stNeed": TextEN = "Open a CATProduct or CATPart first"
+        Case "stReady": TextEN = "Ready. Active document: {0}"
+        Case "title": TextEN = "CATIA Bounding Box Calculator"
+        Case "subtitle": TextEN = "Measures the overall length, width and height of each part and writes the stock size"
+        Case "scope": TextEN = "Measure:"
+        Case "scopeActive": TextEN = "The active part"
+        Case "scopeAll": TextEN = "Every part in the active product"
+        Case "allow": TextEN = "Allowance added to each size (mm):"
+        Case "chkParam": TextEN = "Write length, width and height as parameters in each part"
+        Case "chkProp": TextEN = "Write a ""Stock Size"" property for the bill of material"
+        Case "chkCsv": TextEN = "Save a CSV list"
+        Case "outFolder": TextEN = "Folder for the CSV:"
+        Case "btnRun": TextEN = "Measure"
+        Case "stItem": TextEN = "Measuring {0} of {1}:"
+        Case "msgNoOut": TextEN = "Choose an existing folder for the CSV."
+        Case "msgBadAllow": TextEN = "The allowance must be a number, 0 or more."
+        Case "msgNeedPart": TextEN = "The active document is a product. Choose ""Every part in the active product""."
+        Case "msgNothing": TextEN = "No parts found."
+        Case "msgWriteFail": TextEN = "The CSV could not be written. Is it open in Excel?"
+        Case "msgDone": TextEN = "Measured {0} parts. Failed: {1}."
+        Case "msgOne": TextEN = "{0}: {1} mm"
+        Case "dEmpty": TextEN = "The main body is empty"
+        Case "hPN": TextEN = "Part Number"
+        Case "hFile": TextEN = "File"
+        Case "hX": TextEN = "Size along X (mm)"
+        Case "hY": TextEN = "Size along Y (mm)"
+        Case "hZ": TextEN = "Size along Z (mm)"
+        Case "hL": TextEN = "Length (mm)"
+        Case "hW": TextEN = "Width (mm)"
+        Case "hH": TextEN = "Height (mm)"
+        Case "hStock": TextEN = "Stock Size"
+        Case "hNote": TextEN = "Note"
+    End Select
+
+End Function
+
+
+Private Function TextKO(ByVal key As String) As String
+
+    Select Case key
+        Case "btnClose": TextKO = U("\ub2eb\uae30")
+        Case "btnLang": TextKO = "English"
+        Case "btnBrowse": TextKO = U("\ucc3e\uc544\ubcf4\uae30...")
+        Case "status": TextKO = U("\uc0c1\ud0dc: ")
+        Case "stWorking": TextKO = U("\uc791\uc5c5 \uc911...")
+        Case "msgError": TextKO = U("\uc624\ub958: {0}")
+        Case "stNeed": TextKO = U("\uba3c\uc800 CATProduct \ub610\ub294 CATPart\ub97c \uc5ec\uc138\uc694")
+        Case "stReady": TextKO = U("\uc900\ube44\ub428. \ud65c\uc131 \ubb38\uc11c: {0}")
+        Case "title": TextKO = U("CATIA \ubc14\uc6b4\ub529 \ubc15\uc2a4 \uacc4\uc0b0\uae30")
+        Case "subtitle": TextKO = U("\uac01 \ud30c\ud2b8\uc758 \uc804\uccb4 \uae38\uc774, \ud3ed, \ub192\uc774\ub97c \uce21\uc815\ud558\uace0 \uc18c\uc7ac \ud06c\uae30\ub97c \uae30\ub85d\ud569\ub2c8\ub2e4")
+        Case "scope": TextKO = U("\uce21\uc815 \ub300\uc0c1:")
+        Case "scopeActive": TextKO = U("\ud65c\uc131 \ud30c\ud2b8")
+        Case "scopeAll": TextKO = U("\ud65c\uc131 Product\uc758 \ubaa8\ub4e0 \ud30c\ud2b8")
+        Case "allow": TextKO = U("\uac01 \uce58\uc218\uc5d0 \ub354\ud560 \uc5ec\uc720 (mm):")
+        Case "chkParam": TextKO = U("\uac01 \ud30c\ud2b8\uc5d0 \uae38\uc774, \ud3ed, \ub192\uc774\ub97c \ud30c\ub77c\ubbf8\ud130\ub85c \uae30\ub85d")
+        Case "chkProp": TextKO = U("BOM\uc6a9 ""Stock Size"" \uc18d\uc131 \uae30\ub85d")
+        Case "chkCsv": TextKO = U("CSV \ubaa9\ub85d \uc800\uc7a5")
+        Case "outFolder": TextKO = U("CSV \uc800\uc7a5 \ud3f4\ub354:")
+        Case "btnRun": TextKO = U("\uce21\uc815")
+        Case "stItem": TextKO = U("\uce21\uc815 \uc911 {0} / {1}:")
+        Case "msgNoOut": TextKO = U("CSV\ub97c \uc800\uc7a5\ud560 \uae30\uc874 \ud3f4\ub354\ub97c \uc120\ud0dd\ud558\uc138\uc694.")
+        Case "msgBadAllow": TextKO = U("\uc5ec\uc720 \uac12\uc740 0 \uc774\uc0c1\uc758 \uc22b\uc790\uc5ec\uc57c \ud569\ub2c8\ub2e4.")
+        Case "msgNeedPart": TextKO = U("\ud65c\uc131 \ubb38\uc11c\uac00 Product\uc785\ub2c8\ub2e4. ""\ud65c\uc131 Product\uc758 \ubaa8\ub4e0 \ud30c\ud2b8""\ub97c \uc120\ud0dd\ud558\uc138\uc694.")
+        Case "msgNothing": TextKO = U("\ud30c\ud2b8\ub97c \ucc3e\uc744 \uc218 \uc5c6\uc2b5\ub2c8\ub2e4.")
+        Case "msgWriteFail": TextKO = U("CSV\ub97c \uc4f8 \uc218 \uc5c6\uc2b5\ub2c8\ub2e4. Excel\uc5d0\uc11c \uc5f4\ub824 \uc788\uc2b5\ub2c8\uae4c?")
+        Case "msgDone": TextKO = U("\ud30c\ud2b8 {0}\uac1c\ub97c \uce21\uc815\ud588\uc2b5\ub2c8\ub2e4. \uc2e4\ud328: {1}.")
+        Case "msgOne": TextKO = "{0}: {1} mm"
+        Case "dEmpty": TextKO = U("\uba54\uc778 \ubc14\ub514\uac00 \ube44\uc5b4 \uc788\uc2b5\ub2c8\ub2e4")
+        Case "hPN": TextKO = U("\ud30c\ud2b8 \ubc88\ud638")
+        Case "hFile": TextKO = U("\ud30c\uc77c")
+        Case "hX": TextKO = U("X \ubc29\ud5a5 \ud06c\uae30 (mm)")
+        Case "hY": TextKO = U("Y \ubc29\ud5a5 \ud06c\uae30 (mm)")
+        Case "hZ": TextKO = U("Z \ubc29\ud5a5 \ud06c\uae30 (mm)")
+        Case "hL": TextKO = U("\uae38\uc774 (mm)")
+        Case "hW": TextKO = U("\ud3ed (mm)")
+        Case "hH": TextKO = U("\ub192\uc774 (mm)")
+        Case "hStock": TextKO = U("\uc18c\uc7ac \ud06c\uae30")
+        Case "hNote": TextKO = U("\ube44\uace0")
+    End Select
+
+End Function
+
+
+'=========================================================
+' LOGO
+' The logo picture is stored below as text.
+' The form shows it with:
+'     BBxLoadLogo Me.Controls("imgLogo")
+'=========================================================
+
+' Puts the logo into an Image control.
+' Returns False if the picture could not be loaded.
+Public Function BBxLoadLogo(ByVal target As Object) As Boolean
+
+    Dim data() As Byte
+    Dim filePath As String
+    Dim fileNo As Integer
+
+    BBxLoadLogo = False
+
+    On Error GoTo Failed
+
+    data = HexToBytes(LogoHex())
+
+    ' VBA can only load a picture from a file, so the data is
+    ' written to the Windows temp folder, loaded, then deleted.
+    filePath = Environ$("TEMP") &amp; "\catia_macro_logo.gif"
+
+    If Len(Dir$(filePath)) &gt; 0 Then Kill filePath
+
+    fileNo = FreeFile
+
+    Open filePath For Binary Access Write As #fileNo
+    Put #fileNo, , data
+    Close #fileNo
+
+    Set target.Picture = LoadPicture(filePath)
+
+    BBxLoadLogo = True
+
+    On Error Resume Next
+    Kill filePath
+
+    Exit Function
+
+Failed:
+
+    On Error Resume Next
+    Close #fileNo
+
+End Function
+
+
+' Turns pairs of hex characters back into bytes
+Private Function HexToBytes(ByVal hexText As String) As Byte()
+
+    Dim count As Long
+    Dim i As Long
+    Dim data() As Byte
+
+    count = Len(hexText) \ 2
+
+    ReDim data(0 To count - 1)
+
+    For i = 0 To count - 1
+        data(i) = CByte("&amp;H" &amp; Mid$(hexText, i * 2 + 1, 2))
+    Next i
+
+    HexToBytes = data
+
+End Function
+
+
+' The logo picture (a GIF image, 195 x 15 pixels) written as hex text
+Private Function LogoHex() As String
+
+    Dim s As String
+
+    s = s &amp; "474946383761C3000F00840000F0F0F0D7DCE0C4CCD4B5C0CBA7B4C29AA9BA8D9FB27F92A97288A06B829D657D9957719048"
+    s = s &amp; "65863B5A7F2C4E751E426C0F3562002A5A000000000000000000000000000000000000000000000000000000000000000000"
+    s = s &amp; "0000000000000000002C00000000C3000F000008FF0001081C48B0A0C18308132A5CC8B0A1C38710234A9C48B1A2C58B1833"
+    s = s &amp; "6ADCE810418401041F34187820820082061E4480B02000008F11562A20A9320283930463C674504020019D3113402058E001"
+    s = s &amp; "00A011101C2550F040CD9B021BE87CD013A6CE973A59BA1CF8332604A50D940A44309260499C4B010C7010B32580B0041B30"
+    s = s &amp; "15C8C0E840010C623E38E0330241044AADC6FC1BA12C8092861D34E02BD029D3000B1CBC2C1BE08181970FE62280B0556084"
+    s = s &amp; "B90620F4FC5950F4C005333F17543D1041E6B19CDF8A2DC0996C41DB00F04AE6EA37B7E801B10340983B5031E3B47B010460"
+    s = s &amp; "B04076DCB9C21D80540E4181CBB54A49B70E6CF87683063D2B2BFF282BE08180DD00868724801BC002A5EA07C21DC81A404A"
+    s = s &amp; "00DA4FCF140801647DCFC4A517205CF32DD5DE58DD59C69B7C4ABDF752730495771E7D4C992490009715F816680B18B0DF01"
+    s = s &amp; "DD11C0597E2F71871059033C0019606521C09774F8F5E6DD85999138594E017E64635102F198168E0BFE35D27C3F0970E08D"
+    s = s &amp; "AD311024702709F01104688DF5E274AA2DB0175A1ACA15D500C245251685240286A441B62D602592E6D937938D6301C5978D"
+    s = s &amp; "0474F7DF675D5D05C00320A1E61950151207E790535505D44807B657A74D5B29509D41697A08A04006E4D500485221C55479"
+    s = s &amp; "022DD093861B8619D8A0425257D548030065149B480217808D200249DF006C2AFF3013948FBA1A6353437E89E08C49060919"
+    s = s &amp; "6511742650A953D52A50008A3A271F5325E9D41CA7C3793A26AFAD8DA4C071930AB85E7B0E5C169F97B6DEC7668A05A0F7DF"
+    s = s &amp; "8FFC0D0896AED34EAB605F411E65D0B5F2F947C000722A1B155330F27758889C95DA1903261E74A46D6936D6DC010E3C16D9"
+    s = s &amp; "9808348740BF07C446618FA6A1FA8003C79DFBDFC4D355EC12A70793F770BC0AD8256F41091FD6DC67C25D76D850591280E9"
+    s = s &amp; "400C18209C58E789E5805B45B65BAD773E0E3B947D2A6935A68F4EC504554E3AF1D4179F022960E19E3A2965E9614FE14432"
+    s = s &amp; "525879E5166F3A3130DDCA0315ADD650AAE1EB34A5BACAA500848D2989975EC72DB7534F61DB24C9D1DF80072EF845043810"
+    s = s &amp; "E5E08827AEF8E21D412023E390472EF9E494576EF9E51B0504003B"
+
+    LogoHex = s
+
+End Function</code></pre>
+  </section>
+
+  <section>
+    <h2>English and Korean text</h2>
+    <p>All wording lives in <code>TextEN</code> and <code>TextKO</code> in the module. Korean is stored as <code>\uXXXX</code> codes so it pastes safely into the VBA editor on any PC. Please have a Korean-speaking CATIA user check the terms.</p>
+    <div class="wrapx"><table>
+      <tr><th>Key</th><th>English</th><th>Korean</th></tr>
+      <tr><td><code>btnClose</code></td><td>Close</td><td lang="ko">닫기</td></tr><tr><td><code>btnLang</code></td><td>한국어 (button label)</td><td lang="ko">English (button label)</td></tr><tr><td><code>btnBrowse</code></td><td>Browse...</td><td lang="ko">찾아보기...</td></tr><tr><td><code>status</code></td><td>Status: </td><td lang="ko">상태: </td></tr><tr><td><code>stWorking</code></td><td>Working...</td><td lang="ko">작업 중...</td></tr><tr><td><code>msgError</code></td><td>Error: {0}</td><td lang="ko">오류: {0}</td></tr><tr><td><code>stNeed</code></td><td>Open a CATProduct or CATPart first</td><td lang="ko">먼저 CATProduct 또는 CATPart를 여세요</td></tr><tr><td><code>stReady</code></td><td>Ready. Active document: {0}</td><td lang="ko">준비됨. 활성 문서: {0}</td></tr><tr><td><code>title</code></td><td>CATIA Bounding Box Calculator</td><td lang="ko">CATIA 바운딩 박스 계산기</td></tr><tr><td><code>subtitle</code></td><td>Measures the overall length, width and height of each part and writes the stock size</td><td lang="ko">각 파트의 전체 길이, 폭, 높이를 측정하고 소재 크기를 기록합니다</td></tr><tr><td><code>scope</code></td><td>Measure:</td><td lang="ko">측정 대상:</td></tr><tr><td><code>scopeActive</code></td><td>The active part</td><td lang="ko">활성 파트</td></tr><tr><td><code>scopeAll</code></td><td>Every part in the active product</td><td lang="ko">활성 Product의 모든 파트</td></tr><tr><td><code>allow</code></td><td>Allowance added to each size (mm):</td><td lang="ko">각 치수에 더할 여유 (mm):</td></tr><tr><td><code>chkParam</code></td><td>Write length, width and height as parameters in each part</td><td lang="ko">각 파트에 길이, 폭, 높이를 파라미터로 기록</td></tr><tr><td><code>chkProp</code></td><td>Write a &quot;Stock Size&quot; property for the bill of material</td><td lang="ko">BOM용 &quot;Stock Size&quot; 속성 기록</td></tr><tr><td><code>chkCsv</code></td><td>Save a CSV list</td><td lang="ko">CSV 목록 저장</td></tr><tr><td><code>outFolder</code></td><td>Folder for the CSV:</td><td lang="ko">CSV 저장 폴더:</td></tr><tr><td><code>btnRun</code></td><td>Measure</td><td lang="ko">측정</td></tr><tr><td><code>stItem</code></td><td>Measuring {0} of {1}:</td><td lang="ko">측정 중 {0} / {1}:</td></tr><tr><td><code>msgNoOut</code></td><td>Choose an existing folder for the CSV.</td><td lang="ko">CSV를 저장할 기존 폴더를 선택하세요.</td></tr><tr><td><code>msgBadAllow</code></td><td>The allowance must be a number, 0 or more.</td><td lang="ko">여유 값은 0 이상의 숫자여야 합니다.</td></tr><tr><td><code>msgNeedPart</code></td><td>The active document is a product. Choose &quot;Every part in the active product&quot;.</td><td lang="ko">활성 문서가 Product입니다. &quot;활성 Product의 모든 파트&quot;를 선택하세요.</td></tr><tr><td><code>msgNothing</code></td><td>No parts found.</td><td lang="ko">파트를 찾을 수 없습니다.</td></tr><tr><td><code>msgWriteFail</code></td><td>The CSV could not be written. Is it open in Excel?</td><td lang="ko">CSV를 쓸 수 없습니다. Excel에서 열려 있습니까?</td></tr><tr><td><code>msgDone</code></td><td>Measured {0} parts. Failed: {1}.</td><td lang="ko">파트 {0}개를 측정했습니다. 실패: {1}.</td></tr><tr><td><code>msgOne</code></td><td>{0}: {1} mm</td><td lang="ko">{0}: {1} mm</td></tr><tr><td><code>dEmpty</code></td><td>The main body is empty</td><td lang="ko">메인 바디가 비어 있습니다</td></tr><tr><td><code>hPN</code></td><td>Part Number</td><td lang="ko">파트 번호</td></tr><tr><td><code>hFile</code></td><td>File</td><td lang="ko">파일</td></tr><tr><td><code>hX</code></td><td>Size along X (mm)</td><td lang="ko">X 방향 크기 (mm)</td></tr><tr><td><code>hY</code></td><td>Size along Y (mm)</td><td lang="ko">Y 방향 크기 (mm)</td></tr><tr><td><code>hZ</code></td><td>Size along Z (mm)</td><td lang="ko">Z 방향 크기 (mm)</td></tr><tr><td><code>hL</code></td><td>Length (mm)</td><td lang="ko">길이 (mm)</td></tr><tr><td><code>hW</code></td><td>Width (mm)</td><td lang="ko">폭 (mm)</td></tr><tr><td><code>hH</code></td><td>Height (mm)</td><td lang="ko">높이 (mm)</td></tr><tr><td><code>hStock</code></td><td>Stock Size</td><td lang="ko">소재 크기</td></tr><tr><td><code>hNote</code></td><td>Note</td><td lang="ko">비고</td></tr>
+    </table></div>
+    <p class="note"><code>{0}</code>, <code>{1}</code> and <code>{2}</code> are filled in with numbers, names and error details. The window title bar stays in English in both languages.</p>
+  </section>
+
+  <section>
+    <h2>Known limitations</h2>
+    <ul>
+      <li>The box is aligned with the X, Y and Z axes of each part. A part modeled at an angle to its own axes gets a larger box than the tightest possible one.</li>
+      <li>Only the main body (PartBody) is measured. Other bodies and surfaces are ignored.</li>
+      <li>The measurement uses the Generative Shape Design extremum command, so it needs a license that includes wireframe and surface tools.</li>
+      <li>The parts are modified (new parameters and a property), so CATIA will ask to save them.</li>
+      <li>If a measurement fails part way, a geometrical set named "BBx_Temp" can be left in that part. It is safe to delete.</li>
+      <li>To show the stock size in a CATIA bill of material, add the "Stock Size" property in Analyze, Bill of Material, Define formats.</li>
+      <li>The window is modal, so CATIA cannot be clicked while it is open. Anything that must be selected in CATIA has to be selected before running the macro.</li>
+      <li>If the credit image cannot be loaded, for example when the Windows temp folder is not writable, the window opens without it.</li>
+    </ul>
+  </section>
+</main>
+<footer>Prepared for CATIA V5 R21 and later, VBA. Measures part bounding boxes and writes stock sizes.</footer>
+</div>
+<script>
+document.querySelectorAll('.copy').forEach(function (btn) {
+  btn.addEventListener('click', function () {
+    var text = document.getElementById(btn.dataset.target).textContent;
+    function done(ok) {
+      btn.textContent = ok ? 'Copied' : 'Select and copy manually';
+      setTimeout(function () { btn.textContent = 'Copy code'; }, 1800);
+    }
+    function fallback() {
+      var ta = document.createElement('textarea');
+      ta.value = text; document.body.appendChild(ta); ta.select();
+      var ok = false;
+      try { ok = document.execCommand('copy'); } catch (e) {}
+      document.body.removeChild(ta); done(ok);
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () { done(true); }, fallback);
+    } else { fallback(); }
+  });
+});
+</script>
+</body>
+</html>

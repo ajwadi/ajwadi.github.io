@@ -1,0 +1,1442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>CATIA Point Exporter - VBA Package</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono&display=swap">
+<style>
+:root {
+  --bg:#eef1f5; --panel:#ffffff; --ink:#16202c; --muted:#566475; --line:#d3dae3;
+  --accent:#2c5aa0; --accent2:#1f437a; --code-bg:#f6f8fb; --note:#fff6dc; --note-line:#d9a400;
+  box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --bg:#141a22; --panel:#1c242f; --ink:#e6ebf2; --muted:#9aa8b9; --line:#324052; --accent:#6f9fe6; --accent2:#8fb5ee; --code-bg:#151c25; --note:#3a3216; --note-line:#d9a400; }
+}
+:root[data-theme="dark"] { --bg:#141a22; --panel:#1c242f; --ink:#e6ebf2; --muted:#9aa8b9; --line:#324052; --accent:#6f9fe6; --accent2:#8fb5ee; --code-bg:#151c25; --note:#3a3216; --note-line:#d9a400; }
+*, *::before, *::after { box-sizing:inherit; }
+html { scroll-padding-top:env(safe-area-inset-top,0px); }
+body { margin:0; background:var(--bg); color:var(--ink); font-family:"IBM Plex Sans","Segoe UI","Malgun Gothic",Arial,sans-serif; font-size:16px; line-height:1.6; }
+.wrap { max-width:920px; margin:0 auto; padding:0 20px; }
+header { padding:40px 0 8px; }
+h1 { font-size:2rem; line-height:1.2; margin:0 0 6px; font-weight:600; letter-spacing:-0.01em; }
+.subtitle { margin:0; color:var(--muted); max-width:62ch; }
+.palettes { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:14px 22px; margin:26px 0 8px; }
+.strip { display:flex; height:34px; border:1px solid var(--line); }
+.strip span { flex:1; }
+.pal p { margin:4px 0 0; font-size:.85rem; color:var(--muted); }
+section { background:var(--panel); border:1px solid var(--line); border-radius:6px; padding:22px 24px; margin:18px 0; }
+h2 { font-size:1.15rem; margin:0 0 10px; font-weight:600; }
+p { margin:0 0 10px; max-width:72ch; }
+ul, ol { margin:0; padding-left:22px; max-width:72ch; }
+li { margin-bottom:6px; }
+code, pre { font-family:"IBM Plex Mono",Consolas,monospace; }
+code { font-size:.9em; }
+.code-head { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:10px; margin-bottom:10px; }
+.code-head h2 { margin:0; }
+.right { display:flex; align-items:center; gap:10px; }
+.filetag { font-size:.8rem; color:var(--muted); border:1px solid var(--line); border-radius:4px; padding:3px 8px; }
+.copy { background:var(--accent); color:#fff; border:0; border-radius:4px; padding:8px 16px; font:inherit; font-size:.9rem; font-weight:500; cursor:pointer; }
+.copy:hover { background:var(--accent2); }
+.copy:focus-visible { outline:3px solid var(--note-line); outline-offset:2px; }
+:root[data-theme="dark"] .copy { color:#10161e; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .copy { color:#10161e; } }
+pre { margin:0; background:var(--code-bg); border:1px solid var(--line); border-radius:4px; padding:14px; max-height:520px; overflow:auto; font-size:.8rem; line-height:1.5; }
+.logo { display:block; max-width:100%; height:auto; margin:10px 0 0; border:1px solid var(--line); }
+.note { background:var(--note); border-left:4px solid var(--note-line); padding:10px 14px; margin:12px 0 0; }
+.wrapx { overflow-x:auto; }
+table { border-collapse:collapse; width:100%; font-size:.88rem; }
+th, td { text-align:left; padding:6px 10px; border-bottom:1px solid var(--line); vertical-align:top; }
+th { color:var(--muted); font-weight:500; }
+footer { color:var(--muted); font-size:.85rem; padding:8px 0 40px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>CATIA Point Exporter</h1>
+  <p class="subtitle">Writes the X, Y, Z coordinates of points and hole centers in the active part to a CSV, ready for a CMM program or an inspection plan. Two code blocks to paste: the form and the module.</p>
+</header>
+<main>
+  <section>
+    <h2>What it does</h2>
+    <ul>
+      <li><strong>Selected points or every point.</strong> Select points in the tree or in 3D before running, or let the macro find every point in the part.</li>
+      <li><strong>Hole centers too.</strong> Tick the box and the origin of every hole feature is added.</li>
+      <li><strong>Columns:</strong> No, Name, the set or body it sits in, Type, X, Y and Z in mm.</li>
+      <li><strong>Decimal places</strong> from 0 to 6.</li>
+      <li><strong>Saved as</strong> <code>PartName_Points.csv</code> in the folder you choose.</li>
+      <li><strong>English / Korean button</strong> in the top right corner. The language is remembered for next time.</li>
+      <li><strong>Credit image centered at the bottom</strong>, stored inside the module as text, the same as your other macros. <img class="logo" src="data:image/gif;base64,R0lGODdhwwAPAIQAAPDw8Nfc4MTM1LXAy6e0wpqpuo2fsn+SqXKIoGuCnWV9mVdxkEhlhjtafyxOdR5CbA81YgAqWgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACwAAAAAwwAPAAAI/wABCBxIsKDBgwgTKlzIsKHDhxAjSpxIsaLFixgzatzoEEGEAQQfNBh4IIIAggYeRICwIAAAjxFWKiCpMgKDkwRjxnRQQCABnTETQCBY4AEAoBEQHCVQ8EDNmwIb6HzQE6bOlzpZuhz4MyYEpQ2UCkQwkmBJnEsBDHAQsyWAsAQbMBXIwOhAAQxiPjjgMwJBBEqtxvwboSyAkoYdNOAr0CnTAAscvCwb4IGBlw/mIoCwVWCEuQYg9PxZUPTABTM/F1Q9EEHmsZzfii3AmWxB2wDwSubqN7foAbEDQJg7UDHjtHsBBGCwQHbcucIdgFQOQYHLtUpJtw5s+HaDBj0rK/8oK+CBgN0AhockgBvAAqXqB8IdyBpASgDaT88UCAFkfc/EpRcgXPMt1d5Y3VnGm3xKvfdScwSVdx59TJkkkACXFfgWaAsYsN8B3RHAWX4vcYcQWQM8ABlgZSHAl3T49ebdhZmROFlOAX5kY1EC8ZgWjgv+NdJ8Pwlw4I2tMRAkcCcJ8BEEaI314nSqLbAXWhrKFdUAwkUlFoUkAoakQbYtYCWS5tk3k41jAcWXjQR0999nXV0FwAMgoeYZUBUSB+eQU1UF1EgHtlenTVspUJ1BaXoIoEAG5NUASFIhxVR5Ai3Qk4YbhhnYoEJSV9VIAwBlFJtIAheAjSACSd8AbCr/MBOUj7oaY1NDfongjEkGCRllEXQmUKlT1SpQAIo6Jx9TJenUHKfDeTomr62NpMBxkwq4XnsOXBafl7bex2aKBaD334/8DQiWrtNOq2BfQR5l0LXy+UfAAHIqGxVTMPJ3WIicldoZAyYedKRtaTbW3AEOPBbZmAg0h0C/B8RGYY+mofqAA8ed+9/E01XsEqcHk/dwvArYJW9BCR/W3GfCXXbYUFkSgOlADBggnFjnieWAW0W2W613Pg47lH0qaTWmj07FBFVOOvHUF58CKWDhnjopZelhT+FEMlJYeeUWbzoxMN3KAxWt1lCq4es0pbrKpQCEjSmJl17HLbdTT2HbJMnR34AHLvhFBDgQ5eCIJ6744h1BICPjkEcu+eSUV2755RsFBAA7" alt="Credit image with the line: macro developed by AISHAQUE" width="195" height="15"></li>
+      <li><strong>Works beside your other macros.</strong> Every shared name starts with <code>Pt</code>, so it does not clash with the other macros in the same VBA project.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Setup</h2>
+    <ol>
+      <li>In the VBA editor, use Insert, UserForm. In the Properties window set its <code>(Name)</code> to <code>frmPointExporter</code>. Leave the form empty in the designer.</li>
+      <li>Open the form's code (right-click the form, View Code), select all, delete, and paste the Form code below.</li>
+      <li>Use Insert, Module. In the Properties window set its <code>(Name)</code> to <code>PointExporter</code>, then paste the Module code below.</li>
+      <li>Use Debug, Compile VBAProject.</li>
+      <li>Open a CATPart, select points if you want only some of them, then run <code>CATMain</code> from the <code>PointExporter</code> module.</li>
+    </ol>
+    <p class="note"><strong>First run:</strong> this code was written and checked for structure, but not run inside CATIA. Try it on a part with two or three points whose coordinates you know.</p>
+  </section>
+
+  <section>
+    <div class="code-head"><h2>Form code</h2><div class="right"><span class="filetag">frmPointExporter</span><button class="copy" data-target="form">Copy code</button></div></div>
+    <pre><code id="form">Option Explicit
+
+'=========================================================
+' CATIA POINT EXPORTER - FORM
+' Form name: frmPointExporter
+' The form is empty in the designer. Every control is
+' created here in code.
+'=========================================================
+
+Private WithEvents mLangButton As MSForms.CommandButton
+Private WithEvents mCloseButton As MSForms.CommandButton
+Private WithEvents mBrowse1 As MSForms.CommandButton
+Private WithEvents mAct1 As MSForms.CommandButton
+
+Private mBusy As Boolean
+
+
+'=========================================================
+' FORM INITIALIZATION
+'=========================================================
+
+Private Sub UserForm_Initialize()
+
+    PtLoadLanguage
+
+    Me.Caption = "CATIA Point Exporter"
+    Me.Width = 440
+    Me.Height = 330
+
+    BuildControls
+    ApplyLanguage
+    LoadInputs
+    ShowDocStatus
+
+End Sub
+
+
+Private Function AddCtl( _
+        ByVal progId As String, _
+        ByVal ctlName As String, _
+        ByVal x As Single, _
+        ByVal y As Single, _
+        ByVal w As Single, _
+        ByVal h As Single) As Object
+
+    Dim c As Object
+
+    Set c = Me.Controls.Add(progId, ctlName, True)
+
+    c.Left = x
+    c.Top = y
+    c.Width = w
+    c.Height = h
+
+    Set AddCtl = c
+
+End Function
+
+
+Private Sub BuildControls()
+
+    Dim c As Object
+
+    ' Title and language button
+    Set c = AddCtl("Forms.Label.1", "lblTitle", 20, 12, 300, 24)
+    c.Font.Size = 14
+    c.Font.Bold = True
+
+    Set mLangButton = AddCtl("Forms.CommandButton.1", "cmdLang", 330, 12, 80, 24)
+
+    Set c = AddCtl("Forms.Label.1", "lblSubtitle", 20, 40, 390, 28)
+    c.WordWrap = True
+
+    Set c = AddCtl("Forms.Label.1", "lbl_cboSource", 20, 77, 150, 16)
+    Set c = AddCtl("Forms.ComboBox.1", "cboSource", 175, 74, 235, 20)
+    c.Style = 2
+
+    Set c = AddCtl("Forms.CheckBox.1", "chkHoles", 20, 102, 390, 18)
+
+    Set c = AddCtl("Forms.Label.1", "lbl_txtDec", 20, 126, 300, 16)
+    Set c = AddCtl("Forms.TextBox.1", "txtDec", 330, 123, 80, 20)
+    c.TextAlign = 3
+
+    Set c = AddCtl("Forms.Label.1", "lbl_txtOut", 20, 151, 390, 16)
+    Set c = AddCtl("Forms.TextBox.1", "txtOut", 20, 168, 310, 20)
+    Set mBrowse1 = AddCtl("Forms.CommandButton.1", "cmdBrowse1", 336, 167, 74, 22)
+
+    Set c = AddCtl("Forms.CheckBox.1", "chkOpen", 20, 197, 390, 18)
+
+    ' Status
+    Set c = AddCtl("Forms.Label.1", "lblStatus", 20, 218, 390, 34)
+    c.WordWrap = True
+    c.Font.Bold = True
+
+    ' Buttons
+    Set mAct1 = AddCtl("Forms.CommandButton.1", "cmdAct1", 20, 258, 191, 30)
+    Set mCloseButton = AddCtl("Forms.CommandButton.1", "cmdClose", 219, 258, 191, 30)
+
+    ' Logo, centered at the bottom. The picture data is at the bottom of the module.
+    Set c = AddCtl("Forms.Image.1", "imgLogo", 20, 296, 10, 10)
+    c.BorderStyle = 0
+    c.BackStyle = 0
+    c.AutoSize = True
+
+    If PtLoadLogo(c) Then
+        c.Left = 215 - c.Width / 2
+        Me.Height = 330 + c.Height + 8
+    Else
+        c.Visible = False
+    End If
+
+End Sub
+
+
+'=========================================================
+' LANGUAGE
+'=========================================================
+
+Private Sub ApplyLanguage()
+
+    Dim c As Object
+
+    Me.Controls("lblTitle").Caption = PtTxt("title")
+    Me.Controls("lblSubtitle").Caption = PtTxt("subtitle")
+
+    Me.Controls("lbl_cboSource").Caption = PtTxt("source")
+    FillCombo "cboSource", Array("srcSel", "srcAll")
+    Me.Controls("chkHoles").Caption = PtTxt("chkHoles")
+    Me.Controls("lbl_txtDec").Caption = PtTxt("decimals")
+    Me.Controls("lbl_txtOut").Caption = PtTxt("outFolder")
+    mBrowse1.Caption = PtTxt("btnBrowse")
+    Me.Controls("chkOpen").Caption = PtTxt("chkOpen")
+    mAct1.Caption = PtTxt("btnRun")
+    mCloseButton.Caption = PtTxt("btnClose")
+    mLangButton.Caption = PtTxt("btnLang")
+
+    ' A font that can show the selected language
+    On Error Resume Next
+
+    For Each c In Me.Controls
+        c.Font.Name = PtUiFontName()
+    Next c
+
+    On Error GoTo 0
+
+End Sub
+
+
+Private Sub FillCombo(ByVal ctlName As String, ByVal keys As Variant)
+
+    Dim c As Object
+    Dim keep As Long
+    Dim i As Long
+
+    Set c = Me.Controls(ctlName)
+
+    keep = c.ListIndex
+
+    c.Clear
+
+    For i = LBound(keys) To UBound(keys)
+        c.AddItem PtTxt(CStr(keys(i)))
+    Next i
+
+    If keep &lt; 0 Or keep &gt; c.ListCount - 1 Then keep = 0
+
+    c.ListIndex = keep
+
+End Sub
+
+
+Private Sub SetComboIndex(ByVal ctlName As String, ByVal index As Long)
+
+    Dim c As Object
+
+    Set c = Me.Controls(ctlName)
+
+    If index &lt; 0 Or index &gt; c.ListCount - 1 Then index = 0
+
+    c.ListIndex = index
+
+End Sub
+
+
+Private Sub mLangButton_Click()
+
+    If gPtLang = "KO" Then
+        PtSetLanguage "EN"
+    Else
+        PtSetLanguage "KO"
+    End If
+
+    ApplyLanguage
+    ShowDocStatus
+
+End Sub
+
+
+'=========================================================
+' REMEMBERED INPUTS
+'=========================================================
+
+Private Sub LoadInputs()
+
+    On Error Resume Next
+
+    SetComboIndex "cboSource", CLng(Val(PtLoadText("cboSource", "1")))
+    Me.Controls("chkHoles").Value = (PtLoadText("chkHoles", "1") = "1")
+    Me.Controls("txtDec").Text = PtLoadText("txtDec", "3")
+    Me.Controls("txtOut").Text = PtLoadText("txtOut", "")
+    Me.Controls("chkOpen").Value = (PtLoadText("chkOpen", "1") = "1")
+
+End Sub
+
+
+Private Sub SaveInputs()
+
+    On Error Resume Next
+
+    PtSaveText "cboSource", CStr(Me.Controls("cboSource").ListIndex)
+    PtSaveText "chkHoles", IIf(Me.Controls("chkHoles").Value = True, "1", "0")
+    PtSaveText "txtDec", Me.Controls("txtDec").Text
+    PtSaveText "txtOut", Me.Controls("txtOut").Text
+    PtSaveText "chkOpen", IIf(Me.Controls("chkOpen").Value = True, "1", "0")
+
+End Sub
+
+
+'=========================================================
+' ACTIVE DOCUMENT AND STATUS
+'=========================================================
+
+Private Function DocReady() As Boolean
+
+    Dim kind As String
+
+    kind = PtDocKind()
+
+    DocReady = (Len(kind) &gt; 0 And InStr("|Part|", "|" &amp; kind &amp; "|") &gt; 0)
+
+End Function
+
+
+Private Sub ShowDocStatus()
+
+    If DocReady() Then
+        ShowStatus PtFmt(PtTxt("stReady"), PtDocName())
+    Else
+        ShowStatus PtTxt("stNeed")
+    End If
+
+End Sub
+
+
+Private Sub ShowStatus(ByVal message As String)
+
+    Me.Controls("lblStatus").Caption = PtTxt("status") &amp; message
+
+End Sub
+
+
+' Called by the module while it works
+Public Sub Progress(ByVal message As String)
+
+    ShowStatus message
+
+    Me.Repaint
+
+    DoEvents
+
+End Sub
+
+
+Private Sub SetBusy(ByVal busy As Boolean)
+
+    Dim c As Object
+
+    mBusy = busy
+
+    For Each c In Me.Controls
+        If TypeName(c) = "CommandButton" Then c.Enabled = Not busy
+    Next c
+
+    Me.Repaint
+
+    DoEvents
+
+End Sub
+
+
+'=========================================================
+' BUTTONS
+'=========================================================
+
+Private Sub DoAction(ByVal actionId As Long)
+
+    Dim message As String
+    Dim ok As Boolean
+
+    If mBusy Then Exit Sub
+
+    If Not DocReady() Then
+        ShowDocStatus
+        Exit Sub
+    End If
+
+    SaveInputs
+
+    SetBusy True
+
+    ShowStatus PtTxt("stWorking")
+
+    On Error GoTo Failed
+
+    ok = PtRun(Me, actionId, message)
+
+    On Error Resume Next
+
+    CATIA.RefreshDisplay = True
+    CATIA.DisplayFileAlerts = True
+
+    SetBusy False
+
+    ShowStatus message
+
+    Exit Sub
+
+Failed:
+
+    message = Err.Description
+
+    On Error Resume Next
+
+    CATIA.RefreshDisplay = True
+    CATIA.DisplayFileAlerts = True
+
+    SetBusy False
+
+    ShowStatus PtFmt(PtTxt("msgError"), message)
+
+End Sub
+
+
+Private Sub mAct1_Click()
+
+    DoAction 1
+
+End Sub
+
+
+Private Sub mBrowse1_Click()
+
+    Dim picked As String
+
+    picked = PtBrowseFolder(PtTxt("outFolder"))
+
+    If Len(picked) &gt; 0 Then Me.Controls("txtOut").Text = picked
+
+End Sub
+
+
+
+'=========================================================
+' CLOSE
+'=========================================================
+
+Private Sub mCloseButton_Click()
+
+    Unload Me
+
+End Sub
+
+
+' The window cannot be closed while the macro is working
+Private Sub UserForm_QueryClose(Cancel As Integer, CloseMode As Integer)
+
+    If mBusy Then Cancel = True
+
+End Sub</code></pre>
+  </section>
+
+  <section>
+    <div class="code-head"><h2>Module code</h2><div class="right"><span class="filetag">PointExporter</span><button class="copy" data-target="module">Copy code</button></div></div>
+    <p>The long block of letters and numbers at the bottom is the credit image. Do not edit it.</p>
+    <pre><code id="module">Option Explicit
+
+'=========================================================
+' CATIA POINT EXPORTER - MAIN MODULE
+' Module name: PointExporter
+' Run CATMain to open the window.
+'=========================================================
+
+Private Const REG_APP As String = "CatiaPointExporter"
+Private Const REG_SEC As String = "Settings"
+
+' "EN" or "KO"
+Public gPtLang As String
+
+
+'=========================================================
+' ENTRY POINT
+'=========================================================
+
+Sub CATMain()
+
+    PtLoadLanguage
+    frmPointExporter.Show
+
+End Sub
+
+'=========================================================
+' EXPORT
+'=========================================================
+
+Public Function PtRun( _
+        ByVal frm As Object, _
+        ByVal actionId As Long, _
+        ByRef message As String) As Boolean
+
+    Dim d As Object
+    Dim prt As Object
+    Dim spa As Object
+    Dim sel As Object
+    Dim picked As New Collection
+    Dim obj As Object
+    Dim meas As Object
+    Dim bodies As Object
+    Dim b As Object
+    Dim s As Object
+    Dim pt(2) As Variant
+    Dim outFolder As String
+    Dim target As String
+    Dim content As String
+    Dim itemName As String
+    Dim parentName As String
+    Dim decimals As Long
+    Dim i As Long
+    Dim j As Long
+    Dim rowNo As Long
+    Dim skipped As Long
+    Dim ok As Boolean
+    Dim searched As Boolean
+
+    PtRun = False
+
+    outFolder = WithSlash(CtlText(frm, "txtOut"))
+
+    If Not FolderExists(outFolder) Then
+        message = PtTxt("msgNoOut")
+        Exit Function
+    End If
+
+    decimals = CLng(Val(CtlText(frm, "txtDec")))
+
+    If decimals &lt; 0 Then decimals = 0
+    If decimals &gt; 6 Then decimals = 6
+
+    Set d = CATIA.ActiveDocument
+    Set prt = d.Part
+    Set spa = d.GetWorkbench("SPAWorkbench")
+    Set sel = d.Selection
+
+    If CtlIndex(frm, "cboSource") = 1 Then
+        On Error Resume Next
+        sel.Clear
+        sel.Search "CATPrtSearch.Point,all"
+        On Error GoTo 0
+        searched = True
+    End If
+
+    ' Copy the selection first, so it can be cleared safely
+    For i = 1 To sel.Count
+        picked.Add sel.Item(i).Value
+    Next i
+
+    If searched Then sel.Clear
+
+    content = Csv(PtTxt("hNo")) &amp; "," &amp; Csv(PtTxt("hName")) &amp; "," &amp; Csv(PtTxt("hParent")) &amp; "," &amp; _
+              Csv(PtTxt("hType")) &amp; ",""X (mm)"",""Y (mm)"",""Z (mm)""" &amp; vbCrLf
+
+    '---------------------------------------
+    ' Points
+    '---------------------------------------
+
+    For i = 1 To picked.Count
+
+        Set obj = picked.Item(i)
+
+        ok = False
+        itemName = ""
+        parentName = ""
+
+        On Error Resume Next
+
+        Err.Clear
+
+        Set meas = spa.GetMeasurable(prt.CreateReferenceFromObject(obj))
+
+        meas.GetPoint pt
+
+        ok = (Err.Number = 0)
+
+        Err.Clear
+
+        itemName = obj.Name
+        parentName = obj.Parent.Parent.Name
+
+        On Error GoTo 0
+
+        If ok Then
+
+            rowNo = rowNo + 1
+
+            content = content &amp; CStr(rowNo) &amp; "," &amp; Csv(itemName) &amp; "," &amp; Csv(parentName) &amp; "," &amp; _
+                      Csv(PtTxt("tPoint")) &amp; "," &amp; Num(pt(0), decimals) &amp; "," &amp; _
+                      Num(pt(1), decimals) &amp; "," &amp; Num(pt(2), decimals) &amp; vbCrLf
+
+        Else
+
+            skipped = skipped + 1
+
+        End If
+
+    Next i
+
+    '---------------------------------------
+    ' Hole centers
+    '---------------------------------------
+
+    If CtlOn(frm, "chkHoles") Then
+
+        Set bodies = prt.Bodies
+
+        For i = 1 To bodies.Count
+
+            Set b = bodies.Item(i)
+
+            For j = 1 To b.Shapes.Count
+
+                Set s = b.Shapes.Item(j)
+
+                If TypeName(s) = "Hole" Then
+
+                    ok = False
+
+                    On Error Resume Next
+
+                    Err.Clear
+
+                    s.GetOrigin pt
+
+                    ok = (Err.Number = 0)
+
+                    Err.Clear
+
+                    On Error GoTo 0
+
+                    If ok Then
+
+                        rowNo = rowNo + 1
+
+                        content = content &amp; CStr(rowNo) &amp; "," &amp; Csv(s.Name) &amp; "," &amp; Csv(b.Name) &amp; "," &amp; _
+                                  Csv(PtTxt("tHole")) &amp; "," &amp; Num(pt(0), decimals) &amp; "," &amp; _
+                                  Num(pt(1), decimals) &amp; "," &amp; Num(pt(2), decimals) &amp; vbCrLf
+
+                    End If
+
+                End If
+
+            Next j
+
+        Next i
+
+    End If
+
+    If rowNo = 0 Then
+        message = PtTxt("msgNothing")
+        Exit Function
+    End If
+
+    target = outFolder &amp; CleanName(StripExt(d.Name)) &amp; "_Points.csv"
+
+    If Not WriteTextFile(target, content) Then
+        message = PtTxt("msgWriteFail")
+        Exit Function
+    End If
+
+    If CtlOn(frm, "chkOpen") Then OpenFile target
+
+    message = PtFmt(PtTxt("msgDone"), CStr(rowNo), CStr(skipped)) &amp; " " &amp; target
+
+    PtRun = True
+
+End Function
+
+
+'=========================================================
+' SHARED HELPERS
+'=========================================================
+
+' "" = nothing open, otherwise Product, Part, Drawing or Other
+Public Function PtDocKind() As String
+
+    Dim t As String
+
+    On Error Resume Next
+
+    If CATIA.Documents.Count &gt; 0 Then t = TypeName(CATIA.ActiveDocument)
+
+    On Error GoTo 0
+
+    Select Case t
+        Case "ProductDocument": PtDocKind = "Product"
+        Case "PartDocument": PtDocKind = "Part"
+        Case "DrawingDocument": PtDocKind = "Drawing"
+        Case "": PtDocKind = ""
+        Case Else: PtDocKind = "Other"
+    End Select
+
+End Function
+
+
+Public Function PtDocName() As String
+
+    On Error Resume Next
+
+    PtDocName = CATIA.ActiveDocument.Name
+
+End Function
+
+
+' Folder picker. Returns "" when cancelled.
+Public Function PtBrowseFolder(ByVal title As String) As String
+
+    Dim sh As Object
+    Dim picked As Object
+
+    On Error Resume Next
+
+    Set sh = CreateObject("Shell.Application")
+    Set picked = sh.BrowseForFolder(0, title, 1)
+
+    If Not picked Is Nothing Then PtBrowseFolder = picked.Self.Path
+
+End Function
+
+
+Private Function CtlText(ByVal frm As Object, ByVal ctlName As String) As String
+
+    CtlText = Trim$(frm.Controls(ctlName).Text)
+
+End Function
+
+
+Private Function CtlOn(ByVal frm As Object, ByVal ctlName As String) As Boolean
+
+    CtlOn = (frm.Controls(ctlName).Value = True)
+
+End Function
+
+
+Private Function CtlIndex(ByVal frm As Object, ByVal ctlName As String) As Long
+
+    CtlIndex = frm.Controls(ctlName).ListIndex
+
+End Function
+
+
+' Shows progress on the status line of the window
+Private Sub Say(ByVal frm As Object, ByVal message As String)
+
+    frm.Progress message
+
+End Sub
+
+
+' Replaces characters that are not allowed in a file name
+Private Function CleanName(ByVal rawName As String) As String
+
+    Dim i As Long
+    Dim ch As String
+    Dim code As Long
+    Dim result As String
+
+    For i = 1 To Len(rawName)
+
+        ch = Mid$(rawName, i, 1)
+        code = AscW(ch)
+
+        If InStr("\/:*?""&lt;&gt;|", ch) &gt; 0 Or (code &gt;= 0 And code &lt; 32) Then
+            result = result &amp; "_"
+        Else
+            result = result &amp; ch
+        End If
+
+    Next i
+
+    If Len(result) = 0 Then result = "Unnamed"
+
+    CleanName = result
+
+End Function
+
+
+Private Function StripExt(ByVal fileName As String) As String
+
+    Dim p As Long
+
+    p = InStrRev(fileName, ".")
+
+    If p &gt; 1 Then
+        StripExt = Left$(fileName, p - 1)
+    Else
+        StripExt = fileName
+    End If
+
+End Function
+
+
+Private Function FileNameOf(ByVal filePath As String) As String
+
+    FileNameOf = Mid$(filePath, InStrRev(filePath, "\") + 1)
+
+End Function
+
+
+Private Function WithSlash(ByVal folderPath As String) As String
+
+    If Len(folderPath) &gt; 0 And Right$(folderPath, 1) &lt;&gt; "\" Then folderPath = folderPath &amp; "\"
+
+    WithSlash = folderPath
+
+End Function
+
+
+Private Function FolderExists(ByVal folderPath As String) As Boolean
+
+    Dim fso As Object
+
+    If Len(folderPath) = 0 Then Exit Function
+
+    On Error Resume Next
+
+    Set fso = CreateObject("Scripting.FileSystemObject")
+
+    FolderExists = fso.FolderExists(folderPath)
+
+End Function
+
+
+Private Function FileExists(ByVal filePath As String) As Boolean
+
+    Dim fso As Object
+
+    If Len(filePath) = 0 Then Exit Function
+
+    On Error Resume Next
+
+    Set fso = CreateObject("Scripting.FileSystemObject")
+
+    FileExists = fso.FileExists(filePath)
+
+End Function
+
+
+Private Sub DeleteFile(ByVal filePath As String)
+
+    Dim fso As Object
+
+    On Error Resume Next
+
+    Set fso = CreateObject("Scripting.FileSystemObject")
+
+    If fso.FileExists(filePath) Then fso.DeleteFile filePath, True
+
+End Sub
+
+
+Private Sub OpenFile(ByVal filePath As String)
+
+    Dim sh As Object
+
+    On Error Resume Next
+
+    Set sh = CreateObject("WScript.Shell")
+
+    sh.Run """" &amp; filePath &amp; """"
+
+End Sub
+
+
+Private Function IsDocOpen(ByVal fileName As String) As Boolean
+
+    Dim d As Object
+
+    On Error Resume Next
+
+    Set d = CATIA.Documents.Item(fileName)
+
+    IsDocOpen = (Err.Number = 0) And Not (d Is Nothing)
+
+    Err.Clear
+
+End Function
+
+
+' One CSV field, always in quotes
+Private Function Csv(ByVal fieldText As String) As String
+
+    Csv = """" &amp; Replace(fieldText, """", """""") &amp; """"
+
+End Function
+
+
+' A number written with a decimal point on every PC
+Private Function Num(ByVal numberValue As Variant, Optional ByVal decimals As Long = 3) As String
+
+    Dim pattern As String
+
+    On Error Resume Next
+
+    pattern = "0"
+
+    If decimals &gt; 0 Then pattern = "0." &amp; String$(decimals, "0")
+
+    Num = Replace(Format$(CDbl(numberValue), pattern), ",", ".")
+
+End Function
+
+
+' Saves text as UTF-8 so Excel shows Korean correctly
+Private Function WriteTextFile(ByVal filePath As String, ByVal content As String) As Boolean
+
+    Dim stm As Object
+
+    On Error GoTo Failed
+
+    Set stm = CreateObject("ADODB.Stream")
+
+    stm.Type = 2
+    stm.Charset = "utf-8"
+    stm.Open
+    stm.WriteText content
+    stm.SaveToFile filePath, 2
+    stm.Close
+
+    WriteTextFile = True
+
+    Exit Function
+
+Failed:
+
+    On Error Resume Next
+    stm.Close
+
+End Function
+
+
+Private Function ReadTextFile(ByVal filePath As String) As String
+
+    Dim stm As Object
+
+    On Error GoTo Failed
+
+    Set stm = CreateObject("ADODB.Stream")
+
+    stm.Type = 2
+    stm.Charset = "utf-8"
+    stm.Open
+    stm.LoadFromFile filePath
+
+    ReadTextFile = stm.ReadText
+
+    stm.Close
+
+    Exit Function
+
+Failed:
+
+    On Error Resume Next
+    stm.Close
+
+End Function
+
+
+' Splits one CSV line into its fields
+Private Function CsvSplit(ByVal lineText As String) As Collection
+
+    Dim fields As New Collection
+    Dim i As Long
+    Dim ch As String
+    Dim cur As String
+    Dim inQuotes As Boolean
+
+    i = 1
+
+    Do While i &lt;= Len(lineText)
+
+        ch = Mid$(lineText, i, 1)
+
+        If inQuotes Then
+            If ch = """" Then
+                If Mid$(lineText, i + 1, 1) = """" Then
+                    cur = cur &amp; """"
+                    i = i + 1
+                Else
+                    inQuotes = False
+                End If
+            Else
+                cur = cur &amp; ch
+            End If
+        ElseIf ch = """" Then
+            inQuotes = True
+        ElseIf ch = "," Then
+            fields.Add cur
+            cur = ""
+        Else
+            cur = cur &amp; ch
+        End If
+
+        i = i + 1
+
+    Loop
+
+    fields.Add cur
+
+    Set CsvSplit = fields
+
+End Function
+
+
+' The name of a component, even when it is not loaded
+Private Function SafeName(ByVal prod As Object) As String
+
+    On Error Resume Next
+
+    SafeName = prod.Name
+
+End Function
+
+
+' The reference product behind an instance, or Nothing when
+' its file is missing or not loaded
+Private Function RefOf(ByVal prod As Object) As Object
+
+    On Error Resume Next
+
+    Set RefOf = prod.ReferenceProduct
+
+End Function
+
+
+' The document behind a component, or Nothing when it has none
+Private Function DocOf(ByVal prod As Object) As Object
+
+    Dim d As Object
+
+    On Error Resume Next
+
+    Set d = prod.ReferenceProduct.Parent
+
+    If d Is Nothing Then Exit Function
+
+    If Right$(TypeName(d), 8) = "Document" Then Set DocOf = d
+
+End Function
+
+
+Private Sub AddDoc(ByVal docs As Object, ByVal d As Object)
+
+    Dim key As String
+
+    key = UCase$(d.FullName)
+
+    If Not docs.Exists(key) Then docs.Add key, d
+
+End Sub
+
+
+' Fills docs (a Dictionary) with every loaded document under prod
+Private Sub CollectDocs( _
+        ByVal prod As Object, _
+        ByVal docs As Object, _
+        ByVal wantParts As Boolean, _
+        ByVal wantProducts As Boolean)
+
+    Dim kids As Object
+    Dim child As Object
+    Dim d As Object
+    Dim kind As String
+    Dim i As Long
+
+    On Error Resume Next
+    Set kids = prod.Products
+    On Error GoTo 0
+
+    If kids Is Nothing Then Exit Sub
+
+    For i = 1 To kids.Count
+
+        Set child = kids.Item(i)
+        Set d = DocOf(child)
+
+        If Not d Is Nothing Then
+
+            kind = TypeName(d)
+
+            If kind = "PartDocument" And wantParts Then AddDoc docs, d
+            If kind = "ProductDocument" And wantProducts Then AddDoc docs, d
+
+            CollectDocs child, docs, wantParts, wantProducts
+
+        End If
+
+    Next i
+
+End Sub
+
+
+' Text after the last backslash of a parameter name
+Private Function ShortName(ByVal fullName As String) As String
+
+    ShortName = Mid$(fullName, InStrRev(fullName, "\") + 1)
+
+End Function
+
+
+'=========================================================
+' SETTINGS (remembered between runs)
+'=========================================================
+
+Public Sub PtLoadLanguage()
+
+    gPtLang = UCase$(GetSetting(REG_APP, REG_SEC, "Lang", "EN"))
+
+    If gPtLang &lt;&gt; "KO" Then gPtLang = "EN"
+
+End Sub
+
+
+Public Sub PtSetLanguage(ByVal langCode As String)
+
+    gPtLang = langCode
+
+    SaveSetting REG_APP, REG_SEC, "Lang", gPtLang
+
+End Sub
+
+
+Public Function PtLoadText( _
+        ByVal choiceName As String, _
+        ByVal defaultValue As String) As String
+
+    PtLoadText = GetSetting(REG_APP, REG_SEC, choiceName, defaultValue)
+
+End Function
+
+
+Public Sub PtSaveText( _
+        ByVal choiceName As String, _
+        ByVal choiceValue As String)
+
+    SaveSetting REG_APP, REG_SEC, choiceName, choiceValue
+
+End Sub
+
+
+'=========================================================
+' TEXT (ENGLISH AND KOREAN)
+'=========================================================
+
+Public Function PtTxt(ByVal key As String) As String
+
+    If gPtLang = "KO" Then
+        PtTxt = TextKO(key)
+    Else
+        PtTxt = TextEN(key)
+    End If
+
+    If Len(PtTxt) = 0 Then PtTxt = TextEN(key)
+    If Len(PtTxt) = 0 Then PtTxt = key
+
+End Function
+
+
+Public Function PtUiFontName() As String
+
+    If gPtLang = "KO" Then
+        PtUiFontName = "Malgun Gothic"
+    Else
+        PtUiFontName = "Tahoma"
+    End If
+
+End Function
+
+
+' Fills {0}, {1} and {2} in a text
+Public Function PtFmt( _
+        ByVal template As String, _
+        Optional ByVal a As String = "", _
+        Optional ByVal b As String = "", _
+        Optional ByVal c As String = "") As String
+
+    PtFmt = Replace(Replace(Replace(template, "{0}", a), "{1}", b), "{2}", c)
+
+End Function
+
+
+' Turns \uXXXX codes into real characters
+Private Function U(ByVal coded As String) As String
+
+    Dim i As Long
+    Dim result As String
+
+    i = 1
+
+    Do While i &lt;= Len(coded)
+
+        If Mid$(coded, i, 2) = "\u" And i + 5 &lt;= Len(coded) Then
+            result = result &amp; ChrW$(CLng("&amp;H" &amp; Mid$(coded, i + 2, 4)))
+            i = i + 6
+        Else
+            result = result &amp; Mid$(coded, i, 1)
+            i = i + 1
+        End If
+
+    Loop
+
+    U = result
+
+End Function
+
+
+Private Function TextEN(ByVal key As String) As String
+
+    Select Case key
+        Case "btnClose": TextEN = "Close"
+        Case "btnLang": TextEN = U("\ud55c\uad6d\uc5b4")
+        Case "btnBrowse": TextEN = "Browse..."
+        Case "status": TextEN = "Status: "
+        Case "stWorking": TextEN = "Working..."
+        Case "msgError": TextEN = "Error: {0}"
+        Case "stNeed": TextEN = "Open a CATPart first"
+        Case "stReady": TextEN = "Ready. Active document: {0}"
+        Case "title": TextEN = "CATIA Point Exporter"
+        Case "subtitle": TextEN = "Exports the X, Y, Z coordinates of points and hole centers to a CSV"
+        Case "source": TextEN = "Points:"
+        Case "srcSel": TextEN = "Points selected before running"
+        Case "srcAll": TextEN = "Every point in the active part"
+        Case "chkHoles": TextEN = "Also list the centers of all holes"
+        Case "decimals": TextEN = "Decimal places (0 to 6):"
+        Case "outFolder": TextEN = "Save the CSV in:"
+        Case "chkOpen": TextEN = "Open the file when it is done"
+        Case "btnRun": TextEN = "Export"
+        Case "msgNoOut": TextEN = "Choose an existing folder to save the CSV in."
+        Case "msgNothing": TextEN = "No points found. Select points first, or choose ""Every point in the active part""."
+        Case "msgWriteFail": TextEN = "The file could not be written. Is it open in Excel?"
+        Case "msgDone": TextEN = "Exported {0} points. Selected items that are not points: {1}."
+        Case "hNo": TextEN = "No"
+        Case "hName": TextEN = "Name"
+        Case "hParent": TextEN = "In"
+        Case "hType": TextEN = "Type"
+        Case "tPoint": TextEN = "Point"
+        Case "tHole": TextEN = "Hole center"
+    End Select
+
+End Function
+
+
+Private Function TextKO(ByVal key As String) As String
+
+    Select Case key
+        Case "btnClose": TextKO = U("\ub2eb\uae30")
+        Case "btnLang": TextKO = "English"
+        Case "btnBrowse": TextKO = U("\ucc3e\uc544\ubcf4\uae30...")
+        Case "status": TextKO = U("\uc0c1\ud0dc: ")
+        Case "stWorking": TextKO = U("\uc791\uc5c5 \uc911...")
+        Case "msgError": TextKO = U("\uc624\ub958: {0}")
+        Case "stNeed": TextKO = U("\uba3c\uc800 CATPart\ub97c \uc5ec\uc138\uc694")
+        Case "stReady": TextKO = U("\uc900\ube44\ub428. \ud65c\uc131 \ubb38\uc11c: {0}")
+        Case "title": TextKO = U("CATIA \uc810 \uc88c\ud45c \ub0b4\ubcf4\ub0b4\uae30")
+        Case "subtitle": TextKO = U("\uc810\uacfc \uad6c\uba4d \uc911\uc2ec\uc758 X, Y, Z \uc88c\ud45c\ub97c CSV\ub85c \ub0b4\ubcf4\ub0c5\ub2c8\ub2e4")
+        Case "source": TextKO = U("\uc810:")
+        Case "srcSel": TextKO = U("\uc2e4\ud589 \uc804\uc5d0 \uc120\ud0dd\ud55c \uc810")
+        Case "srcAll": TextKO = U("\ud65c\uc131 \ud30c\ud2b8\uc758 \ubaa8\ub4e0 \uc810")
+        Case "chkHoles": TextKO = U("\ubaa8\ub4e0 \uad6c\uba4d\uc758 \uc911\uc2ec\ub3c4 \ud3ec\ud568")
+        Case "decimals": TextKO = U("\uc18c\uc218 \uc790\ub9bf\uc218 (0-6):")
+        Case "outFolder": TextKO = U("CSV \uc800\uc7a5 \ud3f4\ub354:")
+        Case "chkOpen": TextKO = U("\uc644\ub8cc \ud6c4 \ud30c\uc77c \uc5f4\uae30")
+        Case "btnRun": TextKO = U("\ub0b4\ubcf4\ub0b4\uae30")
+        Case "msgNoOut": TextKO = U("CSV\ub97c \uc800\uc7a5\ud560 \uae30\uc874 \ud3f4\ub354\ub97c \uc120\ud0dd\ud558\uc138\uc694.")
+        Case "msgNothing": TextKO = U("\uc810\uc744 \ucc3e\uc744 \uc218 \uc5c6\uc2b5\ub2c8\ub2e4. \uba3c\uc800 \uc810\uc744 \uc120\ud0dd\ud558\uac70\ub098 ""\ud65c\uc131 \ud30c\ud2b8\uc758 \ubaa8\ub4e0 \uc810""\uc744 \uc120\ud0dd\ud558\uc138\uc694.")
+        Case "msgWriteFail": TextKO = U("\ud30c\uc77c\uc744 \uc4f8 \uc218 \uc5c6\uc2b5\ub2c8\ub2e4. Excel\uc5d0\uc11c \uc5f4\ub824 \uc788\uc2b5\ub2c8\uae4c?")
+        Case "msgDone": TextKO = U("\uc810 {0}\uac1c\ub97c \ub0b4\ubcf4\ub0c8\uc2b5\ub2c8\ub2e4. \uc810\uc774 \uc544\ub2cc \uc120\ud0dd \ud56d\ubaa9: {1}.")
+        Case "hNo": TextKO = U("\ubc88\ud638")
+        Case "hName": TextKO = U("\uc774\ub984")
+        Case "hParent": TextKO = U("\uc0c1\uc704")
+        Case "hType": TextKO = U("\uc720\ud615")
+        Case "tPoint": TextKO = U("\uc810")
+        Case "tHole": TextKO = U("\uad6c\uba4d \uc911\uc2ec")
+    End Select
+
+End Function
+
+
+'=========================================================
+' LOGO
+' The logo picture is stored below as text.
+' The form shows it with:
+'     PtLoadLogo Me.Controls("imgLogo")
+'=========================================================
+
+' Puts the logo into an Image control.
+' Returns False if the picture could not be loaded.
+Public Function PtLoadLogo(ByVal target As Object) As Boolean
+
+    Dim data() As Byte
+    Dim filePath As String
+    Dim fileNo As Integer
+
+    PtLoadLogo = False
+
+    On Error GoTo Failed
+
+    data = HexToBytes(LogoHex())
+
+    ' VBA can only load a picture from a file, so the data is
+    ' written to the Windows temp folder, loaded, then deleted.
+    filePath = Environ$("TEMP") &amp; "\catia_macro_logo.gif"
+
+    If Len(Dir$(filePath)) &gt; 0 Then Kill filePath
+
+    fileNo = FreeFile
+
+    Open filePath For Binary Access Write As #fileNo
+    Put #fileNo, , data
+    Close #fileNo
+
+    Set target.Picture = LoadPicture(filePath)
+
+    PtLoadLogo = True
+
+    On Error Resume Next
+    Kill filePath
+
+    Exit Function
+
+Failed:
+
+    On Error Resume Next
+    Close #fileNo
+
+End Function
+
+
+' Turns pairs of hex characters back into bytes
+Private Function HexToBytes(ByVal hexText As String) As Byte()
+
+    Dim count As Long
+    Dim i As Long
+    Dim data() As Byte
+
+    count = Len(hexText) \ 2
+
+    ReDim data(0 To count - 1)
+
+    For i = 0 To count - 1
+        data(i) = CByte("&amp;H" &amp; Mid$(hexText, i * 2 + 1, 2))
+    Next i
+
+    HexToBytes = data
+
+End Function
+
+
+' The logo picture (a GIF image, 195 x 15 pixels) written as hex text
+Private Function LogoHex() As String
+
+    Dim s As String
+
+    s = s &amp; "474946383761C3000F00840000F0F0F0D7DCE0C4CCD4B5C0CBA7B4C29AA9BA8D9FB27F92A97288A06B829D657D9957719048"
+    s = s &amp; "65863B5A7F2C4E751E426C0F3562002A5A000000000000000000000000000000000000000000000000000000000000000000"
+    s = s &amp; "0000000000000000002C00000000C3000F000008FF0001081C48B0A0C18308132A5CC8B0A1C38710234A9C48B1A2C58B1833"
+    s = s &amp; "6ADCE810418401041F34187820820082061E4480B02000008F11562A20A9320283930463C674504020019D3113402058E001"
+    s = s &amp; "00A011101C2550F040CD9B021BE87CD013A6CE973A59BA1CF8332604A50D940A44309260499C4B010C7010B32580B0041B30"
+    s = s &amp; "15C8C0E840010C623E38E0330241044AADC6FC1BA12C8092861D34E02BD029D3000B1CBC2C1BE08181970FE62280B0556084"
+    s = s &amp; "B90620F4FC5950F4C005333F17543D1041E6B19CDF8A2DC0996C41DB00F04AE6EA37B7E801B10340983B5031E3B47B010460"
+    s = s &amp; "B04076DCB9C21D80540E4181CBB54A49B70E6CF87683063D2B2BFF282BE08180DD00868724801BC002A5EA07C21DC81A404A"
+    s = s &amp; "00DA4FCF140801647DCFC4A517205CF32DD5DE58DD59C69B7C4ABDF752730495771E7D4C992490009715F816680B18B0DF01"
+    s = s &amp; "DD11C0597E2F71871059033C0019606521C09774F8F5E6DD85999138594E017E64635102F198168E0BFE35D27C3F0970E08D"
+    s = s &amp; "AD311024702709F01104688DF5E274AA2DB0175A1ACA15D500C245251685240286A441B62D602592E6D937938D6301C5978D"
+    s = s &amp; "0474F7DF675D5D05C00320A1E61950151207E790535505D44807B657A74D5B29509D41697A08A04006E4D500485221C55479"
+    s = s &amp; "022DD093861B8619D8A0425257D548030065149B480217808D200249DF006C2AFF3013948FBA1A6353437E89E08C49060919"
+    s = s &amp; "6511742650A953D52A50008A3A271F5325E9D41CA7C3793A26AFAD8DA4C071930AB85E7B0E5C169F97B6DEC7668A05A0F7DF"
+    s = s &amp; "8FFC0D0896AED34EAB605F411E65D0B5F2F947C000722A1B155330F27758889C95DA1903261E74A46D6936D6DC010E3C16D9"
+    s = s &amp; "9808348740BF07C446618FA6A1FA8003C79DFBDFC4D355EC12A70793F770BC0AD8256F41091FD6DC67C25D76D850591280E9"
+    s = s &amp; "400C18209C58E789E5805B45B65BAD773E0E3B947D2A6935A68F4EC504554E3AF1D4179F022960E19E3A2965E9614FE14432"
+    s = s &amp; "525879E5166F3A3130DDCA0315ADD650AAE1EB34A5BACAA500848D2989975EC72DB7534F61DB24C9D1DF80072EF845043810"
+    s = s &amp; "E5E08827AEF8E21D412023E390472EF9E494576EF9E51B0504003B"
+
+    LogoHex = s
+
+End Function</code></pre>
+  </section>
+
+  <section>
+    <h2>English and Korean text</h2>
+    <p>All wording lives in <code>TextEN</code> and <code>TextKO</code> in the module. Korean is stored as <code>\uXXXX</code> codes so it pastes safely into the VBA editor on any PC. Please have a Korean-speaking CATIA user check the terms.</p>
+    <div class="wrapx"><table>
+      <tr><th>Key</th><th>English</th><th>Korean</th></tr>
+      <tr><td><code>btnClose</code></td><td>Close</td><td lang="ko">닫기</td></tr><tr><td><code>btnLang</code></td><td>한국어 (button label)</td><td lang="ko">English (button label)</td></tr><tr><td><code>btnBrowse</code></td><td>Browse...</td><td lang="ko">찾아보기...</td></tr><tr><td><code>status</code></td><td>Status: </td><td lang="ko">상태: </td></tr><tr><td><code>stWorking</code></td><td>Working...</td><td lang="ko">작업 중...</td></tr><tr><td><code>msgError</code></td><td>Error: {0}</td><td lang="ko">오류: {0}</td></tr><tr><td><code>stNeed</code></td><td>Open a CATPart first</td><td lang="ko">먼저 CATPart를 여세요</td></tr><tr><td><code>stReady</code></td><td>Ready. Active document: {0}</td><td lang="ko">준비됨. 활성 문서: {0}</td></tr><tr><td><code>title</code></td><td>CATIA Point Exporter</td><td lang="ko">CATIA 점 좌표 내보내기</td></tr><tr><td><code>subtitle</code></td><td>Exports the X, Y, Z coordinates of points and hole centers to a CSV</td><td lang="ko">점과 구멍 중심의 X, Y, Z 좌표를 CSV로 내보냅니다</td></tr><tr><td><code>source</code></td><td>Points:</td><td lang="ko">점:</td></tr><tr><td><code>srcSel</code></td><td>Points selected before running</td><td lang="ko">실행 전에 선택한 점</td></tr><tr><td><code>srcAll</code></td><td>Every point in the active part</td><td lang="ko">활성 파트의 모든 점</td></tr><tr><td><code>chkHoles</code></td><td>Also list the centers of all holes</td><td lang="ko">모든 구멍의 중심도 포함</td></tr><tr><td><code>decimals</code></td><td>Decimal places (0 to 6):</td><td lang="ko">소수 자릿수 (0-6):</td></tr><tr><td><code>outFolder</code></td><td>Save the CSV in:</td><td lang="ko">CSV 저장 폴더:</td></tr><tr><td><code>chkOpen</code></td><td>Open the file when it is done</td><td lang="ko">완료 후 파일 열기</td></tr><tr><td><code>btnRun</code></td><td>Export</td><td lang="ko">내보내기</td></tr><tr><td><code>msgNoOut</code></td><td>Choose an existing folder to save the CSV in.</td><td lang="ko">CSV를 저장할 기존 폴더를 선택하세요.</td></tr><tr><td><code>msgNothing</code></td><td>No points found. Select points first, or choose &quot;Every point in the active part&quot;.</td><td lang="ko">점을 찾을 수 없습니다. 먼저 점을 선택하거나 &quot;활성 파트의 모든 점&quot;을 선택하세요.</td></tr><tr><td><code>msgWriteFail</code></td><td>The file could not be written. Is it open in Excel?</td><td lang="ko">파일을 쓸 수 없습니다. Excel에서 열려 있습니까?</td></tr><tr><td><code>msgDone</code></td><td>Exported {0} points. Selected items that are not points: {1}.</td><td lang="ko">점 {0}개를 내보냈습니다. 점이 아닌 선택 항목: {1}.</td></tr><tr><td><code>hNo</code></td><td>No</td><td lang="ko">번호</td></tr><tr><td><code>hName</code></td><td>Name</td><td lang="ko">이름</td></tr><tr><td><code>hParent</code></td><td>In</td><td lang="ko">상위</td></tr><tr><td><code>hType</code></td><td>Type</td><td lang="ko">유형</td></tr><tr><td><code>tPoint</code></td><td>Point</td><td lang="ko">점</td></tr><tr><td><code>tHole</code></td><td>Hole center</td><td lang="ko">구멍 중심</td></tr>
+    </table></div>
+    <p class="note"><code>{0}</code>, <code>{1}</code> and <code>{2}</code> are filled in with numbers, names and error details. The window title bar stays in English in both languages.</p>
+  </section>
+
+  <section>
+    <h2>Known limitations</h2>
+    <ul>
+      <li>Coordinates are in the absolute axis system of the part. A local axis system or the assembly position is not taken into account.</li>
+      <li>It works on a CATPart that is the active document, not on a part inside an open assembly window.</li>
+      <li>Points inside sketches are not found by "Every point in the active part". Select them one by one instead, or create 3D points.</li>
+      <li>Holes that come from a pattern are not separate hole features in CATIA, so only the original hole is listed.</li>
+      <li>With "Every point in the active part", the current selection is cleared.</li>
+      <li>The window is modal, so CATIA cannot be clicked while it is open. Anything that must be selected in CATIA has to be selected before running the macro.</li>
+      <li>If the credit image cannot be loaded, for example when the Windows temp folder is not writable, the window opens without it.</li>
+    </ul>
+  </section>
+</main>
+<footer>Prepared for CATIA V5 R21 and later, VBA. Exports point and hole center coordinates.</footer>
+</div>
+<script>
+document.querySelectorAll('.copy').forEach(function (btn) {
+  btn.addEventListener('click', function () {
+    var text = document.getElementById(btn.dataset.target).textContent;
+    function done(ok) {
+      btn.textContent = ok ? 'Copied' : 'Select and copy manually';
+      setTimeout(function () { btn.textContent = 'Copy code'; }, 1800);
+    }
+    function fallback() {
+      var ta = document.createElement('textarea');
+      ta.value = text; document.body.appendChild(ta); ta.select();
+      var ok = false;
+      try { ok = document.execCommand('copy'); } catch (e) {}
+      document.body.removeChild(ta); done(ok);
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () { done(true); }, fallback);
+    } else { fallback(); }
+  });
+});
+</script>
+</body>
+</html>

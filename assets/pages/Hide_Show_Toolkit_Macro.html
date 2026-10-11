@@ -1,0 +1,1405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>CATIA Hide Show Toolkit - VBA Package</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono&display=swap">
+<style>
+:root {
+  --bg:#eef1f5; --panel:#ffffff; --ink:#16202c; --muted:#566475; --line:#d3dae3;
+  --accent:#2c5aa0; --accent2:#1f437a; --code-bg:#f6f8fb; --note:#fff6dc; --note-line:#d9a400;
+  box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --bg:#141a22; --panel:#1c242f; --ink:#e6ebf2; --muted:#9aa8b9; --line:#324052; --accent:#6f9fe6; --accent2:#8fb5ee; --code-bg:#151c25; --note:#3a3216; --note-line:#d9a400; }
+}
+:root[data-theme="dark"] { --bg:#141a22; --panel:#1c242f; --ink:#e6ebf2; --muted:#9aa8b9; --line:#324052; --accent:#6f9fe6; --accent2:#8fb5ee; --code-bg:#151c25; --note:#3a3216; --note-line:#d9a400; }
+*, *::before, *::after { box-sizing:inherit; }
+html { scroll-padding-top:env(safe-area-inset-top,0px); }
+body { margin:0; background:var(--bg); color:var(--ink); font-family:"IBM Plex Sans","Segoe UI","Malgun Gothic",Arial,sans-serif; font-size:16px; line-height:1.6; }
+.wrap { max-width:920px; margin:0 auto; padding:0 20px; }
+header { padding:40px 0 8px; }
+h1 { font-size:2rem; line-height:1.2; margin:0 0 6px; font-weight:600; letter-spacing:-0.01em; }
+.subtitle { margin:0; color:var(--muted); max-width:62ch; }
+.palettes { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:14px 22px; margin:26px 0 8px; }
+.strip { display:flex; height:34px; border:1px solid var(--line); }
+.strip span { flex:1; }
+.pal p { margin:4px 0 0; font-size:.85rem; color:var(--muted); }
+section { background:var(--panel); border:1px solid var(--line); border-radius:6px; padding:22px 24px; margin:18px 0; }
+h2 { font-size:1.15rem; margin:0 0 10px; font-weight:600; }
+p { margin:0 0 10px; max-width:72ch; }
+ul, ol { margin:0; padding-left:22px; max-width:72ch; }
+li { margin-bottom:6px; }
+code, pre { font-family:"IBM Plex Mono",Consolas,monospace; }
+code { font-size:.9em; }
+.code-head { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:10px; margin-bottom:10px; }
+.code-head h2 { margin:0; }
+.right { display:flex; align-items:center; gap:10px; }
+.filetag { font-size:.8rem; color:var(--muted); border:1px solid var(--line); border-radius:4px; padding:3px 8px; }
+.copy { background:var(--accent); color:#fff; border:0; border-radius:4px; padding:8px 16px; font:inherit; font-size:.9rem; font-weight:500; cursor:pointer; }
+.copy:hover { background:var(--accent2); }
+.copy:focus-visible { outline:3px solid var(--note-line); outline-offset:2px; }
+:root[data-theme="dark"] .copy { color:#10161e; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .copy { color:#10161e; } }
+pre { margin:0; background:var(--code-bg); border:1px solid var(--line); border-radius:4px; padding:14px; max-height:520px; overflow:auto; font-size:.8rem; line-height:1.5; }
+.logo { display:block; max-width:100%; height:auto; margin:10px 0 0; border:1px solid var(--line); }
+.note { background:var(--note); border-left:4px solid var(--note-line); padding:10px 14px; margin:12px 0 0; }
+.wrapx { overflow-x:auto; }
+table { border-collapse:collapse; width:100%; font-size:.88rem; }
+th, td { text-align:left; padding:6px 10px; border-bottom:1px solid var(--line); vertical-align:top; }
+th { color:var(--muted); font-weight:500; }
+footer { color:var(--muted); font-size:.85rem; padding:8px 0 40px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>CATIA Hide Show Toolkit</h1>
+  <p class="subtitle">One click to hide, or show again, all planes, axis systems, sketches, points, lines, geometrical sets and assembly constraints in the active part or assembly. Two code blocks to paste: the form and the module.</p>
+</header>
+<main>
+  <section>
+    <h2>What it does</h2>
+    <ul>
+      <li><strong>Tick the types,</strong> then click Hide or Show. Planes, axis systems and sketches are ticked by default.</li>
+      <li><strong>Works through the whole assembly.</strong> Every part under the active product is included.</li>
+      <li><strong>Show brings them back.</strong> The same ticks with the Show button reverse the Hide.</li>
+      <li><strong>Your choices are remembered</strong> for next time.</li>
+      <li><strong>Count on the status line</strong> of how many elements were changed.</li>
+      <li><strong>English / Korean button</strong> in the top right corner. The language is remembered for next time.</li>
+      <li><strong>Credit image centered at the bottom</strong>, stored inside the module as text, the same as your other macros. <img class="logo" src="data:image/gif;base64,R0lGODdhwwAPAIQAAPDw8Nfc4MTM1LXAy6e0wpqpuo2fsn+SqXKIoGuCnWV9mVdxkEhlhjtafyxOdR5CbA81YgAqWgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACwAAAAAwwAPAAAI/wABCBxIsKDBgwgTKlzIsKHDhxAjSpxIsaLFixgzatzoEEGEAQQfNBh4IIIAggYeRICwIAAAjxFWKiCpMgKDkwRjxnRQQCABnTETQCBY4AEAoBEQHCVQ8EDNmwIb6HzQE6bOlzpZuhz4MyYEpQ2UCkQwkmBJnEsBDHAQsyWAsAQbMBXIwOhAAQxiPjjgMwJBBEqtxvwboSyAkoYdNOAr0CnTAAscvCwb4IGBlw/mIoCwVWCEuQYg9PxZUPTABTM/F1Q9EEHmsZzfii3AmWxB2wDwSubqN7foAbEDQJg7UDHjtHsBBGCwQHbcucIdgFQOQYHLtUpJtw5s+HaDBj0rK/8oK+CBgN0AhockgBvAAqXqB8IdyBpASgDaT88UCAFkfc/EpRcgXPMt1d5Y3VnGm3xKvfdScwSVdx59TJkkkACXFfgWaAsYsN8B3RHAWX4vcYcQWQM8ABlgZSHAl3T49ebdhZmROFlOAX5kY1EC8ZgWjgv+NdJ8Pwlw4I2tMRAkcCcJ8BEEaI314nSqLbAXWhrKFdUAwkUlFoUkAoakQbYtYCWS5tk3k41jAcWXjQR0999nXV0FwAMgoeYZUBUSB+eQU1UF1EgHtlenTVspUJ1BaXoIoEAG5NUASFIhxVR5Ai3Qk4YbhhnYoEJSV9VIAwBlFJtIAheAjSACSd8AbCr/MBOUj7oaY1NDfongjEkGCRllEXQmUKlT1SpQAIo6Jx9TJenUHKfDeTomr62NpMBxkwq4XnsOXBafl7bex2aKBaD334/8DQiWrtNOq2BfQR5l0LXy+UfAAHIqGxVTMPJ3WIicldoZAyYedKRtaTbW3AEOPBbZmAg0h0C/B8RGYY+mofqAA8ed+9/E01XsEqcHk/dwvArYJW9BCR/W3GfCXXbYUFkSgOlADBggnFjnieWAW0W2W613Pg47lH0qaTWmj07FBFVOOvHUF58CKWDhnjopZelhT+FEMlJYeeUWbzoxMN3KAxWt1lCq4es0pbrKpQCEjSmJl17HLbdTT2HbJMnR34AHLvhFBDgQ5eCIJ6744h1BICPjkEcu+eSUV2755RsFBAA7" alt="Credit image with the line: macro developed by AISHAQUE" width="195" height="15"></li>
+      <li><strong>Works beside your other macros.</strong> Every shared name starts with <code>Vis</code>, so it does not clash with the other macros in the same VBA project.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Setup</h2>
+    <ol>
+      <li>In the VBA editor, use Insert, UserForm. In the Properties window set its <code>(Name)</code> to <code>frmHideShow</code>. Leave the form empty in the designer.</li>
+      <li>Open the form's code (right-click the form, View Code), select all, delete, and paste the Form code below.</li>
+      <li>Use Insert, Module. In the Properties window set its <code>(Name)</code> to <code>HideShowToolkit</code>, then paste the Module code below.</li>
+      <li>Use Debug, Compile VBAProject.</li>
+      <li>Open a CATProduct or CATPart, then run <code>CATMain</code> from the <code>HideShowToolkit</code> module.</li>
+    </ol>
+    <p class="note"><strong>First run:</strong> this code was written and checked for structure, but not run inside CATIA. Try Hide and then Show on a small assembly first.</p>
+  </section>
+
+  <section>
+    <div class="code-head"><h2>Form code</h2><div class="right"><span class="filetag">frmHideShow</span><button class="copy" data-target="form">Copy code</button></div></div>
+    <pre><code id="form">Option Explicit
+
+'=========================================================
+' CATIA HIDE SHOW TOOLKIT - FORM
+' Form name: frmHideShow
+' The form is empty in the designer. Every control is
+' created here in code.
+'=========================================================
+
+Private WithEvents mLangButton As MSForms.CommandButton
+Private WithEvents mCloseButton As MSForms.CommandButton
+Private WithEvents mAct1 As MSForms.CommandButton
+Private WithEvents mAct2 As MSForms.CommandButton
+
+Private mBusy As Boolean
+
+
+'=========================================================
+' FORM INITIALIZATION
+'=========================================================
+
+Private Sub UserForm_Initialize()
+
+    VisLoadLanguage
+
+    Me.Caption = "CATIA Hide Show Toolkit"
+    Me.Width = 420
+    Me.Height = 353
+
+    BuildControls
+    ApplyLanguage
+    LoadInputs
+    ShowDocStatus
+
+End Sub
+
+
+Private Function AddCtl( _
+        ByVal progId As String, _
+        ByVal ctlName As String, _
+        ByVal x As Single, _
+        ByVal y As Single, _
+        ByVal w As Single, _
+        ByVal h As Single) As Object
+
+    Dim c As Object
+
+    Set c = Me.Controls.Add(progId, ctlName, True)
+
+    c.Left = x
+    c.Top = y
+    c.Width = w
+    c.Height = h
+
+    Set AddCtl = c
+
+End Function
+
+
+Private Sub BuildControls()
+
+    Dim c As Object
+
+    ' Title and language button
+    Set c = AddCtl("Forms.Label.1", "lblTitle", 20, 12, 280, 24)
+    c.Font.Size = 14
+    c.Font.Bold = True
+
+    Set mLangButton = AddCtl("Forms.CommandButton.1", "cmdLang", 310, 12, 80, 24)
+
+    Set c = AddCtl("Forms.Label.1", "lblSubtitle", 20, 40, 370, 28)
+    c.WordWrap = True
+
+    Set c = AddCtl("Forms.Label.1", "lblHead1", 20, 74, 370, 16)
+    c.Font.Bold = True
+
+    Set c = AddCtl("Forms.CheckBox.1", "chkPlanes", 20, 94, 370, 18)
+
+    Set c = AddCtl("Forms.CheckBox.1", "chkAxis", 20, 115, 370, 18)
+
+    Set c = AddCtl("Forms.CheckBox.1", "chkSketch", 20, 136, 370, 18)
+
+    Set c = AddCtl("Forms.CheckBox.1", "chkPoints", 20, 157, 370, 18)
+
+    Set c = AddCtl("Forms.CheckBox.1", "chkLines", 20, 178, 370, 18)
+
+    Set c = AddCtl("Forms.CheckBox.1", "chkSets", 20, 199, 370, 18)
+
+    Set c = AddCtl("Forms.CheckBox.1", "chkCst", 20, 220, 370, 18)
+
+    ' Status
+    Set c = AddCtl("Forms.Label.1", "lblStatus", 20, 241, 370, 34)
+    c.WordWrap = True
+    c.Font.Bold = True
+
+    ' Buttons
+    Set mAct1 = AddCtl("Forms.CommandButton.1", "cmdAct1", 20, 281, 118, 30)
+    Set mAct2 = AddCtl("Forms.CommandButton.1", "cmdAct2", 146, 281, 118, 30)
+    Set mCloseButton = AddCtl("Forms.CommandButton.1", "cmdClose", 272, 281, 118, 30)
+
+    ' Logo, centered at the bottom. The picture data is at the bottom of the module.
+    Set c = AddCtl("Forms.Image.1", "imgLogo", 20, 319, 10, 10)
+    c.BorderStyle = 0
+    c.BackStyle = 0
+    c.AutoSize = True
+
+    If VisLoadLogo(c) Then
+        c.Left = 205 - c.Width / 2
+        Me.Height = 353 + c.Height + 8
+    Else
+        c.Visible = False
+    End If
+
+End Sub
+
+
+'=========================================================
+' LANGUAGE
+'=========================================================
+
+Private Sub ApplyLanguage()
+
+    Dim c As Object
+
+    Me.Controls("lblTitle").Caption = VisTxt("title")
+    Me.Controls("lblSubtitle").Caption = VisTxt("subtitle")
+
+    Me.Controls("lblHead1").Caption = VisTxt("pick")
+    Me.Controls("chkPlanes").Caption = VisTxt("tPlanes")
+    Me.Controls("chkAxis").Caption = VisTxt("tAxis")
+    Me.Controls("chkSketch").Caption = VisTxt("tSketch")
+    Me.Controls("chkPoints").Caption = VisTxt("tPoints")
+    Me.Controls("chkLines").Caption = VisTxt("tLines")
+    Me.Controls("chkSets").Caption = VisTxt("tSets")
+    Me.Controls("chkCst").Caption = VisTxt("tCst")
+    mAct1.Caption = VisTxt("btnHide")
+    mAct2.Caption = VisTxt("btnShow")
+    mCloseButton.Caption = VisTxt("btnClose")
+    mLangButton.Caption = VisTxt("btnLang")
+
+    ' A font that can show the selected language
+    On Error Resume Next
+
+    For Each c In Me.Controls
+        c.Font.Name = VisUiFontName()
+    Next c
+
+    On Error GoTo 0
+
+End Sub
+
+
+Private Sub FillCombo(ByVal ctlName As String, ByVal keys As Variant)
+
+    Dim c As Object
+    Dim keep As Long
+    Dim i As Long
+
+    Set c = Me.Controls(ctlName)
+
+    keep = c.ListIndex
+
+    c.Clear
+
+    For i = LBound(keys) To UBound(keys)
+        c.AddItem VisTxt(CStr(keys(i)))
+    Next i
+
+    If keep &lt; 0 Or keep &gt; c.ListCount - 1 Then keep = 0
+
+    c.ListIndex = keep
+
+End Sub
+
+
+Private Sub SetComboIndex(ByVal ctlName As String, ByVal index As Long)
+
+    Dim c As Object
+
+    Set c = Me.Controls(ctlName)
+
+    If index &lt; 0 Or index &gt; c.ListCount - 1 Then index = 0
+
+    c.ListIndex = index
+
+End Sub
+
+
+Private Sub mLangButton_Click()
+
+    If gVisLang = "KO" Then
+        VisSetLanguage "EN"
+    Else
+        VisSetLanguage "KO"
+    End If
+
+    ApplyLanguage
+    ShowDocStatus
+
+End Sub
+
+
+'=========================================================
+' REMEMBERED INPUTS
+'=========================================================
+
+Private Sub LoadInputs()
+
+    On Error Resume Next
+
+    Me.Controls("chkPlanes").Value = (VisLoadText("chkPlanes", "1") = "1")
+    Me.Controls("chkAxis").Value = (VisLoadText("chkAxis", "1") = "1")
+    Me.Controls("chkSketch").Value = (VisLoadText("chkSketch", "1") = "1")
+    Me.Controls("chkPoints").Value = (VisLoadText("chkPoints", "0") = "1")
+    Me.Controls("chkLines").Value = (VisLoadText("chkLines", "0") = "1")
+    Me.Controls("chkSets").Value = (VisLoadText("chkSets", "0") = "1")
+    Me.Controls("chkCst").Value = (VisLoadText("chkCst", "0") = "1")
+
+End Sub
+
+
+Private Sub SaveInputs()
+
+    On Error Resume Next
+
+    VisSaveText "chkPlanes", IIf(Me.Controls("chkPlanes").Value = True, "1", "0")
+    VisSaveText "chkAxis", IIf(Me.Controls("chkAxis").Value = True, "1", "0")
+    VisSaveText "chkSketch", IIf(Me.Controls("chkSketch").Value = True, "1", "0")
+    VisSaveText "chkPoints", IIf(Me.Controls("chkPoints").Value = True, "1", "0")
+    VisSaveText "chkLines", IIf(Me.Controls("chkLines").Value = True, "1", "0")
+    VisSaveText "chkSets", IIf(Me.Controls("chkSets").Value = True, "1", "0")
+    VisSaveText "chkCst", IIf(Me.Controls("chkCst").Value = True, "1", "0")
+
+End Sub
+
+
+'=========================================================
+' ACTIVE DOCUMENT AND STATUS
+'=========================================================
+
+Private Function DocReady() As Boolean
+
+    Dim kind As String
+
+    kind = VisDocKind()
+
+    DocReady = (Len(kind) &gt; 0 And InStr("|Product|Part|", "|" &amp; kind &amp; "|") &gt; 0)
+
+End Function
+
+
+Private Sub ShowDocStatus()
+
+    If DocReady() Then
+        ShowStatus VisFmt(VisTxt("stReady"), VisDocName())
+    Else
+        ShowStatus VisTxt("stNeed")
+    End If
+
+End Sub
+
+
+Private Sub ShowStatus(ByVal message As String)
+
+    Me.Controls("lblStatus").Caption = VisTxt("status") &amp; message
+
+End Sub
+
+
+' Called by the module while it works
+Public Sub Progress(ByVal message As String)
+
+    ShowStatus message
+
+    Me.Repaint
+
+    DoEvents
+
+End Sub
+
+
+Private Sub SetBusy(ByVal busy As Boolean)
+
+    Dim c As Object
+
+    mBusy = busy
+
+    For Each c In Me.Controls
+        If TypeName(c) = "CommandButton" Then c.Enabled = Not busy
+    Next c
+
+    Me.Repaint
+
+    DoEvents
+
+End Sub
+
+
+'=========================================================
+' BUTTONS
+'=========================================================
+
+Private Sub DoAction(ByVal actionId As Long)
+
+    Dim message As String
+    Dim ok As Boolean
+
+    If mBusy Then Exit Sub
+
+    If Not DocReady() Then
+        ShowDocStatus
+        Exit Sub
+    End If
+
+    SaveInputs
+
+    SetBusy True
+
+    ShowStatus VisTxt("stWorking")
+
+    On Error GoTo Failed
+
+    ok = VisRun(Me, actionId, message)
+
+    On Error Resume Next
+
+    CATIA.RefreshDisplay = True
+    CATIA.DisplayFileAlerts = True
+
+    SetBusy False
+
+    ShowStatus message
+
+    Exit Sub
+
+Failed:
+
+    message = Err.Description
+
+    On Error Resume Next
+
+    CATIA.RefreshDisplay = True
+    CATIA.DisplayFileAlerts = True
+
+    SetBusy False
+
+    ShowStatus VisFmt(VisTxt("msgError"), message)
+
+End Sub
+
+
+Private Sub mAct1_Click()
+
+    DoAction 1
+
+End Sub
+
+
+Private Sub mAct2_Click()
+
+    DoAction 2
+
+End Sub
+
+
+
+'=========================================================
+' CLOSE
+'=========================================================
+
+Private Sub mCloseButton_Click()
+
+    Unload Me
+
+End Sub
+
+
+' The window cannot be closed while the macro is working
+Private Sub UserForm_QueryClose(Cancel As Integer, CloseMode As Integer)
+
+    If mBusy Then Cancel = True
+
+End Sub</code></pre>
+  </section>
+
+  <section>
+    <div class="code-head"><h2>Module code</h2><div class="right"><span class="filetag">HideShowToolkit</span><button class="copy" data-target="module">Copy code</button></div></div>
+    <p>The long block of letters and numbers at the bottom is the credit image. Do not edit it.</p>
+    <pre><code id="module">Option Explicit
+
+'=========================================================
+' CATIA HIDE SHOW TOOLKIT - MAIN MODULE
+' Module name: HideShowToolkit
+' Run CATMain to open the window.
+'=========================================================
+
+Private Const REG_APP As String = "CatiaHideShowToolkit"
+Private Const REG_SEC As String = "Settings"
+
+' "EN" or "KO"
+Public gVisLang As String
+
+
+'=========================================================
+' ENTRY POINT
+'=========================================================
+
+Sub CATMain()
+
+    VisLoadLanguage
+    frmHideShow.Show
+
+End Sub
+
+'=========================================================
+' BUTTONS
+' 1 = Hide, 2 = Show
+'=========================================================
+
+Public Function VisRun( _
+        ByVal frm As Object, _
+        ByVal actionId As Long, _
+        ByRef message As String) As Boolean
+
+    Dim d As Object
+    Dim sel As Object
+    Dim showState As Long
+    Dim total As Long
+    Dim skipped As Long
+    Dim picked As Long
+
+    VisRun = False
+
+    Set d = CATIA.ActiveDocument
+    Set sel = d.Selection
+
+    ' CATIA show states: 0 = shown, 1 = hidden
+    If actionId = 1 Then
+        showState = 1
+    Else
+        showState = 0
+    End If
+
+    ' Elements inside parts can only be reached in design mode
+    If TypeName(d) = "ProductDocument" Then
+        On Error Resume Next
+        d.Product.ApplyWorkMode 2
+        On Error GoTo 0
+    End If
+
+    CATIA.RefreshDisplay = False
+
+    If CtlOn(frm, "chkPlanes") Then
+        picked = picked + 1
+        ApplyType sel, "CATPrtSearch.Plane,all", "", showState, total, skipped
+    End If
+
+    If CtlOn(frm, "chkAxis") Then
+        picked = picked + 1
+        ApplyType sel, "CATPrtSearch.AxisSystem,all", "", showState, total, skipped
+    End If
+
+    If CtlOn(frm, "chkSketch") Then
+        picked = picked + 1
+        ApplyType sel, "CATPrtSearch.Sketch,all", "", showState, total, skipped
+    End If
+
+    If CtlOn(frm, "chkPoints") Then
+        picked = picked + 1
+        ApplyType sel, "CATPrtSearch.Point,all", "", showState, total, skipped
+    End If
+
+    If CtlOn(frm, "chkLines") Then
+        picked = picked + 1
+        ApplyType sel, "CATPrtSearch.Line,all", "", showState, total, skipped
+    End If
+
+    If CtlOn(frm, "chkSets") Then
+        picked = picked + 1
+        ApplyType sel, "CATPrtSearch.OpenBodyFeature,all", "", showState, total, skipped
+    End If
+
+    If CtlOn(frm, "chkCst") Then
+        picked = picked + 1
+        ApplyType sel, "CATAsmSearch.MfConstraint,all", "CATAsmSearch.Constraint,all", showState, total, skipped
+    End If
+
+    On Error Resume Next
+    sel.Clear
+    On Error GoTo 0
+
+    CATIA.RefreshDisplay = True
+
+    If picked = 0 Then
+        message = VisTxt("msgNoType")
+        Exit Function
+    End If
+
+    If showState = 1 Then
+        message = VisFmt(VisTxt("msgHidden"), CStr(total))
+    Else
+        message = VisFmt(VisTxt("msgShown"), CStr(total))
+    End If
+
+    If skipped &gt; 0 Then message = message &amp; VisFmt(VisTxt("msgSkipped"), CStr(skipped))
+
+    VisRun = True
+
+End Function
+
+
+' Searches one type and hides or shows what was found. If the
+' first search text is not accepted, the second one is tried.
+Private Sub ApplyType( _
+        ByVal sel As Object, _
+        ByVal query As String, _
+        ByVal fallbackQuery As String, _
+        ByVal showState As Long, _
+        ByRef total As Long, _
+        ByRef skipped As Long)
+
+    Dim found As Long
+
+    found = SetShowFor(sel, query, showState)
+
+    If found &lt; 0 And Len(fallbackQuery) &gt; 0 Then found = SetShowFor(sel, fallbackQuery, showState)
+
+    If found &lt; 0 Then
+        skipped = skipped + 1
+    Else
+        total = total + found
+    End If
+
+End Sub
+
+
+' Returns the number of elements changed, or -1 when the
+' search itself failed
+Private Function SetShowFor( _
+        ByVal sel As Object, _
+        ByVal query As String, _
+        ByVal showState As Long) As Long
+
+    On Error GoTo Failed
+
+    sel.Clear
+    sel.Search query
+
+    SetShowFor = sel.Count
+
+    If sel.Count &gt; 0 Then sel.VisProperties.SetShow showState
+
+    sel.Clear
+
+    Exit Function
+
+Failed:
+
+    SetShowFor = -1
+
+    On Error Resume Next
+    sel.Clear
+
+End Function
+
+
+'=========================================================
+' SHARED HELPERS
+'=========================================================
+
+' "" = nothing open, otherwise Product, Part, Drawing or Other
+Public Function VisDocKind() As String
+
+    Dim t As String
+
+    On Error Resume Next
+
+    If CATIA.Documents.Count &gt; 0 Then t = TypeName(CATIA.ActiveDocument)
+
+    On Error GoTo 0
+
+    Select Case t
+        Case "ProductDocument": VisDocKind = "Product"
+        Case "PartDocument": VisDocKind = "Part"
+        Case "DrawingDocument": VisDocKind = "Drawing"
+        Case "": VisDocKind = ""
+        Case Else: VisDocKind = "Other"
+    End Select
+
+End Function
+
+
+Public Function VisDocName() As String
+
+    On Error Resume Next
+
+    VisDocName = CATIA.ActiveDocument.Name
+
+End Function
+
+
+' Folder picker. Returns "" when cancelled.
+Public Function VisBrowseFolder(ByVal title As String) As String
+
+    Dim sh As Object
+    Dim picked As Object
+
+    On Error Resume Next
+
+    Set sh = CreateObject("Shell.Application")
+    Set picked = sh.BrowseForFolder(0, title, 1)
+
+    If Not picked Is Nothing Then VisBrowseFolder = picked.Self.Path
+
+End Function
+
+
+Private Function CtlText(ByVal frm As Object, ByVal ctlName As String) As String
+
+    CtlText = Trim$(frm.Controls(ctlName).Text)
+
+End Function
+
+
+Private Function CtlOn(ByVal frm As Object, ByVal ctlName As String) As Boolean
+
+    CtlOn = (frm.Controls(ctlName).Value = True)
+
+End Function
+
+
+Private Function CtlIndex(ByVal frm As Object, ByVal ctlName As String) As Long
+
+    CtlIndex = frm.Controls(ctlName).ListIndex
+
+End Function
+
+
+' Shows progress on the status line of the window
+Private Sub Say(ByVal frm As Object, ByVal message As String)
+
+    frm.Progress message
+
+End Sub
+
+
+' Replaces characters that are not allowed in a file name
+Private Function CleanName(ByVal rawName As String) As String
+
+    Dim i As Long
+    Dim ch As String
+    Dim code As Long
+    Dim result As String
+
+    For i = 1 To Len(rawName)
+
+        ch = Mid$(rawName, i, 1)
+        code = AscW(ch)
+
+        If InStr("\/:*?""&lt;&gt;|", ch) &gt; 0 Or (code &gt;= 0 And code &lt; 32) Then
+            result = result &amp; "_"
+        Else
+            result = result &amp; ch
+        End If
+
+    Next i
+
+    If Len(result) = 0 Then result = "Unnamed"
+
+    CleanName = result
+
+End Function
+
+
+Private Function StripExt(ByVal fileName As String) As String
+
+    Dim p As Long
+
+    p = InStrRev(fileName, ".")
+
+    If p &gt; 1 Then
+        StripExt = Left$(fileName, p - 1)
+    Else
+        StripExt = fileName
+    End If
+
+End Function
+
+
+Private Function FileNameOf(ByVal filePath As String) As String
+
+    FileNameOf = Mid$(filePath, InStrRev(filePath, "\") + 1)
+
+End Function
+
+
+Private Function WithSlash(ByVal folderPath As String) As String
+
+    If Len(folderPath) &gt; 0 And Right$(folderPath, 1) &lt;&gt; "\" Then folderPath = folderPath &amp; "\"
+
+    WithSlash = folderPath
+
+End Function
+
+
+Private Function FolderExists(ByVal folderPath As String) As Boolean
+
+    Dim fso As Object
+
+    If Len(folderPath) = 0 Then Exit Function
+
+    On Error Resume Next
+
+    Set fso = CreateObject("Scripting.FileSystemObject")
+
+    FolderExists = fso.FolderExists(folderPath)
+
+End Function
+
+
+Private Function FileExists(ByVal filePath As String) As Boolean
+
+    Dim fso As Object
+
+    If Len(filePath) = 0 Then Exit Function
+
+    On Error Resume Next
+
+    Set fso = CreateObject("Scripting.FileSystemObject")
+
+    FileExists = fso.FileExists(filePath)
+
+End Function
+
+
+Private Sub DeleteFile(ByVal filePath As String)
+
+    Dim fso As Object
+
+    On Error Resume Next
+
+    Set fso = CreateObject("Scripting.FileSystemObject")
+
+    If fso.FileExists(filePath) Then fso.DeleteFile filePath, True
+
+End Sub
+
+
+Private Sub OpenFile(ByVal filePath As String)
+
+    Dim sh As Object
+
+    On Error Resume Next
+
+    Set sh = CreateObject("WScript.Shell")
+
+    sh.Run """" &amp; filePath &amp; """"
+
+End Sub
+
+
+Private Function IsDocOpen(ByVal fileName As String) As Boolean
+
+    Dim d As Object
+
+    On Error Resume Next
+
+    Set d = CATIA.Documents.Item(fileName)
+
+    IsDocOpen = (Err.Number = 0) And Not (d Is Nothing)
+
+    Err.Clear
+
+End Function
+
+
+' One CSV field, always in quotes
+Private Function Csv(ByVal fieldText As String) As String
+
+    Csv = """" &amp; Replace(fieldText, """", """""") &amp; """"
+
+End Function
+
+
+' A number written with a decimal point on every PC
+Private Function Num(ByVal numberValue As Variant, Optional ByVal decimals As Long = 3) As String
+
+    Dim pattern As String
+
+    On Error Resume Next
+
+    pattern = "0"
+
+    If decimals &gt; 0 Then pattern = "0." &amp; String$(decimals, "0")
+
+    Num = Replace(Format$(CDbl(numberValue), pattern), ",", ".")
+
+End Function
+
+
+' Saves text as UTF-8 so Excel shows Korean correctly
+Private Function WriteTextFile(ByVal filePath As String, ByVal content As String) As Boolean
+
+    Dim stm As Object
+
+    On Error GoTo Failed
+
+    Set stm = CreateObject("ADODB.Stream")
+
+    stm.Type = 2
+    stm.Charset = "utf-8"
+    stm.Open
+    stm.WriteText content
+    stm.SaveToFile filePath, 2
+    stm.Close
+
+    WriteTextFile = True
+
+    Exit Function
+
+Failed:
+
+    On Error Resume Next
+    stm.Close
+
+End Function
+
+
+Private Function ReadTextFile(ByVal filePath As String) As String
+
+    Dim stm As Object
+
+    On Error GoTo Failed
+
+    Set stm = CreateObject("ADODB.Stream")
+
+    stm.Type = 2
+    stm.Charset = "utf-8"
+    stm.Open
+    stm.LoadFromFile filePath
+
+    ReadTextFile = stm.ReadText
+
+    stm.Close
+
+    Exit Function
+
+Failed:
+
+    On Error Resume Next
+    stm.Close
+
+End Function
+
+
+' Splits one CSV line into its fields
+Private Function CsvSplit(ByVal lineText As String) As Collection
+
+    Dim fields As New Collection
+    Dim i As Long
+    Dim ch As String
+    Dim cur As String
+    Dim inQuotes As Boolean
+
+    i = 1
+
+    Do While i &lt;= Len(lineText)
+
+        ch = Mid$(lineText, i, 1)
+
+        If inQuotes Then
+            If ch = """" Then
+                If Mid$(lineText, i + 1, 1) = """" Then
+                    cur = cur &amp; """"
+                    i = i + 1
+                Else
+                    inQuotes = False
+                End If
+            Else
+                cur = cur &amp; ch
+            End If
+        ElseIf ch = """" Then
+            inQuotes = True
+        ElseIf ch = "," Then
+            fields.Add cur
+            cur = ""
+        Else
+            cur = cur &amp; ch
+        End If
+
+        i = i + 1
+
+    Loop
+
+    fields.Add cur
+
+    Set CsvSplit = fields
+
+End Function
+
+
+' The name of a component, even when it is not loaded
+Private Function SafeName(ByVal prod As Object) As String
+
+    On Error Resume Next
+
+    SafeName = prod.Name
+
+End Function
+
+
+' The reference product behind an instance, or Nothing when
+' its file is missing or not loaded
+Private Function RefOf(ByVal prod As Object) As Object
+
+    On Error Resume Next
+
+    Set RefOf = prod.ReferenceProduct
+
+End Function
+
+
+' The document behind a component, or Nothing when it has none
+Private Function DocOf(ByVal prod As Object) As Object
+
+    Dim d As Object
+
+    On Error Resume Next
+
+    Set d = prod.ReferenceProduct.Parent
+
+    If d Is Nothing Then Exit Function
+
+    If Right$(TypeName(d), 8) = "Document" Then Set DocOf = d
+
+End Function
+
+
+Private Sub AddDoc(ByVal docs As Object, ByVal d As Object)
+
+    Dim key As String
+
+    key = UCase$(d.FullName)
+
+    If Not docs.Exists(key) Then docs.Add key, d
+
+End Sub
+
+
+' Fills docs (a Dictionary) with every loaded document under prod
+Private Sub CollectDocs( _
+        ByVal prod As Object, _
+        ByVal docs As Object, _
+        ByVal wantParts As Boolean, _
+        ByVal wantProducts As Boolean)
+
+    Dim kids As Object
+    Dim child As Object
+    Dim d As Object
+    Dim kind As String
+    Dim i As Long
+
+    On Error Resume Next
+    Set kids = prod.Products
+    On Error GoTo 0
+
+    If kids Is Nothing Then Exit Sub
+
+    For i = 1 To kids.Count
+
+        Set child = kids.Item(i)
+        Set d = DocOf(child)
+
+        If Not d Is Nothing Then
+
+            kind = TypeName(d)
+
+            If kind = "PartDocument" And wantParts Then AddDoc docs, d
+            If kind = "ProductDocument" And wantProducts Then AddDoc docs, d
+
+            CollectDocs child, docs, wantParts, wantProducts
+
+        End If
+
+    Next i
+
+End Sub
+
+
+' Text after the last backslash of a parameter name
+Private Function ShortName(ByVal fullName As String) As String
+
+    ShortName = Mid$(fullName, InStrRev(fullName, "\") + 1)
+
+End Function
+
+
+'=========================================================
+' SETTINGS (remembered between runs)
+'=========================================================
+
+Public Sub VisLoadLanguage()
+
+    gVisLang = UCase$(GetSetting(REG_APP, REG_SEC, "Lang", "EN"))
+
+    If gVisLang &lt;&gt; "KO" Then gVisLang = "EN"
+
+End Sub
+
+
+Public Sub VisSetLanguage(ByVal langCode As String)
+
+    gVisLang = langCode
+
+    SaveSetting REG_APP, REG_SEC, "Lang", gVisLang
+
+End Sub
+
+
+Public Function VisLoadText( _
+        ByVal choiceName As String, _
+        ByVal defaultValue As String) As String
+
+    VisLoadText = GetSetting(REG_APP, REG_SEC, choiceName, defaultValue)
+
+End Function
+
+
+Public Sub VisSaveText( _
+        ByVal choiceName As String, _
+        ByVal choiceValue As String)
+
+    SaveSetting REG_APP, REG_SEC, choiceName, choiceValue
+
+End Sub
+
+
+'=========================================================
+' TEXT (ENGLISH AND KOREAN)
+'=========================================================
+
+Public Function VisTxt(ByVal key As String) As String
+
+    If gVisLang = "KO" Then
+        VisTxt = TextKO(key)
+    Else
+        VisTxt = TextEN(key)
+    End If
+
+    If Len(VisTxt) = 0 Then VisTxt = TextEN(key)
+    If Len(VisTxt) = 0 Then VisTxt = key
+
+End Function
+
+
+Public Function VisUiFontName() As String
+
+    If gVisLang = "KO" Then
+        VisUiFontName = "Malgun Gothic"
+    Else
+        VisUiFontName = "Tahoma"
+    End If
+
+End Function
+
+
+' Fills {0}, {1} and {2} in a text
+Public Function VisFmt( _
+        ByVal template As String, _
+        Optional ByVal a As String = "", _
+        Optional ByVal b As String = "", _
+        Optional ByVal c As String = "") As String
+
+    VisFmt = Replace(Replace(Replace(template, "{0}", a), "{1}", b), "{2}", c)
+
+End Function
+
+
+' Turns \uXXXX codes into real characters
+Private Function U(ByVal coded As String) As String
+
+    Dim i As Long
+    Dim result As String
+
+    i = 1
+
+    Do While i &lt;= Len(coded)
+
+        If Mid$(coded, i, 2) = "\u" And i + 5 &lt;= Len(coded) Then
+            result = result &amp; ChrW$(CLng("&amp;H" &amp; Mid$(coded, i + 2, 4)))
+            i = i + 6
+        Else
+            result = result &amp; Mid$(coded, i, 1)
+            i = i + 1
+        End If
+
+    Loop
+
+    U = result
+
+End Function
+
+
+Private Function TextEN(ByVal key As String) As String
+
+    Select Case key
+        Case "btnClose": TextEN = "Close"
+        Case "btnLang": TextEN = U("\ud55c\uad6d\uc5b4")
+        Case "btnBrowse": TextEN = "Browse..."
+        Case "status": TextEN = "Status: "
+        Case "stWorking": TextEN = "Working..."
+        Case "msgError": TextEN = "Error: {0}"
+        Case "stNeed": TextEN = "Open a CATProduct or CATPart first"
+        Case "stReady": TextEN = "Ready. Active document: {0}"
+        Case "title": TextEN = "CATIA Hide Show Toolkit"
+        Case "subtitle": TextEN = "Hides or shows planes, sketches, axis systems and other helper geometry everywhere at once"
+        Case "pick": TextEN = "Apply to:"
+        Case "tPlanes": TextEN = "Planes"
+        Case "tAxis": TextEN = "Axis systems"
+        Case "tSketch": TextEN = "Sketches"
+        Case "tPoints": TextEN = "Points"
+        Case "tLines": TextEN = "Lines"
+        Case "tSets": TextEN = "Geometrical sets"
+        Case "tCst": TextEN = "Assembly constraints"
+        Case "btnHide": TextEN = "Hide"
+        Case "btnShow": TextEN = "Show"
+        Case "msgNoType": TextEN = "Tick at least one type."
+        Case "msgHidden": TextEN = "Hidden: {0} elements."
+        Case "msgShown": TextEN = "Shown: {0} elements."
+        Case "msgSkipped": TextEN = " Types that could not be searched: {0}."
+    End Select
+
+End Function
+
+
+Private Function TextKO(ByVal key As String) As String
+
+    Select Case key
+        Case "btnClose": TextKO = U("\ub2eb\uae30")
+        Case "btnLang": TextKO = "English"
+        Case "btnBrowse": TextKO = U("\ucc3e\uc544\ubcf4\uae30...")
+        Case "status": TextKO = U("\uc0c1\ud0dc: ")
+        Case "stWorking": TextKO = U("\uc791\uc5c5 \uc911...")
+        Case "msgError": TextKO = U("\uc624\ub958: {0}")
+        Case "stNeed": TextKO = U("\uba3c\uc800 CATProduct \ub610\ub294 CATPart\ub97c \uc5ec\uc138\uc694")
+        Case "stReady": TextKO = U("\uc900\ube44\ub428. \ud65c\uc131 \ubb38\uc11c: {0}")
+        Case "title": TextKO = U("CATIA \uc228\uae30\uae30/\ud45c\uc2dc \ub3c4\uad6c")
+        Case "subtitle": TextKO = U("\ud3c9\uba74, \uc2a4\ucf00\uce58, \ucd95 \uc2dc\uc2a4\ud15c \ub4f1 \ubcf4\uc870 \ud615\uc0c1\uc744 \ud55c \ubc88\uc5d0 \uc228\uae30\uac70\ub098 \ud45c\uc2dc\ud569\ub2c8\ub2e4")
+        Case "pick": TextKO = U("\uc801\uc6a9 \ub300\uc0c1:")
+        Case "tPlanes": TextKO = U("\ud3c9\uba74")
+        Case "tAxis": TextKO = U("\ucd95 \uc2dc\uc2a4\ud15c")
+        Case "tSketch": TextKO = U("\uc2a4\ucf00\uce58")
+        Case "tPoints": TextKO = U("\uc810")
+        Case "tLines": TextKO = U("\uc120")
+        Case "tSets": TextKO = U("\ud615\uc0c1 \uc138\ud2b8")
+        Case "tCst": TextKO = U("\uc5b4\uc148\ube14\ub9ac \uad6c\uc18d")
+        Case "btnHide": TextKO = U("\uc228\uae30\uae30")
+        Case "btnShow": TextKO = U("\ud45c\uc2dc")
+        Case "msgNoType": TextKO = U("\uc720\ud615\uc744 \ud558\ub098 \uc774\uc0c1 \uc120\ud0dd\ud558\uc138\uc694.")
+        Case "msgHidden": TextKO = U("\uc228\uae40: \uc694\uc18c {0}\uac1c.")
+        Case "msgShown": TextKO = U("\ud45c\uc2dc: \uc694\uc18c {0}\uac1c.")
+        Case "msgSkipped": TextKO = U(" \uac80\uc0c9\ud560 \uc218 \uc5c6\ub294 \uc720\ud615: {0}.")
+    End Select
+
+End Function
+
+
+'=========================================================
+' LOGO
+' The logo picture is stored below as text.
+' The form shows it with:
+'     VisLoadLogo Me.Controls("imgLogo")
+'=========================================================
+
+' Puts the logo into an Image control.
+' Returns False if the picture could not be loaded.
+Public Function VisLoadLogo(ByVal target As Object) As Boolean
+
+    Dim data() As Byte
+    Dim filePath As String
+    Dim fileNo As Integer
+
+    VisLoadLogo = False
+
+    On Error GoTo Failed
+
+    data = HexToBytes(LogoHex())
+
+    ' VBA can only load a picture from a file, so the data is
+    ' written to the Windows temp folder, loaded, then deleted.
+    filePath = Environ$("TEMP") &amp; "\catia_macro_logo.gif"
+
+    If Len(Dir$(filePath)) &gt; 0 Then Kill filePath
+
+    fileNo = FreeFile
+
+    Open filePath For Binary Access Write As #fileNo
+    Put #fileNo, , data
+    Close #fileNo
+
+    Set target.Picture = LoadPicture(filePath)
+
+    VisLoadLogo = True
+
+    On Error Resume Next
+    Kill filePath
+
+    Exit Function
+
+Failed:
+
+    On Error Resume Next
+    Close #fileNo
+
+End Function
+
+
+' Turns pairs of hex characters back into bytes
+Private Function HexToBytes(ByVal hexText As String) As Byte()
+
+    Dim count As Long
+    Dim i As Long
+    Dim data() As Byte
+
+    count = Len(hexText) \ 2
+
+    ReDim data(0 To count - 1)
+
+    For i = 0 To count - 1
+        data(i) = CByte("&amp;H" &amp; Mid$(hexText, i * 2 + 1, 2))
+    Next i
+
+    HexToBytes = data
+
+End Function
+
+
+' The logo picture (a GIF image, 195 x 15 pixels) written as hex text
+Private Function LogoHex() As String
+
+    Dim s As String
+
+    s = s &amp; "474946383761C3000F00840000F0F0F0D7DCE0C4CCD4B5C0CBA7B4C29AA9BA8D9FB27F92A97288A06B829D657D9957719048"
+    s = s &amp; "65863B5A7F2C4E751E426C0F3562002A5A000000000000000000000000000000000000000000000000000000000000000000"
+    s = s &amp; "0000000000000000002C00000000C3000F000008FF0001081C48B0A0C18308132A5CC8B0A1C38710234A9C48B1A2C58B1833"
+    s = s &amp; "6ADCE810418401041F34187820820082061E4480B02000008F11562A20A9320283930463C674504020019D3113402058E001"
+    s = s &amp; "00A011101C2550F040CD9B021BE87CD013A6CE973A59BA1CF8332604A50D940A44309260499C4B010C7010B32580B0041B30"
+    s = s &amp; "15C8C0E840010C623E38E0330241044AADC6FC1BA12C8092861D34E02BD029D3000B1CBC2C1BE08181970FE62280B0556084"
+    s = s &amp; "B90620F4FC5950F4C005333F17543D1041E6B19CDF8A2DC0996C41DB00F04AE6EA37B7E801B10340983B5031E3B47B010460"
+    s = s &amp; "B04076DCB9C21D80540E4181CBB54A49B70E6CF87683063D2B2BFF282BE08180DD00868724801BC002A5EA07C21DC81A404A"
+    s = s &amp; "00DA4FCF140801647DCFC4A517205CF32DD5DE58DD59C69B7C4ABDF752730495771E7D4C992490009715F816680B18B0DF01"
+    s = s &amp; "DD11C0597E2F71871059033C0019606521C09774F8F5E6DD85999138594E017E64635102F198168E0BFE35D27C3F0970E08D"
+    s = s &amp; "AD311024702709F01104688DF5E274AA2DB0175A1ACA15D500C245251685240286A441B62D602592E6D937938D6301C5978D"
+    s = s &amp; "0474F7DF675D5D05C00320A1E61950151207E790535505D44807B657A74D5B29509D41697A08A04006E4D500485221C55479"
+    s = s &amp; "022DD093861B8619D8A0425257D548030065149B480217808D200249DF006C2AFF3013948FBA1A6353437E89E08C49060919"
+    s = s &amp; "6511742650A953D52A50008A3A271F5325E9D41CA7C3793A26AFAD8DA4C071930AB85E7B0E5C169F97B6DEC7668A05A0F7DF"
+    s = s &amp; "8FFC0D0896AED34EAB605F411E65D0B5F2F947C000722A1B155330F27758889C95DA1903261E74A46D6936D6DC010E3C16D9"
+    s = s &amp; "9808348740BF07C446618FA6A1FA8003C79DFBDFC4D355EC12A70793F770BC0AD8256F41091FD6DC67C25D76D850591280E9"
+    s = s &amp; "400C18209C58E789E5805B45B65BAD773E0E3B947D2A6935A68F4EC504554E3AF1D4179F022960E19E3A2965E9614FE14432"
+    s = s &amp; "525879E5166F3A3130DDCA0315ADD650AAE1EB34A5BACAA500848D2989975EC72DB7534F61DB24C9D1DF80072EF845043810"
+    s = s &amp; "E5E08827AEF8E21D412023E390472EF9E494576EF9E51B0504003B"
+
+    LogoHex = s
+
+End Function</code></pre>
+  </section>
+
+  <section>
+    <h2>English and Korean text</h2>
+    <p>All wording lives in <code>TextEN</code> and <code>TextKO</code> in the module. Korean is stored as <code>\uXXXX</code> codes so it pastes safely into the VBA editor on any PC. Please have a Korean-speaking CATIA user check the terms.</p>
+    <div class="wrapx"><table>
+      <tr><th>Key</th><th>English</th><th>Korean</th></tr>
+      <tr><td><code>btnClose</code></td><td>Close</td><td lang="ko">닫기</td></tr><tr><td><code>btnLang</code></td><td>한국어 (button label)</td><td lang="ko">English (button label)</td></tr><tr><td><code>btnBrowse</code></td><td>Browse...</td><td lang="ko">찾아보기...</td></tr><tr><td><code>status</code></td><td>Status: </td><td lang="ko">상태: </td></tr><tr><td><code>stWorking</code></td><td>Working...</td><td lang="ko">작업 중...</td></tr><tr><td><code>msgError</code></td><td>Error: {0}</td><td lang="ko">오류: {0}</td></tr><tr><td><code>stNeed</code></td><td>Open a CATProduct or CATPart first</td><td lang="ko">먼저 CATProduct 또는 CATPart를 여세요</td></tr><tr><td><code>stReady</code></td><td>Ready. Active document: {0}</td><td lang="ko">준비됨. 활성 문서: {0}</td></tr><tr><td><code>title</code></td><td>CATIA Hide Show Toolkit</td><td lang="ko">CATIA 숨기기/표시 도구</td></tr><tr><td><code>subtitle</code></td><td>Hides or shows planes, sketches, axis systems and other helper geometry everywhere at once</td><td lang="ko">평면, 스케치, 축 시스템 등 보조 형상을 한 번에 숨기거나 표시합니다</td></tr><tr><td><code>pick</code></td><td>Apply to:</td><td lang="ko">적용 대상:</td></tr><tr><td><code>tPlanes</code></td><td>Planes</td><td lang="ko">평면</td></tr><tr><td><code>tAxis</code></td><td>Axis systems</td><td lang="ko">축 시스템</td></tr><tr><td><code>tSketch</code></td><td>Sketches</td><td lang="ko">스케치</td></tr><tr><td><code>tPoints</code></td><td>Points</td><td lang="ko">점</td></tr><tr><td><code>tLines</code></td><td>Lines</td><td lang="ko">선</td></tr><tr><td><code>tSets</code></td><td>Geometrical sets</td><td lang="ko">형상 세트</td></tr><tr><td><code>tCst</code></td><td>Assembly constraints</td><td lang="ko">어셈블리 구속</td></tr><tr><td><code>btnHide</code></td><td>Hide</td><td lang="ko">숨기기</td></tr><tr><td><code>btnShow</code></td><td>Show</td><td lang="ko">표시</td></tr><tr><td><code>msgNoType</code></td><td>Tick at least one type.</td><td lang="ko">유형을 하나 이상 선택하세요.</td></tr><tr><td><code>msgHidden</code></td><td>Hidden: {0} elements.</td><td lang="ko">숨김: 요소 {0}개.</td></tr><tr><td><code>msgShown</code></td><td>Shown: {0} elements.</td><td lang="ko">표시: 요소 {0}개.</td></tr><tr><td><code>msgSkipped</code></td><td> Types that could not be searched: {0}.</td><td lang="ko"> 검색할 수 없는 유형: {0}.</td></tr>
+    </table></div>
+    <p class="note"><code>{0}</code>, <code>{1}</code> and <code>{2}</code> are filled in with numbers, names and error details. The window title bar stays in English in both languages.</p>
+  </section>
+
+  <section>
+    <h2>Known limitations</h2>
+    <ul>
+      <li>It applies to everything of the ticked type, including the three main planes of every part. It does not work on a selection only.</li>
+      <li>Show makes every element of that type visible, including ones that were hidden on purpose before the macro was used.</li>
+      <li>Hiding a geometrical set hides everything inside it.</li>
+      <li>The search names used for assembly constraints differ between CATIA levels. The macro tries two. If neither works, the status line says one type could not be searched.</li>
+      <li>The assembly is switched to design mode so the elements inside parts can be found. On a large assembly this can take a while.</li>
+      <li>The current selection in CATIA is cleared.</li>
+      <li>The window is modal, so CATIA cannot be clicked while it is open. Anything that must be selected in CATIA has to be selected before running the macro.</li>
+      <li>If the credit image cannot be loaded, for example when the Windows temp folder is not writable, the window opens without it.</li>
+    </ul>
+  </section>
+</main>
+<footer>Prepared for CATIA V5 R21 and later, VBA. Hides and shows helper geometry across a whole assembly.</footer>
+</div>
+<script>
+document.querySelectorAll('.copy').forEach(function (btn) {
+  btn.addEventListener('click', function () {
+    var text = document.getElementById(btn.dataset.target).textContent;
+    function done(ok) {
+      btn.textContent = ok ? 'Copied' : 'Select and copy manually';
+      setTimeout(function () { btn.textContent = 'Copy code'; }, 1800);
+    }
+    function fallback() {
+      var ta = document.createElement('textarea');
+      ta.value = text; document.body.appendChild(ta); ta.select();
+      var ok = false;
+      try { ok = document.execCommand('copy'); } catch (e) {}
+      document.body.removeChild(ta); done(ok);
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () { done(true); }, fallback);
+    } else { fallback(); }
+  });
+});
+</script>
+</body>
+</html>

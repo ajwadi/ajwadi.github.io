@@ -1,0 +1,1542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>CATIA Drawing Batch PDF - VBA Package</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono&display=swap">
+<style>
+:root {
+  --bg:#eef1f5; --panel:#ffffff; --ink:#16202c; --muted:#566475; --line:#d3dae3;
+  --accent:#2c5aa0; --accent2:#1f437a; --code-bg:#f6f8fb; --note:#fff6dc; --note-line:#d9a400;
+  box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --bg:#141a22; --panel:#1c242f; --ink:#e6ebf2; --muted:#9aa8b9; --line:#324052; --accent:#6f9fe6; --accent2:#8fb5ee; --code-bg:#151c25; --note:#3a3216; --note-line:#d9a400; }
+}
+:root[data-theme="dark"] { --bg:#141a22; --panel:#1c242f; --ink:#e6ebf2; --muted:#9aa8b9; --line:#324052; --accent:#6f9fe6; --accent2:#8fb5ee; --code-bg:#151c25; --note:#3a3216; --note-line:#d9a400; }
+*, *::before, *::after { box-sizing:inherit; }
+html { scroll-padding-top:env(safe-area-inset-top,0px); }
+body { margin:0; background:var(--bg); color:var(--ink); font-family:"IBM Plex Sans","Segoe UI","Malgun Gothic",Arial,sans-serif; font-size:16px; line-height:1.6; }
+.wrap { max-width:920px; margin:0 auto; padding:0 20px; }
+header { padding:40px 0 8px; }
+h1 { font-size:2rem; line-height:1.2; margin:0 0 6px; font-weight:600; letter-spacing:-0.01em; }
+.subtitle { margin:0; color:var(--muted); max-width:62ch; }
+.palettes { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:14px 22px; margin:26px 0 8px; }
+.strip { display:flex; height:34px; border:1px solid var(--line); }
+.strip span { flex:1; }
+.pal p { margin:4px 0 0; font-size:.85rem; color:var(--muted); }
+section { background:var(--panel); border:1px solid var(--line); border-radius:6px; padding:22px 24px; margin:18px 0; }
+h2 { font-size:1.15rem; margin:0 0 10px; font-weight:600; }
+p { margin:0 0 10px; max-width:72ch; }
+ul, ol { margin:0; padding-left:22px; max-width:72ch; }
+li { margin-bottom:6px; }
+code, pre { font-family:"IBM Plex Mono",Consolas,monospace; }
+code { font-size:.9em; }
+.code-head { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:10px; margin-bottom:10px; }
+.code-head h2 { margin:0; }
+.right { display:flex; align-items:center; gap:10px; }
+.filetag { font-size:.8rem; color:var(--muted); border:1px solid var(--line); border-radius:4px; padding:3px 8px; }
+.copy { background:var(--accent); color:#fff; border:0; border-radius:4px; padding:8px 16px; font:inherit; font-size:.9rem; font-weight:500; cursor:pointer; }
+.copy:hover { background:var(--accent2); }
+.copy:focus-visible { outline:3px solid var(--note-line); outline-offset:2px; }
+:root[data-theme="dark"] .copy { color:#10161e; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .copy { color:#10161e; } }
+pre { margin:0; background:var(--code-bg); border:1px solid var(--line); border-radius:4px; padding:14px; max-height:520px; overflow:auto; font-size:.8rem; line-height:1.5; }
+.logo { display:block; max-width:100%; height:auto; margin:10px 0 0; border:1px solid var(--line); }
+.note { background:var(--note); border-left:4px solid var(--note-line); padding:10px 14px; margin:12px 0 0; }
+.wrapx { overflow-x:auto; }
+table { border-collapse:collapse; width:100%; font-size:.88rem; }
+th, td { text-align:left; padding:6px 10px; border-bottom:1px solid var(--line); vertical-align:top; }
+th { color:var(--muted); font-weight:500; }
+footer { color:var(--muted); font-size:.85rem; padding:8px 0 40px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>CATIA Drawing Batch PDF</h1>
+  <p class="subtitle">Saves the sheets of the active drawing, every open drawing, or every CATDrawing in a folder as PDF, DXF or DWG. Two code blocks to paste: the form and the module.</p>
+</header>
+<main>
+  <section>
+    <h2>What it does</h2>
+    <ul>
+      <li><strong>Three sources.</strong> The active drawing, every drawing that is open, or every CATDrawing in a folder you choose.</li>
+      <li><strong>One file per sheet or one per drawing.</strong> In per-sheet mode each sheet is activated in turn and saved as <code>DrawingName_SheetName.pdf</code>. Detail sheets are skipped.</li>
+      <li><strong>PDF, DXF or DWG.</strong></li>
+      <li><strong>Save folder is optional.</strong> Leave it empty and each file is saved next to its drawing.</li>
+      <li><strong>Optional date</strong> in the file name. Existing files with the same name are replaced.</li>
+      <li><strong>English / Korean button</strong> in the top right corner. The language is remembered for next time.</li>
+      <li><strong>Credit image centered at the bottom</strong>, stored inside the module as text, the same as your other macros. <img class="logo" src="data:image/gif;base64,R0lGODdhwwAPAIQAAPDw8Nfc4MTM1LXAy6e0wpqpuo2fsn+SqXKIoGuCnWV9mVdxkEhlhjtafyxOdR5CbA81YgAqWgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACwAAAAAwwAPAAAI/wABCBxIsKDBgwgTKlzIsKHDhxAjSpxIsaLFixgzatzoEEGEAQQfNBh4IIIAggYeRICwIAAAjxFWKiCpMgKDkwRjxnRQQCABnTETQCBY4AEAoBEQHCVQ8EDNmwIb6HzQE6bOlzpZuhz4MyYEpQ2UCkQwkmBJnEsBDHAQsyWAsAQbMBXIwOhAAQxiPjjgMwJBBEqtxvwboSyAkoYdNOAr0CnTAAscvCwb4IGBlw/mIoCwVWCEuQYg9PxZUPTABTM/F1Q9EEHmsZzfii3AmWxB2wDwSubqN7foAbEDQJg7UDHjtHsBBGCwQHbcucIdgFQOQYHLtUpJtw5s+HaDBj0rK/8oK+CBgN0AhockgBvAAqXqB8IdyBpASgDaT88UCAFkfc/EpRcgXPMt1d5Y3VnGm3xKvfdScwSVdx59TJkkkACXFfgWaAsYsN8B3RHAWX4vcYcQWQM8ABlgZSHAl3T49ebdhZmROFlOAX5kY1EC8ZgWjgv+NdJ8Pwlw4I2tMRAkcCcJ8BEEaI314nSqLbAXWhrKFdUAwkUlFoUkAoakQbYtYCWS5tk3k41jAcWXjQR0999nXV0FwAMgoeYZUBUSB+eQU1UF1EgHtlenTVspUJ1BaXoIoEAG5NUASFIhxVR5Ai3Qk4YbhhnYoEJSV9VIAwBlFJtIAheAjSACSd8AbCr/MBOUj7oaY1NDfongjEkGCRllEXQmUKlT1SpQAIo6Jx9TJenUHKfDeTomr62NpMBxkwq4XnsOXBafl7bex2aKBaD334/8DQiWrtNOq2BfQR5l0LXy+UfAAHIqGxVTMPJ3WIicldoZAyYedKRtaTbW3AEOPBbZmAg0h0C/B8RGYY+mofqAA8ed+9/E01XsEqcHk/dwvArYJW9BCR/W3GfCXXbYUFkSgOlADBggnFjnieWAW0W2W613Pg47lH0qaTWmj07FBFVOOvHUF58CKWDhnjopZelhT+FEMlJYeeUWbzoxMN3KAxWt1lCq4es0pbrKpQCEjSmJl17HLbdTT2HbJMnR34AHLvhFBDgQ5eCIJ6744h1BICPjkEcu+eSUV2755RsFBAA7" alt="Credit image with the line: macro developed by AISHAQUE" width="195" height="15"></li>
+      <li><strong>Works beside your other macros.</strong> Every shared name starts with <code>DPdf</code>, so it does not clash with the other macros in the same VBA project.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Setup</h2>
+    <ol>
+      <li>In the VBA editor, use Insert, UserForm. In the Properties window set its <code>(Name)</code> to <code>frmDrawingPdf</code>. Leave the form empty in the designer.</li>
+      <li>Open the form's code (right-click the form, View Code), select all, delete, and paste the Form code below.</li>
+      <li>Use Insert, Module. In the Properties window set its <code>(Name)</code> to <code>DrawingPdf</code>, then paste the Module code below.</li>
+      <li>Use Debug, Compile VBAProject.</li>
+      <li>Open a CATDrawing (not needed for the folder option), then run <code>CATMain</code> from the <code>DrawingPdf</code> module.</li>
+    </ol>
+    <p class="note"><strong>First run:</strong> this code was written and checked for structure, but not run inside CATIA. Try it on one drawing with two sheets first and open the PDFs to check what each file contains.</p>
+  </section>
+
+  <section>
+    <div class="code-head"><h2>Form code</h2><div class="right"><span class="filetag">frmDrawingPdf</span><button class="copy" data-target="form">Copy code</button></div></div>
+    <pre><code id="form">Option Explicit
+
+'=========================================================
+' CATIA DRAWING BATCH PDF - FORM
+' Form name: frmDrawingPdf
+' The form is empty in the designer. Every control is
+' created here in code.
+'=========================================================
+
+Private WithEvents mLangButton As MSForms.CommandButton
+Private WithEvents mCloseButton As MSForms.CommandButton
+Private WithEvents mBrowse1 As MSForms.CommandButton
+Private WithEvents mBrowse2 As MSForms.CommandButton
+Private WithEvents mAct1 As MSForms.CommandButton
+
+Private mBusy As Boolean
+
+
+'=========================================================
+' FORM INITIALIZATION
+'=========================================================
+
+Private Sub UserForm_Initialize()
+
+    DPdfLoadLanguage
+
+    Me.Caption = "CATIA Drawing Batch PDF"
+    Me.Width = 440
+    Me.Height = 383
+
+    BuildControls
+    ApplyLanguage
+    LoadInputs
+    ShowDocStatus
+
+End Sub
+
+
+Private Function AddCtl( _
+        ByVal progId As String, _
+        ByVal ctlName As String, _
+        ByVal x As Single, _
+        ByVal y As Single, _
+        ByVal w As Single, _
+        ByVal h As Single) As Object
+
+    Dim c As Object
+
+    Set c = Me.Controls.Add(progId, ctlName, True)
+
+    c.Left = x
+    c.Top = y
+    c.Width = w
+    c.Height = h
+
+    Set AddCtl = c
+
+End Function
+
+
+Private Sub BuildControls()
+
+    Dim c As Object
+
+    ' Title and language button
+    Set c = AddCtl("Forms.Label.1", "lblTitle", 20, 12, 300, 24)
+    c.Font.Size = 14
+    c.Font.Bold = True
+
+    Set mLangButton = AddCtl("Forms.CommandButton.1", "cmdLang", 330, 12, 80, 24)
+
+    Set c = AddCtl("Forms.Label.1", "lblSubtitle", 20, 40, 390, 28)
+    c.WordWrap = True
+
+    Set c = AddCtl("Forms.Label.1", "lbl_cboSource", 20, 77, 150, 16)
+    Set c = AddCtl("Forms.ComboBox.1", "cboSource", 175, 74, 235, 20)
+    c.Style = 2
+
+    Set c = AddCtl("Forms.Label.1", "lbl_txtSource", 20, 102, 390, 16)
+    Set c = AddCtl("Forms.TextBox.1", "txtSource", 20, 119, 310, 20)
+    Set mBrowse1 = AddCtl("Forms.CommandButton.1", "cmdBrowse1", 336, 118, 74, 22)
+
+    Set c = AddCtl("Forms.Label.1", "lbl_cboFormat", 20, 151, 150, 16)
+    Set c = AddCtl("Forms.ComboBox.1", "cboFormat", 175, 148, 235, 20)
+    c.Style = 2
+
+    Set c = AddCtl("Forms.Label.1", "lbl_cboMode", 20, 179, 150, 16)
+    Set c = AddCtl("Forms.ComboBox.1", "cboMode", 175, 176, 235, 20)
+    c.Style = 2
+
+    Set c = AddCtl("Forms.Label.1", "lbl_txtOut", 20, 204, 390, 16)
+    Set c = AddCtl("Forms.TextBox.1", "txtOut", 20, 221, 310, 20)
+    Set mBrowse2 = AddCtl("Forms.CommandButton.1", "cmdBrowse2", 336, 220, 74, 22)
+
+    Set c = AddCtl("Forms.CheckBox.1", "chkDate", 20, 250, 390, 18)
+
+    ' Status
+    Set c = AddCtl("Forms.Label.1", "lblStatus", 20, 271, 390, 34)
+    c.WordWrap = True
+    c.Font.Bold = True
+
+    ' Buttons
+    Set mAct1 = AddCtl("Forms.CommandButton.1", "cmdAct1", 20, 311, 191, 30)
+    Set mCloseButton = AddCtl("Forms.CommandButton.1", "cmdClose", 219, 311, 191, 30)
+
+    ' Logo, centered at the bottom. The picture data is at the bottom of the module.
+    Set c = AddCtl("Forms.Image.1", "imgLogo", 20, 349, 10, 10)
+    c.BorderStyle = 0
+    c.BackStyle = 0
+    c.AutoSize = True
+
+    If DPdfLoadLogo(c) Then
+        c.Left = 215 - c.Width / 2
+        Me.Height = 383 + c.Height + 8
+    Else
+        c.Visible = False
+    End If
+
+End Sub
+
+
+'=========================================================
+' LANGUAGE
+'=========================================================
+
+Private Sub ApplyLanguage()
+
+    Dim c As Object
+
+    Me.Controls("lblTitle").Caption = DPdfTxt("title")
+    Me.Controls("lblSubtitle").Caption = DPdfTxt("subtitle")
+
+    Me.Controls("lbl_cboSource").Caption = DPdfTxt("source")
+    FillCombo "cboSource", Array("srcActive", "srcOpen", "srcFolder")
+    Me.Controls("lbl_txtSource").Caption = DPdfTxt("srcFolderLabel")
+    mBrowse1.Caption = DPdfTxt("btnBrowse")
+    Me.Controls("lbl_cboFormat").Caption = DPdfTxt("format")
+    FillCombo "cboFormat", Array("fmtPdf", "fmtDxf", "fmtDwg")
+    Me.Controls("lbl_cboMode").Caption = DPdfTxt("mode")
+    FillCombo "cboMode", Array("modeSheet", "modeDrawing")
+    Me.Controls("lbl_txtOut").Caption = DPdfTxt("outFolder")
+    mBrowse2.Caption = DPdfTxt("btnBrowse")
+    Me.Controls("chkDate").Caption = DPdfTxt("chkDate")
+    mAct1.Caption = DPdfTxt("btnRun")
+    mCloseButton.Caption = DPdfTxt("btnClose")
+    mLangButton.Caption = DPdfTxt("btnLang")
+
+    ' A font that can show the selected language
+    On Error Resume Next
+
+    For Each c In Me.Controls
+        c.Font.Name = DPdfUiFontName()
+    Next c
+
+    On Error GoTo 0
+
+End Sub
+
+
+Private Sub FillCombo(ByVal ctlName As String, ByVal keys As Variant)
+
+    Dim c As Object
+    Dim keep As Long
+    Dim i As Long
+
+    Set c = Me.Controls(ctlName)
+
+    keep = c.ListIndex
+
+    c.Clear
+
+    For i = LBound(keys) To UBound(keys)
+        c.AddItem DPdfTxt(CStr(keys(i)))
+    Next i
+
+    If keep &lt; 0 Or keep &gt; c.ListCount - 1 Then keep = 0
+
+    c.ListIndex = keep
+
+End Sub
+
+
+Private Sub SetComboIndex(ByVal ctlName As String, ByVal index As Long)
+
+    Dim c As Object
+
+    Set c = Me.Controls(ctlName)
+
+    If index &lt; 0 Or index &gt; c.ListCount - 1 Then index = 0
+
+    c.ListIndex = index
+
+End Sub
+
+
+Private Sub mLangButton_Click()
+
+    If gDPdfLang = "KO" Then
+        DPdfSetLanguage "EN"
+    Else
+        DPdfSetLanguage "KO"
+    End If
+
+    ApplyLanguage
+    ShowDocStatus
+
+End Sub
+
+
+'=========================================================
+' REMEMBERED INPUTS
+'=========================================================
+
+Private Sub LoadInputs()
+
+    On Error Resume Next
+
+    SetComboIndex "cboSource", CLng(Val(DPdfLoadText("cboSource", "0")))
+    Me.Controls("txtSource").Text = DPdfLoadText("txtSource", "")
+    SetComboIndex "cboFormat", CLng(Val(DPdfLoadText("cboFormat", "0")))
+    SetComboIndex "cboMode", CLng(Val(DPdfLoadText("cboMode", "0")))
+    Me.Controls("txtOut").Text = DPdfLoadText("txtOut", "")
+    Me.Controls("chkDate").Value = (DPdfLoadText("chkDate", "0") = "1")
+
+End Sub
+
+
+Private Sub SaveInputs()
+
+    On Error Resume Next
+
+    DPdfSaveText "cboSource", CStr(Me.Controls("cboSource").ListIndex)
+    DPdfSaveText "txtSource", Me.Controls("txtSource").Text
+    DPdfSaveText "cboFormat", CStr(Me.Controls("cboFormat").ListIndex)
+    DPdfSaveText "cboMode", CStr(Me.Controls("cboMode").ListIndex)
+    DPdfSaveText "txtOut", Me.Controls("txtOut").Text
+    DPdfSaveText "chkDate", IIf(Me.Controls("chkDate").Value = True, "1", "0")
+
+End Sub
+
+
+'=========================================================
+' ACTIVE DOCUMENT AND STATUS
+'=========================================================
+
+Private Function DocReady() As Boolean
+
+    Dim kind As String
+
+    kind = DPdfDocKind()
+
+    DocReady = True
+
+End Function
+
+
+Private Sub ShowDocStatus()
+
+    If DocReady() Then
+        ShowStatus DPdfFmt(DPdfTxt("stReady"), DPdfDocName())
+    Else
+        ShowStatus DPdfTxt("stNeed")
+    End If
+
+End Sub
+
+
+Private Sub ShowStatus(ByVal message As String)
+
+    Me.Controls("lblStatus").Caption = DPdfTxt("status") &amp; message
+
+End Sub
+
+
+' Called by the module while it works
+Public Sub Progress(ByVal message As String)
+
+    ShowStatus message
+
+    Me.Repaint
+
+    DoEvents
+
+End Sub
+
+
+Private Sub SetBusy(ByVal busy As Boolean)
+
+    Dim c As Object
+
+    mBusy = busy
+
+    For Each c In Me.Controls
+        If TypeName(c) = "CommandButton" Then c.Enabled = Not busy
+    Next c
+
+    Me.Repaint
+
+    DoEvents
+
+End Sub
+
+
+'=========================================================
+' BUTTONS
+'=========================================================
+
+Private Sub DoAction(ByVal actionId As Long)
+
+    Dim message As String
+    Dim ok As Boolean
+
+    If mBusy Then Exit Sub
+
+    If Not DocReady() Then
+        ShowDocStatus
+        Exit Sub
+    End If
+
+    SaveInputs
+
+    SetBusy True
+
+    ShowStatus DPdfTxt("stWorking")
+
+    On Error GoTo Failed
+
+    ok = DPdfRun(Me, actionId, message)
+
+    On Error Resume Next
+
+    CATIA.RefreshDisplay = True
+    CATIA.DisplayFileAlerts = True
+
+    SetBusy False
+
+    ShowStatus message
+
+    Exit Sub
+
+Failed:
+
+    message = Err.Description
+
+    On Error Resume Next
+
+    CATIA.RefreshDisplay = True
+    CATIA.DisplayFileAlerts = True
+
+    SetBusy False
+
+    ShowStatus DPdfFmt(DPdfTxt("msgError"), message)
+
+End Sub
+
+
+Private Sub mAct1_Click()
+
+    DoAction 1
+
+End Sub
+
+
+Private Sub mBrowse1_Click()
+
+    Dim picked As String
+
+    picked = DPdfBrowseFolder(DPdfTxt("srcFolderLabel"))
+
+    If Len(picked) &gt; 0 Then Me.Controls("txtSource").Text = picked
+
+End Sub
+
+
+Private Sub mBrowse2_Click()
+
+    Dim picked As String
+
+    picked = DPdfBrowseFolder(DPdfTxt("outFolder"))
+
+    If Len(picked) &gt; 0 Then Me.Controls("txtOut").Text = picked
+
+End Sub
+
+
+
+'=========================================================
+' CLOSE
+'=========================================================
+
+Private Sub mCloseButton_Click()
+
+    Unload Me
+
+End Sub
+
+
+' The window cannot be closed while the macro is working
+Private Sub UserForm_QueryClose(Cancel As Integer, CloseMode As Integer)
+
+    If mBusy Then Cancel = True
+
+End Sub</code></pre>
+  </section>
+
+  <section>
+    <div class="code-head"><h2>Module code</h2><div class="right"><span class="filetag">DrawingPdf</span><button class="copy" data-target="module">Copy code</button></div></div>
+    <p>The long block of letters and numbers at the bottom is the credit image. Do not edit it.</p>
+    <pre><code id="module">Option Explicit
+
+'=========================================================
+' CATIA DRAWING BATCH PDF - MAIN MODULE
+' Module name: DrawingPdf
+' Run CATMain to open the window.
+'=========================================================
+
+Private Const REG_APP As String = "CatiaDrawingPdf"
+Private Const REG_SEC As String = "Settings"
+
+' "EN" or "KO"
+Public gDPdfLang As String
+
+
+'=========================================================
+' ENTRY POINT
+'=========================================================
+
+Sub CATMain()
+
+    DPdfLoadLanguage
+    frmDrawingPdf.Show
+
+End Sub
+
+'=========================================================
+' EXPORT
+'=========================================================
+
+Public Function DPdfRun( _
+        ByVal frm As Object, _
+        ByVal actionId As Long, _
+        ByRef message As String) As Boolean
+
+    Dim drawings As New Collection
+    Dim paths As New Collection
+    Dim fso As Object
+    Dim f As Object
+    Dim d As Object
+    Dim homeWindow As Object
+    Dim outFolder As String
+    Dim srcFolder As String
+    Dim ext As String
+    Dim source As Long
+    Dim perSheet As Boolean
+    Dim wasOpen As Boolean
+    Dim i As Long
+    Dim made As Long
+    Dim files As Long
+    Dim failed As Long
+    Dim total As Long
+
+    DPdfRun = False
+
+    outFolder = WithSlash(CtlText(frm, "txtOut"))
+
+    If Len(outFolder) &gt; 0 And Not FolderExists(outFolder) Then
+        message = DPdfTxt("msgNoOut")
+        Exit Function
+    End If
+
+    Select Case CtlIndex(frm, "cboFormat")
+        Case 1: ext = "dxf"
+        Case 2: ext = "dwg"
+        Case Else: ext = "pdf"
+    End Select
+
+    perSheet = (CtlIndex(frm, "cboMode") = 0)
+    source = CtlIndex(frm, "cboSource")
+
+    On Error Resume Next
+    Set homeWindow = CATIA.ActiveWindow
+    On Error GoTo 0
+
+    CATIA.DisplayFileAlerts = False
+
+    If source = 2 Then
+
+        '---------------------------------------
+        ' Every CATDrawing in a folder
+        '---------------------------------------
+
+        srcFolder = WithSlash(CtlText(frm, "txtSource"))
+
+        If Not FolderExists(srcFolder) Then
+            message = DPdfTxt("msgNoSrc")
+            Exit Function
+        End If
+
+        Set fso = CreateObject("Scripting.FileSystemObject")
+
+        For Each f In fso.GetFolder(srcFolder).Files
+            If LCase$(fso.GetExtensionName(f.Name)) = "catdrawing" Then paths.Add CStr(f.Path)
+        Next f
+
+        total = paths.Count
+
+        For i = 1 To paths.Count
+
+            wasOpen = IsDocOpen(FileNameOf(CStr(paths.Item(i))))
+
+            Set d = OpenDrawing(CStr(paths.Item(i)))
+
+            made = 0
+
+            If Not d Is Nothing Then
+                made = ExportDrawing(d, outFolder, ext, perSheet, frm)
+                If Not wasOpen Then CloseQuietly d
+            End If
+
+            If made &gt; 0 Then
+                files = files + made
+            Else
+                failed = failed + 1
+            End If
+
+        Next i
+
+    Else
+
+        '---------------------------------------
+        ' Active drawing, or every open drawing
+        '---------------------------------------
+
+        If source = 1 Then
+
+            For i = 1 To CATIA.Documents.Count
+                If TypeName(CATIA.Documents.Item(i)) = "DrawingDocument" Then drawings.Add CATIA.Documents.Item(i)
+            Next i
+
+        ElseIf DPdfDocKind() = "Drawing" Then
+
+            drawings.Add CATIA.ActiveDocument
+
+        Else
+
+            message = DPdfTxt("msgNeedDoc")
+            Exit Function
+
+        End If
+
+        total = drawings.Count
+
+        For i = 1 To drawings.Count
+
+            Set d = drawings.Item(i)
+
+            made = ExportDrawing(d, outFolder, ext, perSheet, frm)
+
+            If made &gt; 0 Then
+                files = files + made
+            Else
+                failed = failed + 1
+            End If
+
+        Next i
+
+    End If
+
+    CATIA.DisplayFileAlerts = True
+
+    On Error Resume Next
+    homeWindow.Activate
+    On Error GoTo 0
+
+    If total = 0 Then
+        message = DPdfTxt("msgNothing")
+        Exit Function
+    End If
+
+    message = DPdfFmt(DPdfTxt("msgDone"), CStr(files), CStr(total), CStr(failed))
+
+    DPdfRun = True
+
+End Function
+
+
+Private Function OpenDrawing(ByVal filePath As String) As Object
+
+    On Error Resume Next
+
+    Set OpenDrawing = CATIA.Documents.Open(filePath)
+
+End Function
+
+
+Private Sub CloseQuietly(ByVal d As Object)
+
+    On Error Resume Next
+
+    d.Close
+
+End Sub
+
+
+' Saves one drawing. Returns the number of files written.
+Private Function ExportDrawing( _
+        ByVal d As Object, _
+        ByVal outFolder As String, _
+        ByVal ext As String, _
+        ByVal perSheet As Boolean, _
+        ByVal frm As Object) As Long
+
+    Dim sheets As Object
+    Dim sh As Object
+    Dim keep As Object
+    Dim saveFolder As String
+    Dim baseName As String
+    Dim target As String
+    Dim i As Long
+    Dim made As Long
+
+    On Error GoTo Failed
+
+    saveFolder = outFolder
+
+    If Len(saveFolder) = 0 Then saveFolder = WithSlash(d.Path)
+
+    ' A drawing that was never saved has no folder of its own
+    If Len(saveFolder) = 0 Then Exit Function
+
+    baseName = CleanName(StripExt(d.Name))
+
+    If CtlOn(frm, "chkDate") Then baseName = baseName &amp; "_" &amp; Format$(Date, "yyyymmdd")
+
+    d.Activate
+
+    Set sheets = d.Sheets
+
+    If perSheet Then
+
+        Set keep = sheets.ActiveSheet
+
+        For i = 1 To sheets.Count
+
+            Set sh = sheets.Item(i)
+
+            If Not sh.IsDetail Then
+
+                sh.Activate
+
+                target = saveFolder &amp; baseName &amp; "_" &amp; CleanName(sh.Name) &amp; "." &amp; ext
+
+                Say frm, DPdfTxt("stItem") &amp; " " &amp; FileNameOf(target)
+
+                DeleteFile target
+
+                d.ExportData target, ext
+
+                If FileExists(target) Then made = made + 1
+
+            End If
+
+        Next i
+
+        keep.Activate
+
+    Else
+
+        target = saveFolder &amp; baseName &amp; "." &amp; ext
+
+        Say frm, DPdfTxt("stItem") &amp; " " &amp; FileNameOf(target)
+
+        DeleteFile target
+
+        d.ExportData target, ext
+
+        If FileExists(target) Then made = made + 1
+
+    End If
+
+    ExportDrawing = made
+
+    Exit Function
+
+Failed:
+
+    ExportDrawing = made
+
+End Function
+
+
+'=========================================================
+' SHARED HELPERS
+'=========================================================
+
+' "" = nothing open, otherwise Product, Part, Drawing or Other
+Public Function DPdfDocKind() As String
+
+    Dim t As String
+
+    On Error Resume Next
+
+    If CATIA.Documents.Count &gt; 0 Then t = TypeName(CATIA.ActiveDocument)
+
+    On Error GoTo 0
+
+    Select Case t
+        Case "ProductDocument": DPdfDocKind = "Product"
+        Case "PartDocument": DPdfDocKind = "Part"
+        Case "DrawingDocument": DPdfDocKind = "Drawing"
+        Case "": DPdfDocKind = ""
+        Case Else: DPdfDocKind = "Other"
+    End Select
+
+End Function
+
+
+Public Function DPdfDocName() As String
+
+    On Error Resume Next
+
+    DPdfDocName = CATIA.ActiveDocument.Name
+
+End Function
+
+
+' Folder picker. Returns "" when cancelled.
+Public Function DPdfBrowseFolder(ByVal title As String) As String
+
+    Dim sh As Object
+    Dim picked As Object
+
+    On Error Resume Next
+
+    Set sh = CreateObject("Shell.Application")
+    Set picked = sh.BrowseForFolder(0, title, 1)
+
+    If Not picked Is Nothing Then DPdfBrowseFolder = picked.Self.Path
+
+End Function
+
+
+Private Function CtlText(ByVal frm As Object, ByVal ctlName As String) As String
+
+    CtlText = Trim$(frm.Controls(ctlName).Text)
+
+End Function
+
+
+Private Function CtlOn(ByVal frm As Object, ByVal ctlName As String) As Boolean
+
+    CtlOn = (frm.Controls(ctlName).Value = True)
+
+End Function
+
+
+Private Function CtlIndex(ByVal frm As Object, ByVal ctlName As String) As Long
+
+    CtlIndex = frm.Controls(ctlName).ListIndex
+
+End Function
+
+
+' Shows progress on the status line of the window
+Private Sub Say(ByVal frm As Object, ByVal message As String)
+
+    frm.Progress message
+
+End Sub
+
+
+' Replaces characters that are not allowed in a file name
+Private Function CleanName(ByVal rawName As String) As String
+
+    Dim i As Long
+    Dim ch As String
+    Dim code As Long
+    Dim result As String
+
+    For i = 1 To Len(rawName)
+
+        ch = Mid$(rawName, i, 1)
+        code = AscW(ch)
+
+        If InStr("\/:*?""&lt;&gt;|", ch) &gt; 0 Or (code &gt;= 0 And code &lt; 32) Then
+            result = result &amp; "_"
+        Else
+            result = result &amp; ch
+        End If
+
+    Next i
+
+    If Len(result) = 0 Then result = "Unnamed"
+
+    CleanName = result
+
+End Function
+
+
+Private Function StripExt(ByVal fileName As String) As String
+
+    Dim p As Long
+
+    p = InStrRev(fileName, ".")
+
+    If p &gt; 1 Then
+        StripExt = Left$(fileName, p - 1)
+    Else
+        StripExt = fileName
+    End If
+
+End Function
+
+
+Private Function FileNameOf(ByVal filePath As String) As String
+
+    FileNameOf = Mid$(filePath, InStrRev(filePath, "\") + 1)
+
+End Function
+
+
+Private Function WithSlash(ByVal folderPath As String) As String
+
+    If Len(folderPath) &gt; 0 And Right$(folderPath, 1) &lt;&gt; "\" Then folderPath = folderPath &amp; "\"
+
+    WithSlash = folderPath
+
+End Function
+
+
+Private Function FolderExists(ByVal folderPath As String) As Boolean
+
+    Dim fso As Object
+
+    If Len(folderPath) = 0 Then Exit Function
+
+    On Error Resume Next
+
+    Set fso = CreateObject("Scripting.FileSystemObject")
+
+    FolderExists = fso.FolderExists(folderPath)
+
+End Function
+
+
+Private Function FileExists(ByVal filePath As String) As Boolean
+
+    Dim fso As Object
+
+    If Len(filePath) = 0 Then Exit Function
+
+    On Error Resume Next
+
+    Set fso = CreateObject("Scripting.FileSystemObject")
+
+    FileExists = fso.FileExists(filePath)
+
+End Function
+
+
+Private Sub DeleteFile(ByVal filePath As String)
+
+    Dim fso As Object
+
+    On Error Resume Next
+
+    Set fso = CreateObject("Scripting.FileSystemObject")
+
+    If fso.FileExists(filePath) Then fso.DeleteFile filePath, True
+
+End Sub
+
+
+Private Sub OpenFile(ByVal filePath As String)
+
+    Dim sh As Object
+
+    On Error Resume Next
+
+    Set sh = CreateObject("WScript.Shell")
+
+    sh.Run """" &amp; filePath &amp; """"
+
+End Sub
+
+
+Private Function IsDocOpen(ByVal fileName As String) As Boolean
+
+    Dim d As Object
+
+    On Error Resume Next
+
+    Set d = CATIA.Documents.Item(fileName)
+
+    IsDocOpen = (Err.Number = 0) And Not (d Is Nothing)
+
+    Err.Clear
+
+End Function
+
+
+' One CSV field, always in quotes
+Private Function Csv(ByVal fieldText As String) As String
+
+    Csv = """" &amp; Replace(fieldText, """", """""") &amp; """"
+
+End Function
+
+
+' A number written with a decimal point on every PC
+Private Function Num(ByVal numberValue As Variant, Optional ByVal decimals As Long = 3) As String
+
+    Dim pattern As String
+
+    On Error Resume Next
+
+    pattern = "0"
+
+    If decimals &gt; 0 Then pattern = "0." &amp; String$(decimals, "0")
+
+    Num = Replace(Format$(CDbl(numberValue), pattern), ",", ".")
+
+End Function
+
+
+' Saves text as UTF-8 so Excel shows Korean correctly
+Private Function WriteTextFile(ByVal filePath As String, ByVal content As String) As Boolean
+
+    Dim stm As Object
+
+    On Error GoTo Failed
+
+    Set stm = CreateObject("ADODB.Stream")
+
+    stm.Type = 2
+    stm.Charset = "utf-8"
+    stm.Open
+    stm.WriteText content
+    stm.SaveToFile filePath, 2
+    stm.Close
+
+    WriteTextFile = True
+
+    Exit Function
+
+Failed:
+
+    On Error Resume Next
+    stm.Close
+
+End Function
+
+
+Private Function ReadTextFile(ByVal filePath As String) As String
+
+    Dim stm As Object
+
+    On Error GoTo Failed
+
+    Set stm = CreateObject("ADODB.Stream")
+
+    stm.Type = 2
+    stm.Charset = "utf-8"
+    stm.Open
+    stm.LoadFromFile filePath
+
+    ReadTextFile = stm.ReadText
+
+    stm.Close
+
+    Exit Function
+
+Failed:
+
+    On Error Resume Next
+    stm.Close
+
+End Function
+
+
+' Splits one CSV line into its fields
+Private Function CsvSplit(ByVal lineText As String) As Collection
+
+    Dim fields As New Collection
+    Dim i As Long
+    Dim ch As String
+    Dim cur As String
+    Dim inQuotes As Boolean
+
+    i = 1
+
+    Do While i &lt;= Len(lineText)
+
+        ch = Mid$(lineText, i, 1)
+
+        If inQuotes Then
+            If ch = """" Then
+                If Mid$(lineText, i + 1, 1) = """" Then
+                    cur = cur &amp; """"
+                    i = i + 1
+                Else
+                    inQuotes = False
+                End If
+            Else
+                cur = cur &amp; ch
+            End If
+        ElseIf ch = """" Then
+            inQuotes = True
+        ElseIf ch = "," Then
+            fields.Add cur
+            cur = ""
+        Else
+            cur = cur &amp; ch
+        End If
+
+        i = i + 1
+
+    Loop
+
+    fields.Add cur
+
+    Set CsvSplit = fields
+
+End Function
+
+
+' The name of a component, even when it is not loaded
+Private Function SafeName(ByVal prod As Object) As String
+
+    On Error Resume Next
+
+    SafeName = prod.Name
+
+End Function
+
+
+' The reference product behind an instance, or Nothing when
+' its file is missing or not loaded
+Private Function RefOf(ByVal prod As Object) As Object
+
+    On Error Resume Next
+
+    Set RefOf = prod.ReferenceProduct
+
+End Function
+
+
+' The document behind a component, or Nothing when it has none
+Private Function DocOf(ByVal prod As Object) As Object
+
+    Dim d As Object
+
+    On Error Resume Next
+
+    Set d = prod.ReferenceProduct.Parent
+
+    If d Is Nothing Then Exit Function
+
+    If Right$(TypeName(d), 8) = "Document" Then Set DocOf = d
+
+End Function
+
+
+Private Sub AddDoc(ByVal docs As Object, ByVal d As Object)
+
+    Dim key As String
+
+    key = UCase$(d.FullName)
+
+    If Not docs.Exists(key) Then docs.Add key, d
+
+End Sub
+
+
+' Fills docs (a Dictionary) with every loaded document under prod
+Private Sub CollectDocs( _
+        ByVal prod As Object, _
+        ByVal docs As Object, _
+        ByVal wantParts As Boolean, _
+        ByVal wantProducts As Boolean)
+
+    Dim kids As Object
+    Dim child As Object
+    Dim d As Object
+    Dim kind As String
+    Dim i As Long
+
+    On Error Resume Next
+    Set kids = prod.Products
+    On Error GoTo 0
+
+    If kids Is Nothing Then Exit Sub
+
+    For i = 1 To kids.Count
+
+        Set child = kids.Item(i)
+        Set d = DocOf(child)
+
+        If Not d Is Nothing Then
+
+            kind = TypeName(d)
+
+            If kind = "PartDocument" And wantParts Then AddDoc docs, d
+            If kind = "ProductDocument" And wantProducts Then AddDoc docs, d
+
+            CollectDocs child, docs, wantParts, wantProducts
+
+        End If
+
+    Next i
+
+End Sub
+
+
+' Text after the last backslash of a parameter name
+Private Function ShortName(ByVal fullName As String) As String
+
+    ShortName = Mid$(fullName, InStrRev(fullName, "\") + 1)
+
+End Function
+
+
+'=========================================================
+' SETTINGS (remembered between runs)
+'=========================================================
+
+Public Sub DPdfLoadLanguage()
+
+    gDPdfLang = UCase$(GetSetting(REG_APP, REG_SEC, "Lang", "EN"))
+
+    If gDPdfLang &lt;&gt; "KO" Then gDPdfLang = "EN"
+
+End Sub
+
+
+Public Sub DPdfSetLanguage(ByVal langCode As String)
+
+    gDPdfLang = langCode
+
+    SaveSetting REG_APP, REG_SEC, "Lang", gDPdfLang
+
+End Sub
+
+
+Public Function DPdfLoadText( _
+        ByVal choiceName As String, _
+        ByVal defaultValue As String) As String
+
+    DPdfLoadText = GetSetting(REG_APP, REG_SEC, choiceName, defaultValue)
+
+End Function
+
+
+Public Sub DPdfSaveText( _
+        ByVal choiceName As String, _
+        ByVal choiceValue As String)
+
+    SaveSetting REG_APP, REG_SEC, choiceName, choiceValue
+
+End Sub
+
+
+'=========================================================
+' TEXT (ENGLISH AND KOREAN)
+'=========================================================
+
+Public Function DPdfTxt(ByVal key As String) As String
+
+    If gDPdfLang = "KO" Then
+        DPdfTxt = TextKO(key)
+    Else
+        DPdfTxt = TextEN(key)
+    End If
+
+    If Len(DPdfTxt) = 0 Then DPdfTxt = TextEN(key)
+    If Len(DPdfTxt) = 0 Then DPdfTxt = key
+
+End Function
+
+
+Public Function DPdfUiFontName() As String
+
+    If gDPdfLang = "KO" Then
+        DPdfUiFontName = "Malgun Gothic"
+    Else
+        DPdfUiFontName = "Tahoma"
+    End If
+
+End Function
+
+
+' Fills {0}, {1} and {2} in a text
+Public Function DPdfFmt( _
+        ByVal template As String, _
+        Optional ByVal a As String = "", _
+        Optional ByVal b As String = "", _
+        Optional ByVal c As String = "") As String
+
+    DPdfFmt = Replace(Replace(Replace(template, "{0}", a), "{1}", b), "{2}", c)
+
+End Function
+
+
+' Turns \uXXXX codes into real characters
+Private Function U(ByVal coded As String) As String
+
+    Dim i As Long
+    Dim result As String
+
+    i = 1
+
+    Do While i &lt;= Len(coded)
+
+        If Mid$(coded, i, 2) = "\u" And i + 5 &lt;= Len(coded) Then
+            result = result &amp; ChrW$(CLng("&amp;H" &amp; Mid$(coded, i + 2, 4)))
+            i = i + 6
+        Else
+            result = result &amp; Mid$(coded, i, 1)
+            i = i + 1
+        End If
+
+    Loop
+
+    U = result
+
+End Function
+
+
+Private Function TextEN(ByVal key As String) As String
+
+    Select Case key
+        Case "btnClose": TextEN = "Close"
+        Case "btnLang": TextEN = U("\ud55c\uad6d\uc5b4")
+        Case "btnBrowse": TextEN = "Browse..."
+        Case "status": TextEN = "Status: "
+        Case "stWorking": TextEN = "Working..."
+        Case "msgError": TextEN = "Error: {0}"
+        Case "stNeed": TextEN = "Ready"
+        Case "stReady": TextEN = "Ready. Active document: {0}"
+        Case "title": TextEN = "CATIA Drawing Batch PDF"
+        Case "subtitle": TextEN = "Saves the sheets of one or many drawings as PDF, DXF or DWG"
+        Case "source": TextEN = "Drawings:"
+        Case "srcActive": TextEN = "Active drawing only"
+        Case "srcOpen": TextEN = "Every open drawing"
+        Case "srcFolder": TextEN = "Every CATDrawing in a folder"
+        Case "srcFolderLabel": TextEN = "Source folder (only for the folder option):"
+        Case "format": TextEN = "File format:"
+        Case "fmtPdf": TextEN = "PDF (.pdf)"
+        Case "fmtDxf": TextEN = "DXF (.dxf)"
+        Case "fmtDwg": TextEN = "DWG (.dwg)"
+        Case "mode": TextEN = "Files:"
+        Case "modeSheet": TextEN = "One file per sheet"
+        Case "modeDrawing": TextEN = "One file per drawing"
+        Case "outFolder": TextEN = "Save in (leave empty to save next to each drawing):"
+        Case "chkDate": TextEN = "Add today's date to the file name"
+        Case "btnRun": TextEN = "Export"
+        Case "stItem": TextEN = "Exporting:"
+        Case "msgNoOut": TextEN = "The save folder does not exist."
+        Case "msgNoSrc": TextEN = "Choose an existing source folder."
+        Case "msgNeedDoc": TextEN = "Open a CATDrawing first, or use another option."
+        Case "msgNothing": TextEN = "No drawings found."
+        Case "msgDone": TextEN = "Saved {0} files from {1} drawings. Drawings that failed: {2}."
+    End Select
+
+End Function
+
+
+Private Function TextKO(ByVal key As String) As String
+
+    Select Case key
+        Case "btnClose": TextKO = U("\ub2eb\uae30")
+        Case "btnLang": TextKO = "English"
+        Case "btnBrowse": TextKO = U("\ucc3e\uc544\ubcf4\uae30...")
+        Case "status": TextKO = U("\uc0c1\ud0dc: ")
+        Case "stWorking": TextKO = U("\uc791\uc5c5 \uc911...")
+        Case "msgError": TextKO = U("\uc624\ub958: {0}")
+        Case "stNeed": TextKO = U("\uc900\ube44\ub428")
+        Case "stReady": TextKO = U("\uc900\ube44\ub428. \ud65c\uc131 \ubb38\uc11c: {0}")
+        Case "title": TextKO = U("CATIA \ub3c4\uba74 \uc77c\uad04 PDF")
+        Case "subtitle": TextKO = U("\ud558\ub098 \ub610\ub294 \uc5ec\ub7ec \ub3c4\uba74\uc758 \uc2dc\ud2b8\ub97c PDF, DXF \ub610\ub294 DWG\ub85c \uc800\uc7a5\ud569\ub2c8\ub2e4")
+        Case "source": TextKO = U("\ub3c4\uba74:")
+        Case "srcActive": TextKO = U("\ud65c\uc131 \ub3c4\uba74\ub9cc")
+        Case "srcOpen": TextKO = U("\uc5f4\ub824 \uc788\ub294 \ubaa8\ub4e0 \ub3c4\uba74")
+        Case "srcFolder": TextKO = U("\ud3f4\ub354 \uc548\uc758 \ubaa8\ub4e0 CATDrawing")
+        Case "srcFolderLabel": TextKO = U("\uc6d0\ubcf8 \ud3f4\ub354 (\ud3f4\ub354 \uc635\uc158\uc5d0\uc11c\ub9cc \uc0ac\uc6a9):")
+        Case "format": TextKO = U("\ud30c\uc77c \ud615\uc2dd:")
+        Case "fmtPdf": TextKO = "PDF (.pdf)"
+        Case "fmtDxf": TextKO = "DXF (.dxf)"
+        Case "fmtDwg": TextKO = "DWG (.dwg)"
+        Case "mode": TextKO = U("\ud30c\uc77c:")
+        Case "modeSheet": TextKO = U("\uc2dc\ud2b8\ub9c8\ub2e4 \ud30c\uc77c \ud558\ub098")
+        Case "modeDrawing": TextKO = U("\ub3c4\uba74\ub9c8\ub2e4 \ud30c\uc77c \ud558\ub098")
+        Case "outFolder": TextKO = U("\uc800\uc7a5 \ud3f4\ub354 (\ube44\uc6cc \ub450\uba74 \uac01 \ub3c4\uba74 \uc606\uc5d0 \uc800\uc7a5):")
+        Case "chkDate": TextKO = U("\ud30c\uc77c \uc774\ub984\uc5d0 \uc624\ub298 \ub0a0\uc9dc \ucd94\uac00")
+        Case "btnRun": TextKO = U("\ub0b4\ubcf4\ub0b4\uae30")
+        Case "stItem": TextKO = U("\ub0b4\ubcf4\ub0b4\ub294 \uc911:")
+        Case "msgNoOut": TextKO = U("\uc800\uc7a5 \ud3f4\ub354\uac00 \uc5c6\uc2b5\ub2c8\ub2e4.")
+        Case "msgNoSrc": TextKO = U("\uae30\uc874 \uc6d0\ubcf8 \ud3f4\ub354\ub97c \uc120\ud0dd\ud558\uc138\uc694.")
+        Case "msgNeedDoc": TextKO = U("\uba3c\uc800 CATDrawing\uc744 \uc5f4\uac70\ub098 \ub2e4\ub978 \uc635\uc158\uc744 \uc0ac\uc6a9\ud558\uc138\uc694.")
+        Case "msgNothing": TextKO = U("\ub3c4\uba74\uc744 \ucc3e\uc744 \uc218 \uc5c6\uc2b5\ub2c8\ub2e4.")
+        Case "msgDone": TextKO = U("\ub3c4\uba74 {1}\uac1c\uc5d0\uc11c \ud30c\uc77c {0}\uac1c\ub97c \uc800\uc7a5\ud588\uc2b5\ub2c8\ub2e4. \uc2e4\ud328\ud55c \ub3c4\uba74: {2}.")
+    End Select
+
+End Function
+
+
+'=========================================================
+' LOGO
+' The logo picture is stored below as text.
+' The form shows it with:
+'     DPdfLoadLogo Me.Controls("imgLogo")
+'=========================================================
+
+' Puts the logo into an Image control.
+' Returns False if the picture could not be loaded.
+Public Function DPdfLoadLogo(ByVal target As Object) As Boolean
+
+    Dim data() As Byte
+    Dim filePath As String
+    Dim fileNo As Integer
+
+    DPdfLoadLogo = False
+
+    On Error GoTo Failed
+
+    data = HexToBytes(LogoHex())
+
+    ' VBA can only load a picture from a file, so the data is
+    ' written to the Windows temp folder, loaded, then deleted.
+    filePath = Environ$("TEMP") &amp; "\catia_macro_logo.gif"
+
+    If Len(Dir$(filePath)) &gt; 0 Then Kill filePath
+
+    fileNo = FreeFile
+
+    Open filePath For Binary Access Write As #fileNo
+    Put #fileNo, , data
+    Close #fileNo
+
+    Set target.Picture = LoadPicture(filePath)
+
+    DPdfLoadLogo = True
+
+    On Error Resume Next
+    Kill filePath
+
+    Exit Function
+
+Failed:
+
+    On Error Resume Next
+    Close #fileNo
+
+End Function
+
+
+' Turns pairs of hex characters back into bytes
+Private Function HexToBytes(ByVal hexText As String) As Byte()
+
+    Dim count As Long
+    Dim i As Long
+    Dim data() As Byte
+
+    count = Len(hexText) \ 2
+
+    ReDim data(0 To count - 1)
+
+    For i = 0 To count - 1
+        data(i) = CByte("&amp;H" &amp; Mid$(hexText, i * 2 + 1, 2))
+    Next i
+
+    HexToBytes = data
+
+End Function
+
+
+' The logo picture (a GIF image, 195 x 15 pixels) written as hex text
+Private Function LogoHex() As String
+
+    Dim s As String
+
+    s = s &amp; "474946383761C3000F00840000F0F0F0D7DCE0C4CCD4B5C0CBA7B4C29AA9BA8D9FB27F92A97288A06B829D657D9957719048"
+    s = s &amp; "65863B5A7F2C4E751E426C0F3562002A5A000000000000000000000000000000000000000000000000000000000000000000"
+    s = s &amp; "0000000000000000002C00000000C3000F000008FF0001081C48B0A0C18308132A5CC8B0A1C38710234A9C48B1A2C58B1833"
+    s = s &amp; "6ADCE810418401041F34187820820082061E4480B02000008F11562A20A9320283930463C674504020019D3113402058E001"
+    s = s &amp; "00A011101C2550F040CD9B021BE87CD013A6CE973A59BA1CF8332604A50D940A44309260499C4B010C7010B32580B0041B30"
+    s = s &amp; "15C8C0E840010C623E38E0330241044AADC6FC1BA12C8092861D34E02BD029D3000B1CBC2C1BE08181970FE62280B0556084"
+    s = s &amp; "B90620F4FC5950F4C005333F17543D1041E6B19CDF8A2DC0996C41DB00F04AE6EA37B7E801B10340983B5031E3B47B010460"
+    s = s &amp; "B04076DCB9C21D80540E4181CBB54A49B70E6CF87683063D2B2BFF282BE08180DD00868724801BC002A5EA07C21DC81A404A"
+    s = s &amp; "00DA4FCF140801647DCFC4A517205CF32DD5DE58DD59C69B7C4ABDF752730495771E7D4C992490009715F816680B18B0DF01"
+    s = s &amp; "DD11C0597E2F71871059033C0019606521C09774F8F5E6DD85999138594E017E64635102F198168E0BFE35D27C3F0970E08D"
+    s = s &amp; "AD311024702709F01104688DF5E274AA2DB0175A1ACA15D500C245251685240286A441B62D602592E6D937938D6301C5978D"
+    s = s &amp; "0474F7DF675D5D05C00320A1E61950151207E790535505D44807B657A74D5B29509D41697A08A04006E4D500485221C55479"
+    s = s &amp; "022DD093861B8619D8A0425257D548030065149B480217808D200249DF006C2AFF3013948FBA1A6353437E89E08C49060919"
+    s = s &amp; "6511742650A953D52A50008A3A271F5325E9D41CA7C3793A26AFAD8DA4C071930AB85E7B0E5C169F97B6DEC7668A05A0F7DF"
+    s = s &amp; "8FFC0D0896AED34EAB605F411E65D0B5F2F947C000722A1B155330F27758889C95DA1903261E74A46D6936D6DC010E3C16D9"
+    s = s &amp; "9808348740BF07C446618FA6A1FA8003C79DFBDFC4D355EC12A70793F770BC0AD8256F41091FD6DC67C25D76D850591280E9"
+    s = s &amp; "400C18209C58E789E5805B45B65BAD773E0E3B947D2A6935A68F4EC504554E3AF1D4179F022960E19E3A2965E9614FE14432"
+    s = s &amp; "525879E5166F3A3130DDCA0315ADD650AAE1EB34A5BACAA500848D2989975EC72DB7534F61DB24C9D1DF80072EF845043810"
+    s = s &amp; "E5E08827AEF8E21D412023E390472EF9E494576EF9E51B0504003B"
+
+    LogoHex = s
+
+End Function</code></pre>
+  </section>
+
+  <section>
+    <h2>English and Korean text</h2>
+    <p>All wording lives in <code>TextEN</code> and <code>TextKO</code> in the module. Korean is stored as <code>\uXXXX</code> codes so it pastes safely into the VBA editor on any PC. Please have a Korean-speaking CATIA user check the terms.</p>
+    <div class="wrapx"><table>
+      <tr><th>Key</th><th>English</th><th>Korean</th></tr>
+      <tr><td><code>btnClose</code></td><td>Close</td><td lang="ko">닫기</td></tr><tr><td><code>btnLang</code></td><td>한국어 (button label)</td><td lang="ko">English (button label)</td></tr><tr><td><code>btnBrowse</code></td><td>Browse...</td><td lang="ko">찾아보기...</td></tr><tr><td><code>status</code></td><td>Status: </td><td lang="ko">상태: </td></tr><tr><td><code>stWorking</code></td><td>Working...</td><td lang="ko">작업 중...</td></tr><tr><td><code>msgError</code></td><td>Error: {0}</td><td lang="ko">오류: {0}</td></tr><tr><td><code>stNeed</code></td><td>Ready</td><td lang="ko">준비됨</td></tr><tr><td><code>stReady</code></td><td>Ready. Active document: {0}</td><td lang="ko">준비됨. 활성 문서: {0}</td></tr><tr><td><code>title</code></td><td>CATIA Drawing Batch PDF</td><td lang="ko">CATIA 도면 일괄 PDF</td></tr><tr><td><code>subtitle</code></td><td>Saves the sheets of one or many drawings as PDF, DXF or DWG</td><td lang="ko">하나 또는 여러 도면의 시트를 PDF, DXF 또는 DWG로 저장합니다</td></tr><tr><td><code>source</code></td><td>Drawings:</td><td lang="ko">도면:</td></tr><tr><td><code>srcActive</code></td><td>Active drawing only</td><td lang="ko">활성 도면만</td></tr><tr><td><code>srcOpen</code></td><td>Every open drawing</td><td lang="ko">열려 있는 모든 도면</td></tr><tr><td><code>srcFolder</code></td><td>Every CATDrawing in a folder</td><td lang="ko">폴더 안의 모든 CATDrawing</td></tr><tr><td><code>srcFolderLabel</code></td><td>Source folder (only for the folder option):</td><td lang="ko">원본 폴더 (폴더 옵션에서만 사용):</td></tr><tr><td><code>format</code></td><td>File format:</td><td lang="ko">파일 형식:</td></tr><tr><td><code>fmtPdf</code></td><td>PDF (.pdf)</td><td lang="ko">PDF (.pdf)</td></tr><tr><td><code>fmtDxf</code></td><td>DXF (.dxf)</td><td lang="ko">DXF (.dxf)</td></tr><tr><td><code>fmtDwg</code></td><td>DWG (.dwg)</td><td lang="ko">DWG (.dwg)</td></tr><tr><td><code>mode</code></td><td>Files:</td><td lang="ko">파일:</td></tr><tr><td><code>modeSheet</code></td><td>One file per sheet</td><td lang="ko">시트마다 파일 하나</td></tr><tr><td><code>modeDrawing</code></td><td>One file per drawing</td><td lang="ko">도면마다 파일 하나</td></tr><tr><td><code>outFolder</code></td><td>Save in (leave empty to save next to each drawing):</td><td lang="ko">저장 폴더 (비워 두면 각 도면 옆에 저장):</td></tr><tr><td><code>chkDate</code></td><td>Add today&#x27;s date to the file name</td><td lang="ko">파일 이름에 오늘 날짜 추가</td></tr><tr><td><code>btnRun</code></td><td>Export</td><td lang="ko">내보내기</td></tr><tr><td><code>stItem</code></td><td>Exporting:</td><td lang="ko">내보내는 중:</td></tr><tr><td><code>msgNoOut</code></td><td>The save folder does not exist.</td><td lang="ko">저장 폴더가 없습니다.</td></tr><tr><td><code>msgNoSrc</code></td><td>Choose an existing source folder.</td><td lang="ko">기존 원본 폴더를 선택하세요.</td></tr><tr><td><code>msgNeedDoc</code></td><td>Open a CATDrawing first, or use another option.</td><td lang="ko">먼저 CATDrawing을 열거나 다른 옵션을 사용하세요.</td></tr><tr><td><code>msgNothing</code></td><td>No drawings found.</td><td lang="ko">도면을 찾을 수 없습니다.</td></tr><tr><td><code>msgDone</code></td><td>Saved {0} files from {1} drawings. Drawings that failed: {2}.</td><td lang="ko">도면 {1}개에서 파일 {0}개를 저장했습니다. 실패한 도면: {2}.</td></tr>
+    </table></div>
+    <p class="note"><code>{0}</code>, <code>{1}</code> and <code>{2}</code> are filled in with numbers, names and error details. The window title bar stays in English in both languages.</p>
+  </section>
+
+  <section>
+    <h2>Known limitations</h2>
+    <ul>
+      <li>Whether a PDF holds one sheet or all sheets depends on a CATIA option: Tools, Options, General, Compatibility, Graphics Formats, "Save multi-sheet document in a single vectorial file". For one file per sheet, leave it unticked. For one file per drawing with all sheets, tick it. The macro does not change this option.</li>
+      <li>Drawings that were never saved are skipped unless you choose a save folder.</li>
+      <li>In folder mode, files in sub-folders are not included, and drawings are opened one by one, which loads their linked parts if CATIA is set to do so.</li>
+      <li>The PDFs are separate files. Merging several PDFs into one needs a PDF tool outside CATIA.</li>
+      <li>The window is modal, so CATIA cannot be clicked while it is open. Anything that must be selected in CATIA has to be selected before running the macro.</li>
+      <li>If the credit image cannot be loaded, for example when the Windows temp folder is not writable, the window opens without it.</li>
+    </ul>
+  </section>
+</main>
+<footer>Prepared for CATIA V5 R21 and later, VBA. Saves drawing sheets to PDF, DXF or DWG in one run.</footer>
+</div>
+<script>
+document.querySelectorAll('.copy').forEach(function (btn) {
+  btn.addEventListener('click', function () {
+    var text = document.getElementById(btn.dataset.target).textContent;
+    function done(ok) {
+      btn.textContent = ok ? 'Copied' : 'Select and copy manually';
+      setTimeout(function () { btn.textContent = 'Copy code'; }, 1800);
+    }
+    function fallback() {
+      var ta = document.createElement('textarea');
+      ta.value = text; document.body.appendChild(ta); ta.select();
+      var ok = false;
+      try { ok = document.execCommand('copy'); } catch (e) {}
+      document.body.removeChild(ta); done(ok);
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () { done(true); }, fallback);
+    } else { fallback(); }
+  });
+});
+</script>
+</body>
+</html>
