@@ -1,0 +1,1871 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CATIA Tree Exporter - VBA Package</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono&display=swap">
+<style>
+:root {
+  --bg:#eef1f5; --panel:#ffffff; --ink:#16202c; --muted:#566475; --line:#d3dae3;
+  --accent:#2c5aa0; --accent2:#1f437a; --code-bg:#f6f8fb; --note:#fff6dc; --note-line:#d9a400;
+  box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --bg:#141a22; --panel:#1c242f; --ink:#e6ebf2; --muted:#9aa8b9; --line:#324052; --accent:#6f9fe6; --accent2:#8fb5ee; --code-bg:#151c25; --note:#3a3216; --note-line:#d9a400; }
+}
+:root[data-theme="dark"] { --bg:#141a22; --panel:#1c242f; --ink:#e6ebf2; --muted:#9aa8b9; --line:#324052; --accent:#6f9fe6; --accent2:#8fb5ee; --code-bg:#151c25; --note:#3a3216; --note-line:#d9a400; }
+*, *::before, *::after { box-sizing:inherit; }
+html { scroll-padding-top:env(safe-area-inset-top,0px); }
+body { margin:0; background:var(--bg); color:var(--ink); font-family:"IBM Plex Sans","Segoe UI","Malgun Gothic",Arial,sans-serif; font-size:16px; line-height:1.6; }
+.wrap { max-width:920px; margin:0 auto; padding:0 20px; }
+header { padding:40px 0 8px; }
+h1 { font-size:2rem; line-height:1.2; margin:0 0 6px; font-weight:600; letter-spacing:-0.01em; }
+.subtitle { margin:0; color:var(--muted); max-width:62ch; }
+.palettes { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:14px 22px; margin:26px 0 8px; }
+.strip { display:flex; height:34px; border:1px solid var(--line); }
+.strip span { flex:1; }
+.pal p { margin:4px 0 0; font-size:.85rem; color:var(--muted); }
+section { background:var(--panel); border:1px solid var(--line); border-radius:6px; padding:22px 24px; margin:18px 0; }
+h2 { font-size:1.15rem; margin:0 0 10px; font-weight:600; }
+p { margin:0 0 10px; max-width:72ch; }
+ul, ol { margin:0; padding-left:22px; max-width:72ch; }
+li { margin-bottom:6px; }
+code, pre { font-family:"IBM Plex Mono",Consolas,monospace; }
+code { font-size:.9em; }
+.code-head { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:10px; margin-bottom:10px; }
+.code-head h2 { margin:0; }
+.right { display:flex; align-items:center; gap:10px; }
+.filetag { font-size:.8rem; color:var(--muted); border:1px solid var(--line); border-radius:4px; padding:3px 8px; }
+.copy { background:var(--accent); color:#fff; border:0; border-radius:4px; padding:8px 16px; font:inherit; font-size:.9rem; font-weight:500; cursor:pointer; }
+.copy:hover { background:var(--accent2); }
+.copy:focus-visible { outline:3px solid var(--note-line); outline-offset:2px; }
+:root[data-theme="dark"] .copy { color:#10161e; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .copy { color:#10161e; } }
+pre { margin:0; background:var(--code-bg); border:1px solid var(--line); border-radius:4px; padding:14px; max-height:520px; overflow:auto; font-size:.8rem; line-height:1.5; }
+.logo { display:block; max-width:100%; height:auto; margin:10px 0 0; border:1px solid var(--line); }
+.note { background:var(--note); border-left:4px solid var(--note-line); padding:10px 14px; margin:12px 0 0; }
+.wrapx { overflow-x:auto; }
+table { border-collapse:collapse; width:100%; font-size:.88rem; }
+th, td { text-align:left; padding:6px 10px; border-bottom:1px solid var(--line); vertical-align:top; }
+th { color:var(--muted); font-weight:500; }
+footer { color:var(--muted); font-size:.85rem; padding:8px 0 40px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>CATIA Tree Exporter</h1>
+  <p class="subtitle">Pick any open CATIA window, CATProduct or CATPart, and save its specification tree as a .csv file. Two code blocks to paste: the form and the module.</p>
+</header>
+<main>
+  <section>
+    <h2>What it does</h2>
+    <ul>
+      <li><strong>Window picker.</strong> The window lists every window open in CATIA with its type. The window that is active in CATIA is selected to start with. Refresh rebuilds the list.</li>
+      <li><strong>Works on a CATProduct.</strong> Every product, component and part is written on its own row, at every level, with its part number, instance name and properties.</li>
+      <li><strong>Works on a CATPart.</strong> The part is the top row, followed by its bodies, geometrical sets, sketches and features.</li>
+      <li><strong>Optional part contents in assemblies.</strong> Tick the box to also list the bodies and features inside each part of an assembly. It is off by default because the assembly must be switched to design mode, which can take a while on a large one.</li>
+      <li><strong>Body names only.</strong> Tick "Export body names only" and the file holds one row for each body and nothing else. Each row also carries the part number, instance name and file of the part the body belongs to. It works on a CATPart and on a CATProduct, where the parts are loaded in design mode first.</li>
+      <li><strong>Saved as .csv.</strong> A file name is suggested from the document name, ending in <code>_Tree.csv</code>. Type another path or use Browse. The folder is remembered for next time.</li>
+      <li><strong>English / Korean button</strong> in the top right corner. The column headings in the file follow the language of the window.</li>
+      <li><strong>Credit image centered at the bottom</strong>, stored inside the module as text, the same as your other macros. <img class="logo" src="data:image/gif;base64,R0lGODdhwwAPAIQAAPDw8Nfc4MTM1LXAy6e0wpqpuo2fsn+SqXKIoGuCnWV9mVdxkEhlhjtafyxOdR5CbA81YgAqWgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACwAAAAAwwAPAAAI/wABCBxIsKDBgwgTKlzIsKHDhxAjSpxIsaLFixgzatzoEEGEAQQfNBh4IIIAggYeRICwIAAAjxFWKiCpMgKDkwRjxnRQQCABnTETQCBY4AEAoBEQHCVQ8EDNmwIb6HzQE6bOlzpZuhz4MyYEpQ2UCkQwkmBJnEsBDHAQsyWAsAQbMBXIwOhAAQxiPjjgMwJBBEqtxvwboSyAkoYdNOAr0CnTAAscvCwb4IGBlw/mIoCwVWCEuQYg9PxZUPTABTM/F1Q9EEHmsZzfii3AmWxB2wDwSubqN7foAbEDQJg7UDHjtHsBBGCwQHbcucIdgFQOQYHLtUpJtw5s+HaDBj0rK/8oK+CBgN0AhockgBvAAqXqB8IdyBpASgDaT88UCAFkfc/EpRcgXPMt1d5Y3VnGm3xKvfdScwSVdx59TJkkkACXFfgWaAsYsN8B3RHAWX4vcYcQWQM8ABlgZSHAl3T49ebdhZmROFlOAX5kY1EC8ZgWjgv+NdJ8Pwlw4I2tMRAkcCcJ8BEEaI314nSqLbAXWhrKFdUAwkUlFoUkAoakQbYtYCWS5tk3k41jAcWXjQR0999nXV0FwAMgoeYZUBUSB+eQU1UF1EgHtlenTVspUJ1BaXoIoEAG5NUASFIhxVR5Ai3Qk4YbhhnYoEJSV9VIAwBlFJtIAheAjSACSd8AbCr/MBOUj7oaY1NDfongjEkGCRllEXQmUKlT1SpQAIo6Jx9TJenUHKfDeTomr62NpMBxkwq4XnsOXBafl7bex2aKBaD334/8DQiWrtNOq2BfQR5l0LXy+UfAAHIqGxVTMPJ3WIicldoZAyYedKRtaTbW3AEOPBbZmAg0h0C/B8RGYY+mofqAA8ed+9/E01XsEqcHk/dwvArYJW9BCR/W3GfCXXbYUFkSgOlADBggnFjnieWAW0W2W613Pg47lH0qaTWmj07FBFVOOvHUF58CKWDhnjopZelhT+FEMlJYeeUWbzoxMN3KAxWt1lCq4es0pbrKpQCEjSmJl17HLbdTT2HbJMnR34AHLvhFBDgQ5eCIJ6744h1BICPjkEcu+eSUV2755RsFBAA7" alt="Credit image with the line: macro developed by AISHAQUE" width="195" height="15"></li>
+      <li><strong>Works beside your other macros.</strong> Every shared name starts with <code>TreeExp</code>, so it does not clash with the box generator, colorizer, renamer, BOM exporter or text generator in the same project.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Setup</h2>
+    <ol>
+      <li>In the VBA editor, use Insert, UserForm. In the Properties window set its <code>(Name)</code> to <code>frmTreeExporter</code>. Leave the form empty in the designer.</li>
+      <li>Open the form's code (right-click the form, View Code), select all, delete, and paste the Form code below.</li>
+      <li>Use Insert, Module. In the Properties window set its <code>(Name)</code> to <code>TreeExporter</code>, then paste the Module code below.</li>
+      <li>Use Debug, Compile VBAProject.</li>
+      <li>Open a CATProduct or CATPart, then run <code>CATMain</code> from the <code>TreeExporter</code> module.</li>
+    </ol>
+    <p class="note"><strong>First run:</strong> this code was written and checked for structure, but not run inside CATIA. Try it on a small assembly first and compare a few rows with the tree on screen.</p>
+  </section>
+
+  <section>
+    <div class="code-head"><h2>Form code</h2><div class="right"><span class="filetag">frmTreeExporter</span><button class="copy" data-target="form">Copy code</button></div></div>
+    <pre><code id="form">Option Explicit
+
+&#x27;=========================================================
+&#x27; CATIA TREE EXPORTER - FORM
+&#x27; Form name: frmTreeExporter
+&#x27; The form is empty in the designer. Every control is
+&#x27; created here in code.
+&#x27;=========================================================
+
+Private WithEvents mExportButton As MSForms.CommandButton
+Private WithEvents mCloseButton As MSForms.CommandButton
+Private WithEvents mLangButton As MSForms.CommandButton
+Private WithEvents mRefreshButton As MSForms.CommandButton
+Private WithEvents mBrowseButton As MSForms.CommandButton
+Private WithEvents mWindowList As MSForms.ListBox
+Private WithEvents mBodiesCheck As MSForms.CheckBox
+
+&#x27; Document type of each row in the window list
+&#x27; 0 = unknown, 1 = CATProduct, 2 = CATPart, 3 = other
+Private mKinds() As Integer
+
+Private mBusy As Boolean
+Private mLoading As Boolean
+
+&#x27; The file path the macro filled in by itself. While the
+&#x27; box still shows it, picking another window updates it.
+Private mAutoPath As String
+
+
+&#x27;=========================================================
+&#x27; FORM INITIALIZATION
+&#x27;=========================================================
+
+Private Sub UserForm_Initialize()
+
+    TreeExpLoadLanguage
+
+    Me.Caption = &quot;CATIA Tree Exporter&quot;
+    Me.Width = 470
+    Me.Height = 434
+
+    BuildControls
+    ApplyLanguage
+
+    Me.Controls(&quot;chkFeatures&quot;).Value = (TreeExpLoadChoice(&quot;Features&quot;, 0) &lt;&gt; 0)
+    Me.Controls(&quot;chkOpen&quot;).Value = (TreeExpLoadChoice(&quot;OpenAfter&quot;, 0) &lt;&gt; 0)
+    mBodiesCheck.Value = (TreeExpLoadChoice(&quot;BodiesOnly&quot;, 0) &lt;&gt; 0)
+
+    ApplyBodiesOption
+
+    FillWindows -1
+
+End Sub
+
+
+&#x27; The window cannot be closed in the middle of an export
+Private Sub UserForm_QueryClose(Cancel As Integer, CloseMode As Integer)
+
+    If mBusy Then Cancel = True
+
+End Sub
+
+
+Private Function AddCtl( _
+        ByVal progId As String, _
+        ByVal ctlName As String, _
+        ByVal x As Single, _
+        ByVal y As Single, _
+        ByVal w As Single, _
+        ByVal h As Single) As Object
+
+    Dim c As Object
+
+    Set c = Me.Controls.Add(progId, ctlName, True)
+
+    c.Left = x
+    c.Top = y
+    c.Width = w
+    c.Height = h
+
+    Set AddCtl = c
+
+End Function
+
+
+Private Sub BuildControls()
+
+    Dim c As Object
+
+    &#x27; Title and language button
+    Set c = AddCtl(&quot;Forms.Label.1&quot;, &quot;lblTitle&quot;, 20, 12, 320, 24)
+    c.Font.Size = 14
+    c.Font.Bold = True
+
+    Set mLangButton = AddCtl(&quot;Forms.CommandButton.1&quot;, &quot;cmdLang&quot;, 360, 12, 80, 24)
+
+    Set c = AddCtl(&quot;Forms.Label.1&quot;, &quot;lblSubtitle&quot;, 20, 40, 420, 18)
+
+    &#x27; Window picker
+    Set c = AddCtl(&quot;Forms.Label.1&quot;, &quot;lblWindows&quot;, 20, 68, 320, 18)
+    c.Font.Bold = True
+
+    Set mRefreshButton = AddCtl(&quot;Forms.CommandButton.1&quot;, &quot;cmdRefresh&quot;, 360, 63, 80, 22)
+
+    Set mWindowList = AddCtl(&quot;Forms.ListBox.1&quot;, &quot;lstWindows&quot;, 20, 90, 420, 96)
+    mWindowList.ColumnCount = 2
+    mWindowList.ColumnWidths = &quot;300 pt;100 pt&quot;
+
+    &#x27; Options
+    Set c = AddCtl(&quot;Forms.CheckBox.1&quot;, &quot;chkFeatures&quot;, 20, 192, 420, 18)
+
+    Set mBodiesCheck = AddCtl(&quot;Forms.CheckBox.1&quot;, &quot;chkBodies&quot;, 20, 214, 420, 18)
+
+    &#x27; Where to save
+    Set c = AddCtl(&quot;Forms.Label.1&quot;, &quot;lblSave&quot;, 20, 242, 420, 18)
+    c.Font.Bold = True
+
+    Set c = AddCtl(&quot;Forms.TextBox.1&quot;, &quot;txtPath&quot;, 20, 262, 330, 20)
+
+    Set mBrowseButton = AddCtl(&quot;Forms.CommandButton.1&quot;, &quot;cmdBrowse&quot;, 360, 261, 80, 22)
+
+    Set c = AddCtl(&quot;Forms.CheckBox.1&quot;, &quot;chkOpen&quot;, 20, 288, 420, 18)
+
+    &#x27; Status
+    Set c = AddCtl(&quot;Forms.Label.1&quot;, &quot;lblStatus&quot;, 20, 314, 420, 42)
+    c.WordWrap = True
+    c.Font.Bold = True
+
+    &#x27; Buttons
+    Set mExportButton = AddCtl(&quot;Forms.CommandButton.1&quot;, &quot;cmdExport&quot;, 20, 362, 205, 30)
+    Set mCloseButton = AddCtl(&quot;Forms.CommandButton.1&quot;, &quot;cmdClose&quot;, 235, 362, 205, 30)
+
+    &#x27; Logo, centered at the bottom. The picture data is at the bottom of the module.
+    Set c = AddCtl(&quot;Forms.Image.1&quot;, &quot;imgLogo&quot;, 20, 400, 10, 10)
+    c.BorderStyle = 0
+    c.BackStyle = 0
+    c.AutoSize = True
+
+    If TreeExpLoadLogo(c) Then
+        c.Left = 230 - c.Width / 2
+        Me.Height = 434 + c.Height + 8
+    Else
+        c.Visible = False
+    End If
+
+End Sub
+
+
+&#x27;=========================================================
+&#x27; LANGUAGE
+&#x27;=========================================================
+
+Private Sub ApplyLanguage()
+
+    Dim c As Object
+
+    Me.Controls(&quot;lblTitle&quot;).Caption = TreeExpTxt(&quot;title&quot;)
+    Me.Controls(&quot;lblSubtitle&quot;).Caption = TreeExpTxt(&quot;subtitle&quot;)
+    Me.Controls(&quot;lblWindows&quot;).Caption = TreeExpTxt(&quot;windows&quot;)
+    Me.Controls(&quot;chkFeatures&quot;).Caption = TreeExpTxt(&quot;chkFeatures&quot;)
+    mBodiesCheck.Caption = TreeExpTxt(&quot;chkBodies&quot;)
+    Me.Controls(&quot;lblSave&quot;).Caption = TreeExpTxt(&quot;save&quot;)
+    Me.Controls(&quot;chkOpen&quot;).Caption = TreeExpTxt(&quot;chkOpen&quot;)
+
+    mExportButton.Caption = TreeExpTxt(&quot;btnExport&quot;)
+    mCloseButton.Caption = TreeExpTxt(&quot;btnClose&quot;)
+    mLangButton.Caption = TreeExpTxt(&quot;btnLang&quot;)
+    mRefreshButton.Caption = TreeExpTxt(&quot;btnRefresh&quot;)
+    mBrowseButton.Caption = TreeExpTxt(&quot;btnBrowse&quot;)
+
+    &#x27; A font that can show the selected language
+    On Error Resume Next
+
+    For Each c In Me.Controls
+        c.Font.Name = TreeExpUiFontName()
+    Next c
+
+    On Error GoTo 0
+
+End Sub
+
+
+Private Sub mLangButton_Click()
+
+    If gTreeExpLang = &quot;KO&quot; Then
+        TreeExpSetLanguage &quot;EN&quot;
+    Else
+        TreeExpSetLanguage &quot;KO&quot;
+    End If
+
+    ApplyLanguage
+
+    &#x27; The type column is text, so the list is rebuilt
+    FillWindows mWindowList.ListIndex
+
+End Sub
+
+
+&#x27;=========================================================
+&#x27; WINDOW LIST
+&#x27;=========================================================
+
+&#x27; Lists every window open in CATIA.
+&#x27; keepIndex is the row to select again, or -1 to select
+&#x27; the window that is active in CATIA.
+Private Sub FillWindows(ByVal keepIndex As Long)
+
+    Dim n As Long
+    Dim i As Long
+    Dim pick As Long
+    Dim cap As String
+    Dim activeCap As String
+
+    mLoading = True
+
+    mWindowList.Clear
+
+    n = TreeExpWindowCount()
+    activeCap = TreeExpActiveCaption()
+    pick = -1
+
+    ReDim mKinds(0 To n)
+
+    For i = 1 To n
+
+        cap = TreeExpWindowCaption(i)
+
+        mKinds(i - 1) = TreeExpDocKind(TreeExpFindDocument(cap))
+
+        mWindowList.AddItem cap
+        mWindowList.List(i - 1, 1) = KindText(mKinds(i - 1))
+
+        If pick &lt; 0 And cap = activeCap Then pick = i - 1
+
+    Next i
+
+    If keepIndex &gt;= 0 And keepIndex &lt; n Then pick = keepIndex
+    If pick &lt; 0 And n &gt; 0 Then pick = 0
+
+    If n &gt; 0 Then mWindowList.ListIndex = pick
+
+    mLoading = False
+
+    SelectionChanged
+
+End Sub
+
+
+Private Function KindText(ByVal kind As Integer) As String
+
+    Select Case kind
+        Case 1: KindText = TreeExpTxt(&quot;kindProduct&quot;)
+        Case 2: KindText = TreeExpTxt(&quot;kindPart&quot;)
+        Case 3: KindText = TreeExpTxt(&quot;kindOther&quot;)
+        Case Else: KindText = TreeExpTxt(&quot;kindUnknown&quot;)
+    End Select
+
+End Function
+
+
+&#x27; Document type of the selected row, or -1 if nothing is selected
+Private Function SelectedKind() As Integer
+
+    Dim idx As Long
+
+    idx = mWindowList.ListIndex
+
+    If idx &lt; 0 Or mWindowList.ListCount = 0 Then
+        SelectedKind = -1
+    Else
+        SelectedKind = mKinds(idx)
+    End If
+
+End Function
+
+
+Private Sub SelectionChanged()
+
+    Dim kind As Integer
+
+    kind = SelectedKind()
+
+    mExportButton.Enabled = (kind = 0 Or kind = 1 Or kind = 2)
+
+    Select Case kind
+        Case 1: ShowStatus TreeExpTxt(&quot;stProduct&quot;)
+        Case 2: ShowStatus TreeExpTxt(&quot;stPart&quot;)
+        Case 3: ShowStatus TreeExpTxt(&quot;stOther&quot;)
+        Case 0: ShowStatus TreeExpTxt(&quot;stUnknown&quot;)
+        Case Else: ShowStatus TreeExpTxt(&quot;stNoWindow&quot;)
+    End Select
+
+    UpdateDefaultPath
+
+End Sub
+
+
+Private Sub mWindowList_Click()
+
+    If mLoading Or mBusy Then Exit Sub
+
+    SelectionChanged
+
+End Sub
+
+
+&#x27; With &quot;body names only&quot; ticked, the features option
+&#x27; has no effect, so it is greyed out.
+Private Sub ApplyBodiesOption()
+
+    Me.Controls(&quot;chkFeatures&quot;).Enabled = (Not mBusy) And (mBodiesCheck.Value &lt;&gt; True)
+
+End Sub
+
+
+Private Sub mBodiesCheck_Click()
+
+    ApplyBodiesOption
+
+End Sub
+
+
+Private Sub mRefreshButton_Click()
+
+    FillWindows -1
+
+End Sub
+
+
+&#x27;=========================================================
+&#x27; FILE TO SAVE
+&#x27;=========================================================
+
+&#x27; Suggests a file name for the selected window, unless
+&#x27; the user has typed or picked a path of their own.
+Private Sub UpdateDefaultPath()
+
+    Dim box As Object
+    Dim idx As Long
+
+    Set box = Me.Controls(&quot;txtPath&quot;)
+
+    If Len(Trim$(box.Text)) &gt; 0 And box.Text &lt;&gt; mAutoPath Then Exit Sub
+
+    idx = mWindowList.ListIndex
+
+    If idx &lt; 0 Or mWindowList.ListCount = 0 Then Exit Sub
+
+    mAutoPath = TreeExpDefaultPath(CStr(mWindowList.List(idx, 0)))
+
+    box.Text = mAutoPath
+
+End Sub
+
+
+Private Sub mBrowseButton_Click()
+
+    Dim picked As String
+
+    picked = TreeExpBrowse(TreeExpTxt(&quot;browseTitle&quot;))
+
+    If Len(picked) = 0 Then Exit Sub
+
+    If LCase$(Right$(picked, 4)) &lt;&gt; &quot;.csv&quot; Then picked = picked &amp; &quot;.csv&quot;
+
+    Me.Controls(&quot;txtPath&quot;).Text = picked
+
+End Sub
+
+
+&#x27;=========================================================
+&#x27; STATUS
+&#x27;=========================================================
+
+Private Sub ShowStatus(ByVal message As String)
+
+    Me.Controls(&quot;lblStatus&quot;).Caption = TreeExpTxt(&quot;status&quot;) &amp; message
+
+End Sub
+
+
+&#x27; Called by the module while it reads the tree
+Public Sub ShowProgress(ByVal rowCount As Long)
+
+    ShowStatus TreeExpFmt(TreeExpTxt(&quot;stWorking&quot;), CStr(rowCount))
+
+    Me.Repaint
+
+    DoEvents
+
+End Sub
+
+
+Private Sub SetBusy(ByVal busy As Boolean)
+
+    Dim kind As Integer
+
+    mBusy = busy
+
+    kind = SelectedKind()
+
+    mExportButton.Enabled = (Not busy) And (kind = 0 Or kind = 1 Or kind = 2)
+    mCloseButton.Enabled = Not busy
+    mLangButton.Enabled = Not busy
+    mRefreshButton.Enabled = Not busy
+    mBrowseButton.Enabled = Not busy
+    mWindowList.Enabled = Not busy
+
+    Me.Controls(&quot;txtPath&quot;).Enabled = Not busy
+    mBodiesCheck.Enabled = Not busy
+
+    ApplyBodiesOption
+    Me.Controls(&quot;chkOpen&quot;).Enabled = Not busy
+
+    Me.Repaint
+
+    DoEvents
+
+End Sub
+
+
+&#x27;=========================================================
+&#x27; EXPORT BUTTON
+&#x27;=========================================================
+
+Private Sub mExportButton_Click()
+
+    Dim doc As Object
+    Dim idx As Long
+    Dim kind As Integer
+    Dim filePath As String
+    Dim folderPath As String
+    Dim includeFeatures As Boolean
+    Dim bodiesOnly As Boolean
+    Dim openAfter As Boolean
+    Dim rowCount As Long
+    Dim errorText As String
+    Dim ok As Boolean
+
+    idx = mWindowList.ListIndex
+
+    If idx &lt; 0 Or mWindowList.ListCount = 0 Then
+        ShowStatus TreeExpTxt(&quot;stNoWindow&quot;)
+        Exit Sub
+    End If
+
+    &#x27;---------------------------------------
+    &#x27; Check the file path
+    &#x27;---------------------------------------
+
+    filePath = Trim$(Me.Controls(&quot;txtPath&quot;).Text)
+
+    If Len(filePath) = 0 Then
+        ShowStatus TreeExpTxt(&quot;msgNoPath&quot;)
+        Exit Sub
+    End If
+
+    If LCase$(Right$(filePath, 4)) &lt;&gt; &quot;.csv&quot; Then filePath = filePath &amp; &quot;.csv&quot;
+
+    &#x27; A bare file name is saved in the Documents folder
+    If InStr(filePath, &quot;\&quot;) = 0 Then
+        filePath = TreeExpDocumentsFolder() &amp; &quot;\&quot; &amp; filePath
+    End If
+
+    folderPath = Left$(filePath, InStrRev(filePath, &quot;\&quot;) - 1)
+
+    If Not TreeExpFolderExists(folderPath) Then
+        ShowStatus TreeExpFmt(TreeExpTxt(&quot;msgBadFolder&quot;), folderPath)
+        Exit Sub
+    End If
+
+    If Me.Controls(&quot;txtPath&quot;).Text = mAutoPath Then mAutoPath = filePath
+
+    Me.Controls(&quot;txtPath&quot;).Text = filePath
+
+    includeFeatures = (Me.Controls(&quot;chkFeatures&quot;).Value = True)
+    openAfter = (Me.Controls(&quot;chkOpen&quot;).Value = True)
+    bodiesOnly = (mBodiesCheck.Value = True)
+
+    On Error GoTo Failed
+
+    SetBusy True
+
+    &#x27;---------------------------------------
+    &#x27; Bring the picked window to the front
+    &#x27; and take its document
+    &#x27;---------------------------------------
+
+    ShowStatus TreeExpTxt(&quot;stActivating&quot;)
+    Me.Repaint
+
+    Set doc = TreeExpActivateWindow(idx + 1, CStr(mWindowList.List(idx, 0)))
+
+    If doc Is Nothing Then
+        SetBusy False
+        FillWindows -1
+        ShowStatus TreeExpTxt(&quot;msgWindowGone&quot;)
+        Exit Sub
+    End If
+
+    kind = TreeExpDocKind(doc)
+
+    If kind &lt;&gt; 1 And kind &lt;&gt; 2 Then
+        SetBusy False
+        ShowStatus TreeExpTxt(&quot;stOther&quot;)
+        Exit Sub
+    End If
+
+    TreeExpSaveChoice &quot;Features&quot;, IIf(includeFeatures, 1, 0)
+    TreeExpSaveChoice &quot;OpenAfter&quot;, IIf(openAfter, 1, 0)
+    TreeExpSaveChoice &quot;BodiesOnly&quot;, IIf(bodiesOnly, 1, 0)
+    TreeExpSaveText &quot;Folder&quot;, folderPath
+
+    &#x27;---------------------------------------
+    &#x27; Read the tree and write the file
+    &#x27;---------------------------------------
+
+    ok = TreeExpExport(doc, filePath, includeFeatures, bodiesOnly, rowCount, errorText)
+
+    SetBusy False
+
+    If ok Then
+        ShowStatus TreeExpFmt(TreeExpTxt(&quot;msgDone&quot;), CStr(rowCount), filePath)
+        If openAfter Then TreeExpOpenFile filePath
+    Else
+        ShowStatus TreeExpFmt(TreeExpTxt(&quot;msgError&quot;), errorText)
+    End If
+
+    Exit Sub
+
+Failed:
+
+    errorText = Err.Description
+
+    SetBusy False
+
+    ShowStatus TreeExpFmt(TreeExpTxt(&quot;msgError&quot;), errorText)
+
+End Sub
+
+
+Private Sub mCloseButton_Click()
+
+    Unload Me
+
+End Sub
+</code></pre>
+  </section>
+
+  <section>
+    <div class="code-head"><h2>Module code</h2><div class="right"><span class="filetag">TreeExporter</span><button class="copy" data-target="module">Copy code</button></div></div>
+    <pre><code id="module">Option Explicit
+
+&#x27;=========================================================
+&#x27; CATIA TREE EXPORTER - MAIN MODULE
+&#x27; Module name: TreeExporter
+&#x27; Run CATMain to open the window.
+&#x27;
+&#x27; Saves the specification tree of a CATProduct or a
+&#x27; CATPart as a CSV file. Every public name starts with
+&#x27; TreeExp so this module can sit beside the other macros.
+&#x27;=========================================================
+
+Private Const REG_APP As String = &quot;CatiaTreeExporter&quot;
+Private Const REG_SEC As String = &quot;Settings&quot;
+
+&#x27; Spaces added to the Tree column for each level
+Private Const INDENT_SIZE As Long = 4
+
+&#x27; The status line is refreshed every this many rows
+Private Const PROGRESS_STEP As Long = 50
+
+&#x27; &quot;EN&quot; or &quot;KO&quot;
+Public gTreeExpLang As String
+
+&#x27; State of the export that is running
+Private mFileNo As Integer
+Private mFileOpen As Boolean
+Private mRowCount As Long
+Private mWriteError As String
+Private mIncludeFeatures As Boolean
+Private mBodiesOnly As Boolean
+
+&#x27; The part being read, written on each row in body-names-only mode
+Private mPartNumber As String
+Private mPartInstance As String
+Private mPartFile As String
+Private mPartPath As String
+
+
+&#x27;=========================================================
+&#x27; ENTRY POINT
+&#x27;=========================================================
+
+Sub CATMain()
+
+    TreeExpLoadLanguage
+    frmTreeExporter.Show
+
+End Sub
+
+
+&#x27;=========================================================
+&#x27; CATIA WINDOWS
+&#x27;=========================================================
+
+Public Function TreeExpWindowCount() As Long
+
+    On Error Resume Next
+
+    TreeExpWindowCount = CATIA.Windows.Count
+
+End Function
+
+
+Public Function TreeExpWindowCaption(ByVal windowIndex As Long) As String
+
+    On Error Resume Next
+
+    TreeExpWindowCaption = CATIA.Windows.Item(windowIndex).Caption
+
+End Function
+
+
+Public Function TreeExpActiveCaption() As String
+
+    On Error Resume Next
+
+    TreeExpActiveCaption = CATIA.ActiveWindow.Caption
+
+End Function
+
+
+&#x27; Finds the open document a window belongs to by comparing
+&#x27; the window caption with the document names. A caption is
+&#x27; the document name, sometimes followed by &quot;:2&quot; and so on.
+&#x27; Returns Nothing if no document matches.
+Public Function TreeExpFindDocument(ByVal caption As String) As Object
+
+    Dim i As Long
+    Dim total As Long
+    Dim d As Object
+    Dim best As Object
+    Dim bestLen As Long
+    Dim docName As String
+
+    On Error Resume Next
+
+    total = CATIA.Documents.Count
+
+    For i = 1 To total
+
+        Set d = Nothing
+        docName = &quot;&quot;
+
+        Set d = CATIA.Documents.Item(i)
+
+        If Not d Is Nothing Then docName = d.Name
+
+        If Len(docName) &gt; bestLen Then
+            If StrComp(Left$(caption, Len(docName)), docName, vbTextCompare) = 0 Then
+                Set best = d
+                bestLen = Len(docName)
+            End If
+        End If
+
+    Next i
+
+    Set TreeExpFindDocument = best
+
+End Function
+
+
+&#x27; 0 = unknown, 1 = CATProduct, 2 = CATPart, 3 = other
+Public Function TreeExpDocKind(ByVal doc As Object) As Integer
+
+    If doc Is Nothing Then
+        TreeExpDocKind = 0
+        Exit Function
+    End If
+
+    Select Case TypeName(doc)
+        Case &quot;ProductDocument&quot;: TreeExpDocKind = 1
+        Case &quot;PartDocument&quot;: TreeExpDocKind = 2
+        Case Else: TreeExpDocKind = 3
+    End Select
+
+End Function
+
+
+&#x27; Brings a window to the front and returns its document.
+&#x27; Returns Nothing if the window is gone or has changed.
+Public Function TreeExpActivateWindow( _
+        ByVal windowIndex As Long, _
+        ByVal expectedCaption As String) As Object
+
+    Dim w As Object
+
+    On Error GoTo Failed
+
+    Set w = CATIA.Windows.Item(windowIndex)
+
+    If w.Caption &lt;&gt; expectedCaption Then Exit Function
+
+    w.Activate
+
+    Set TreeExpActivateWindow = CATIA.ActiveDocument
+
+    Exit Function
+
+Failed:
+
+    Set TreeExpActivateWindow = Nothing
+
+End Function
+
+
+&#x27;=========================================================
+&#x27; FILES AND FOLDERS
+&#x27;=========================================================
+
+Public Function TreeExpDocumentsFolder() As String
+
+    Dim folderPath As String
+
+    On Error Resume Next
+
+    folderPath = CreateObject(&quot;WScript.Shell&quot;).SpecialFolders(&quot;MyDocuments&quot;)
+
+    If Len(folderPath) = 0 Then folderPath = Environ$(&quot;USERPROFILE&quot;)
+
+    TreeExpDocumentsFolder = folderPath
+
+End Function
+
+
+Public Function TreeExpFolderExists(ByVal folderPath As String) As Boolean
+
+    On Error Resume Next
+
+    If Len(folderPath) = 0 Then Exit Function
+
+    TreeExpFolderExists = CreateObject(&quot;Scripting.FileSystemObject&quot;).FolderExists(folderPath)
+
+End Function
+
+
+&#x27; Suggested file for a window: the last folder used, or the
+&#x27; document&#x27;s own folder, or Documents, then &lt;name&gt;_Tree.csv
+Public Function TreeExpDefaultPath(ByVal caption As String) As String
+
+    Dim doc As Object
+    Dim folderPath As String
+    Dim baseName As String
+    Dim dotPos As Long
+
+    On Error Resume Next
+
+    Set doc = TreeExpFindDocument(caption)
+
+    folderPath = TreeExpLoadText(&quot;Folder&quot;, &quot;&quot;)
+
+    If Not TreeExpFolderExists(folderPath) Then
+        folderPath = &quot;&quot;
+        If Not doc Is Nothing Then folderPath = doc.Path
+    End If
+
+    If Not TreeExpFolderExists(folderPath) Then folderPath = TreeExpDocumentsFolder()
+
+    If Right$(folderPath, 1) = &quot;\&quot; Then folderPath = Left$(folderPath, Len(folderPath) - 1)
+
+    baseName = caption
+
+    If Not doc Is Nothing Then baseName = doc.Name
+
+    dotPos = InStrRev(baseName, &quot;.&quot;)
+
+    If dotPos &gt; 1 Then baseName = Left$(baseName, dotPos - 1)
+
+    baseName = SafeFileName(baseName)
+
+    If Len(baseName) = 0 Then baseName = &quot;Export&quot;
+
+    TreeExpDefaultPath = folderPath &amp; &quot;\&quot; &amp; baseName &amp; &quot;_Tree.csv&quot;
+
+End Function
+
+
+&#x27; Replaces the characters Windows does not allow in a file name
+Private Function SafeFileName(ByVal fileName As String) As String
+
+    Dim i As Long
+    Dim ch As String
+    Dim result As String
+
+    For i = 1 To Len(fileName)
+
+        ch = Mid$(fileName, i, 1)
+
+        If InStr(&quot;\/:*?&quot;&quot;&lt;&gt;|&quot;, ch) &gt; 0 Then ch = &quot;_&quot;
+
+        result = result &amp; ch
+
+    Next i
+
+    SafeFileName = Trim$(result)
+
+End Function
+
+
+&#x27; CATIA&#x27;s own Save dialog. Returns &quot;&quot; if it was cancelled.
+Public Function TreeExpBrowse(ByVal title As String) As String
+
+    On Error Resume Next
+
+    &#x27; 1 = CatFileSelectionModeSave
+    TreeExpBrowse = CATIA.FileSelectionBox(title, &quot;*.csv&quot;, 1)
+
+End Function
+
+
+&#x27; Opens a file with the program Windows uses for it
+Public Sub TreeExpOpenFile(ByVal filePath As String)
+
+    On Error Resume Next
+
+    CreateObject(&quot;Shell.Application&quot;).ShellExecute filePath
+
+End Sub
+
+
+&#x27;=========================================================
+&#x27; EXPORT
+&#x27; Reads the tree of a CATProduct or CATPart document and
+&#x27; writes it to filePath as a CSV file (UTF-8, so Korean
+&#x27; names open correctly in Excel).
+&#x27; With bodiesOnly, the file holds one row for each body
+&#x27; and nothing else.
+&#x27; Returns False and fills errorText if anything fails.
+&#x27;=========================================================
+
+Public Function TreeExpExport( _
+        ByVal doc As Object, _
+        ByVal filePath As String, _
+        ByVal includeFeatures As Boolean, _
+        ByVal bodiesOnly As Boolean, _
+        ByRef rowCount As Long, _
+        ByRef errorText As String) As Boolean
+
+    Dim kind As Integer
+    Dim refDoc As Object
+    Dim bom(0 To 2) As Byte
+
+    TreeExpExport = False
+
+    mRowCount = 0
+    mWriteError = &quot;&quot;
+    mFileOpen = False
+    mIncludeFeatures = includeFeatures
+    mBodiesOnly = bodiesOnly
+
+    On Error GoTo Failed
+
+    kind = TreeExpDocKind(doc)
+
+    If Len(Dir$(filePath)) &gt; 0 Then Kill filePath
+
+    mFileNo = FreeFile
+
+    Open filePath For Binary Access Write As #mFileNo
+    mFileOpen = True
+
+    &#x27; Marks the file as UTF-8 for Excel
+    bom(0) = &amp;HEF
+    bom(1) = &amp;HBB
+    bom(2) = &amp;HBF
+
+    Put #mFileNo, , bom
+
+    PutLine HeaderLine()
+
+    If kind = 1 Then
+
+        &#x27; Features can only be read from parts that are
+        &#x27; fully loaded, so the assembly goes to design mode.
+        If includeFeatures Or bodiesOnly Then LoadDesignMode doc
+
+        WriteProductRow doc.Product, 0, doc, refDoc
+        WalkProducts doc.Product, 1
+
+    Else
+
+        WritePartRoot doc
+
+    End If
+
+    Close #mFileNo
+    mFileOpen = False
+
+    If Len(mWriteError) &gt; 0 Then
+        errorText = mWriteError
+        Exit Function
+    End If
+
+    rowCount = mRowCount
+
+    TreeExpExport = True
+
+    Exit Function
+
+Failed:
+
+    Select Case Err.Number
+        Case 70, 75: errorText = TreeExpTxt(&quot;msgLocked&quot;)
+        Case Else: errorText = Err.Description
+    End Select
+
+    On Error Resume Next
+
+    If mFileOpen Then Close #mFileNo
+
+    mFileOpen = False
+
+End Function
+
+
+Private Sub LoadDesignMode(ByVal doc As Object)
+
+    On Error Resume Next
+
+    &#x27; 2 = DESIGN_MODE
+    doc.Product.ApplyWorkMode 2
+
+End Sub
+
+
+&#x27;=========================================================
+&#x27; PRODUCT STRUCTURE
+&#x27;=========================================================
+
+&#x27; Reads a text property and returns &quot;&quot; if CATIA refuses,
+&#x27; for example on a component whose file is not loaded.
+Private Function PropText( _
+        ByVal source As Object, _
+        ByVal propName As String) As String
+
+    On Error Resume Next
+
+    PropText = CStr(CallByName(source, propName, VbGet))
+
+End Function
+
+
+&#x27; Writes the row of one product, part or component.
+&#x27; rootDoc is the document for the top row, Nothing below it.
+&#x27; refDoc returns the document the row points to.
+&#x27; Returns 1 = product, 2 = part, 3 = component, 0 = not loaded
+Private Function WriteProductRow( _
+        ByVal prod As Object, _
+        ByVal level As Long, _
+        ByVal rootDoc As Object, _
+        ByRef refDoc As Object) As Integer
+
+    Dim ref As Object
+    Dim kind As Integer
+
+    Dim partNumber As String
+    Dim instName As String
+    Dim refNumber As String
+    Dim treeName As String
+    Dim typeText As String
+    Dim fileName As String
+    Dim fullPath As String
+
+    Set refDoc = Nothing
+
+    partNumber = PropText(prod, &quot;PartNumber&quot;)
+    instName = PropText(prod, &quot;Name&quot;)
+
+    On Error Resume Next
+
+    If Not rootDoc Is Nothing Then
+
+        Set refDoc = rootDoc
+        kind = 1
+        instName = &quot;&quot;
+
+    Else
+
+        Set ref = prod.ReferenceProduct
+
+        If Not ref Is Nothing Then Set refDoc = ref.Parent
+
+        Select Case TypeName(refDoc)
+
+            Case &quot;PartDocument&quot;
+                kind = 2
+
+            Case &quot;ProductDocument&quot;
+                &#x27; A component has no file of its own, so it
+                &#x27; points to the file of the product above it.
+                refNumber = refDoc.Product.PartNumber
+
+                If StrComp(refNumber, partNumber, vbBinaryCompare) = 0 Then
+                    kind = 1
+                Else
+                    kind = 3
+                End If
+
+            Case Else
+                kind = 0
+                Set refDoc = Nothing
+
+        End Select
+
+    End If
+
+    Select Case kind
+        Case 1: typeText = TreeExpTxt(&quot;typeProduct&quot;)
+        Case 2: typeText = TreeExpTxt(&quot;typePart&quot;)
+        Case 3: typeText = TreeExpTxt(&quot;typeComponent&quot;)
+        Case Else: typeText = TreeExpTxt(&quot;typeNotLoaded&quot;)
+    End Select
+
+    If kind = 1 Or kind = 2 Then
+        fileName = refDoc.Name
+        fullPath = refDoc.FullName
+    End If
+
+    &#x27; Same wording as the CATIA tree: Part Number (Instance Name)
+    If Len(partNumber) = 0 Then
+        treeName = instName
+    ElseIf Len(instName) = 0 Then
+        treeName = partNumber
+    Else
+        treeName = partNumber &amp; &quot; (&quot; &amp; instName &amp; &quot;)&quot;
+    End If
+
+    &#x27; Remembered for the body rows of this part
+    mPartNumber = partNumber
+    mPartInstance = instName
+    mPartFile = fileName
+    mPartPath = fullPath
+
+    If Not mBodiesOnly Then
+
+        WriteRow level, treeName, typeText, partNumber, instName, _
+                 PropText(prod, &quot;Revision&quot;), _
+                 PropText(prod, &quot;Definition&quot;), _
+                 PropText(prod, &quot;Nomenclature&quot;), _
+                 PropText(prod, &quot;DescriptionRef&quot;), _
+                 fileName, fullPath
+
+    End If
+
+    WriteProductRow = kind
+
+End Function
+
+
+&#x27; Writes everything below a product, level by level
+Private Sub WalkProducts(ByVal parentProduct As Object, ByVal level As Long)
+
+    Dim kids As Object
+    Dim child As Object
+    Dim refDoc As Object
+    Dim total As Long
+    Dim i As Long
+    Dim kind As Integer
+
+    On Error Resume Next
+
+    Set kids = parentProduct.Products
+
+    If kids Is Nothing Then Exit Sub
+
+    total = kids.Count
+
+    For i = 1 To total
+
+        Set child = Nothing
+        Set child = kids.Item(i)
+
+        If Not child Is Nothing Then
+
+            kind = WriteProductRow(child, level, Nothing, refDoc)
+
+            If kind = 2 Then
+                If mIncludeFeatures Or mBodiesOnly Then WritePartContents refDoc.Part, level + 1
+            Else
+                WalkProducts child, level + 1
+            End If
+
+        End If
+
+    Next i
+
+End Sub
+
+
+&#x27;=========================================================
+&#x27; PART CONTENTS
+&#x27;=========================================================
+
+&#x27; Top row and contents of a CATPart opened in its own window
+Private Sub WritePartRoot(ByVal doc As Object)
+
+    Dim partNumber As String
+
+    On Error Resume Next
+
+    partNumber = PropText(doc.Product, &quot;PartNumber&quot;)
+
+    If Len(partNumber) = 0 Then partNumber = doc.Part.Name
+
+    mPartNumber = partNumber
+    mPartInstance = &quot;&quot;
+    mPartFile = doc.Name
+    mPartPath = doc.FullName
+
+    If Not mBodiesOnly Then
+
+        WriteRow 0, partNumber, TreeExpTxt(&quot;typePart&quot;), partNumber, &quot;&quot;, _
+                 PropText(doc.Product, &quot;Revision&quot;), _
+                 PropText(doc.Product, &quot;Definition&quot;), _
+                 PropText(doc.Product, &quot;Nomenclature&quot;), _
+                 PropText(doc.Product, &quot;DescriptionRef&quot;), _
+                 mPartFile, mPartPath
+
+    End If
+
+    WritePartContents doc.Part, 1
+
+End Sub
+
+
+&#x27; Bodies, geometrical sets and ordered geometrical sets of a part
+Private Sub WritePartContents(ByVal partObj As Object, ByVal level As Long)
+
+    If partObj Is Nothing Then Exit Sub
+
+    WalkSet partObj, &quot;Bodies&quot;, level, True
+    WalkSet partObj, &quot;HybridBodies&quot;, level, True
+    WalkSet partObj, &quot;OrderedGeometricalSets&quot;, level, True
+
+End Sub
+
+
+&#x27; Writes one row for each item of a collection, for example
+&#x27; the Shapes of a body. If the items can hold other items
+&#x27; (bodies and sets), their contents are written below them.
+Private Sub WalkSet( _
+        ByVal owner As Object, _
+        ByVal setName As String, _
+        ByVal level As Long, _
+        ByVal isContainer As Boolean)
+
+    Dim items As Object
+    Dim node As Object
+    Dim total As Long
+    Dim i As Long
+
+    &#x27; Features and sketches are never bodies
+    If mBodiesOnly And Not isContainer Then Exit Sub
+
+    On Error Resume Next
+
+    Set items = CallByName(owner, setName, VbGet)
+
+    If items Is Nothing Then Exit Sub
+
+    total = items.Count
+
+    For i = 1 To total
+
+        Set node = Nothing
+        Set node = items.Item(i)
+
+        If Not node Is Nothing Then
+
+            If Not mBodiesOnly Then
+
+                WriteRow level, PropText(node, &quot;Name&quot;), TypeName(node), _
+                         &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;
+
+            ElseIf TypeName(node) = &quot;Body&quot; Then
+
+                &#x27; The body name, with the part it belongs to
+                WriteRow level, PropText(node, &quot;Name&quot;), &quot;Body&quot;, _
+                         mPartNumber, mPartInstance, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, _
+                         mPartFile, mPartPath
+
+            End If
+
+            If isContainer Then WalkContainer node, level + 1
+
+        End If
+
+    Next i
+
+End Sub
+
+
+Private Sub WalkContainer(ByVal container As Object, ByVal level As Long)
+
+    Select Case TypeName(container)
+
+        Case &quot;Body&quot;
+            WalkSet container, &quot;Shapes&quot;, level, False
+            WalkSet container, &quot;Sketches&quot;, level, False
+            WalkSet container, &quot;HybridShapes&quot;, level, False
+            WalkSet container, &quot;HybridBodies&quot;, level, True
+            WalkSet container, &quot;OrderedGeometricalSets&quot;, level, True
+
+        Case &quot;HybridBody&quot;
+            WalkSet container, &quot;HybridShapes&quot;, level, False
+            WalkSet container, &quot;HybridSketches&quot;, level, False
+            WalkSet container, &quot;HybridBodies&quot;, level, True
+            WalkSet container, &quot;Bodies&quot;, level, True
+
+        Case &quot;OrderedGeometricalSet&quot;
+            WalkSet container, &quot;HybridShapes&quot;, level, False
+            WalkSet container, &quot;OrderedSketches&quot;, level, False
+            WalkSet container, &quot;OrderedGeometricalSets&quot;, level, True
+            WalkSet container, &quot;Bodies&quot;, level, True
+
+    End Select
+
+End Sub
+
+
+&#x27;=========================================================
+&#x27; CSV WRITING
+&#x27;=========================================================
+
+Private Function HeaderLine() As String
+
+    HeaderLine = Q(TreeExpTxt(&quot;colLevel&quot;)) &amp; &quot;,&quot; &amp; _
+                 Q(TreeExpTxt(&quot;colTree&quot;)) &amp; &quot;,&quot; &amp; _
+                 Q(TreeExpTxt(&quot;colType&quot;)) &amp; &quot;,&quot; &amp; _
+                 Q(TreeExpTxt(&quot;colPartNumber&quot;)) &amp; &quot;,&quot; &amp; _
+                 Q(TreeExpTxt(&quot;colInstance&quot;)) &amp; &quot;,&quot; &amp; _
+                 Q(TreeExpTxt(&quot;colRevision&quot;)) &amp; &quot;,&quot; &amp; _
+                 Q(TreeExpTxt(&quot;colDefinition&quot;)) &amp; &quot;,&quot; &amp; _
+                 Q(TreeExpTxt(&quot;colNomenclature&quot;)) &amp; &quot;,&quot; &amp; _
+                 Q(TreeExpTxt(&quot;colDescription&quot;)) &amp; &quot;,&quot; &amp; _
+                 Q(TreeExpTxt(&quot;colFile&quot;)) &amp; &quot;,&quot; &amp; _
+                 Q(TreeExpTxt(&quot;colPath&quot;))
+
+End Function
+
+
+Private Sub WriteRow( _
+        ByVal level As Long, _
+        ByVal treeName As String, _
+        ByVal typeText As String, _
+        ByVal partNumber As String, _
+        ByVal instName As String, _
+        ByVal revision As String, _
+        ByVal definition As String, _
+        ByVal nomenclature As String, _
+        ByVal description As String, _
+        ByVal fileName As String, _
+        ByVal fullPath As String)
+
+    Dim indent As Long
+
+    &#x27; A list of bodies is flat, so it is not indented
+    If Not mBodiesOnly Then indent = level * INDENT_SIZE
+
+    PutLine CStr(level) &amp; &quot;,&quot; &amp; _
+            Q(Space$(indent) &amp; treeName) &amp; &quot;,&quot; &amp; _
+            Q(typeText) &amp; &quot;,&quot; &amp; _
+            Q(partNumber) &amp; &quot;,&quot; &amp; _
+            Q(instName) &amp; &quot;,&quot; &amp; _
+            Q(revision) &amp; &quot;,&quot; &amp; _
+            Q(definition) &amp; &quot;,&quot; &amp; _
+            Q(nomenclature) &amp; &quot;,&quot; &amp; _
+            Q(description) &amp; &quot;,&quot; &amp; _
+            Q(fileName) &amp; &quot;,&quot; &amp; _
+            Q(fullPath)
+
+    mRowCount = mRowCount + 1
+
+    If mRowCount Mod PROGRESS_STEP = 0 Then
+        On Error Resume Next
+        frmTreeExporter.ShowProgress mRowCount
+    End If
+
+End Sub
+
+
+&#x27; Wraps a value in quotes so commas inside it stay in one cell
+Private Function Q(ByVal value As String) As String
+
+    Q = &quot;&quot;&quot;&quot; &amp; Replace(value, &quot;&quot;&quot;&quot;, &quot;&quot;&quot;&quot;&quot;&quot;) &amp; &quot;&quot;&quot;&quot;
+
+End Function
+
+
+&#x27; Writes one line of text to the file as UTF-8.
+&#x27; The first error is kept and reported when the export ends.
+Private Sub PutLine(ByVal lineText As String)
+
+    Dim data() As Byte
+
+    If Len(mWriteError) &gt; 0 Then Exit Sub
+
+    On Error GoTo Failed
+
+    data = Utf8Bytes(lineText &amp; vbCrLf)
+
+    Put #mFileNo, , data
+
+    Exit Sub
+
+Failed:
+
+    mWriteError = Err.Description
+
+End Sub
+
+
+&#x27; Converts text to UTF-8 bytes. The text must not be empty.
+Private Function Utf8Bytes(ByVal source As String) As Byte()
+
+    Dim data() As Byte
+    Dim total As Long
+    Dim i As Long
+    Dim p As Long
+    Dim cp As Long
+    Dim low As Long
+
+    total = Len(source)
+
+    ReDim data(0 To total * 3 + 3)
+
+    i = 1
+    p = 0
+
+    Do While i &lt;= total
+
+        cp = AscW(Mid$(source, i, 1)) And &amp;HFFFF&amp;
+
+        &#x27; Two-part characters (surrogate pairs) become one code
+        If cp &gt;= &amp;HD800&amp; And cp &lt;= &amp;HDBFF&amp; And i &lt; total Then
+
+            low = AscW(Mid$(source, i + 1, 1)) And &amp;HFFFF&amp;
+
+            If low &gt;= &amp;HDC00&amp; And low &lt;= &amp;HDFFF&amp; Then
+                cp = &amp;H10000 + (cp - &amp;HD800&amp;) * &amp;H400&amp; + (low - &amp;HDC00&amp;)
+                i = i + 1
+            End If
+
+        End If
+
+        If cp &lt; &amp;H80&amp; Then
+
+            data(p) = cp
+            p = p + 1
+
+        ElseIf cp &lt; &amp;H800&amp; Then
+
+            data(p) = &amp;HC0&amp; Or (cp \ &amp;H40&amp;)
+            data(p + 1) = &amp;H80&amp; Or (cp And &amp;H3F&amp;)
+            p = p + 2
+
+        ElseIf cp &lt; &amp;H10000 Then
+
+            data(p) = &amp;HE0&amp; Or (cp \ &amp;H1000&amp;)
+            data(p + 1) = &amp;H80&amp; Or ((cp \ &amp;H40&amp;) And &amp;H3F&amp;)
+            data(p + 2) = &amp;H80&amp; Or (cp And &amp;H3F&amp;)
+            p = p + 3
+
+        Else
+
+            data(p) = &amp;HF0&amp; Or (cp \ &amp;H40000)
+            data(p + 1) = &amp;H80&amp; Or ((cp \ &amp;H1000&amp;) And &amp;H3F&amp;)
+            data(p + 2) = &amp;H80&amp; Or ((cp \ &amp;H40&amp;) And &amp;H3F&amp;)
+            data(p + 3) = &amp;H80&amp; Or (cp And &amp;H3F&amp;)
+            p = p + 4
+
+        End If
+
+        i = i + 1
+
+    Loop
+
+    ReDim Preserve data(0 To p - 1)
+
+    Utf8Bytes = data
+
+End Function
+
+
+&#x27;=========================================================
+&#x27; SETTINGS (remembered between runs)
+&#x27;=========================================================
+
+Public Sub TreeExpLoadLanguage()
+
+    gTreeExpLang = UCase$(GetSetting(REG_APP, REG_SEC, &quot;Lang&quot;, &quot;EN&quot;))
+
+    If gTreeExpLang &lt;&gt; &quot;KO&quot; Then gTreeExpLang = &quot;EN&quot;
+
+End Sub
+
+
+Public Sub TreeExpSetLanguage(ByVal langCode As String)
+
+    gTreeExpLang = langCode
+
+    SaveSetting REG_APP, REG_SEC, &quot;Lang&quot;, gTreeExpLang
+
+End Sub
+
+
+Public Function TreeExpLoadChoice( _
+        ByVal choiceName As String, _
+        ByVal defaultValue As Long) As Long
+
+    TreeExpLoadChoice = CLng(Val(GetSetting( _
+        REG_APP, REG_SEC, choiceName, CStr(defaultValue))))
+
+End Function
+
+
+Public Sub TreeExpSaveChoice( _
+        ByVal choiceName As String, _
+        ByVal choiceValue As Long)
+
+    SaveSetting REG_APP, REG_SEC, choiceName, CStr(choiceValue)
+
+End Sub
+
+
+Public Function TreeExpLoadText( _
+        ByVal settingName As String, _
+        ByVal defaultValue As String) As String
+
+    TreeExpLoadText = GetSetting(REG_APP, REG_SEC, settingName, defaultValue)
+
+End Function
+
+
+Public Sub TreeExpSaveText( _
+        ByVal settingName As String, _
+        ByVal settingValue As String)
+
+    SaveSetting REG_APP, REG_SEC, settingName, settingValue
+
+End Sub
+
+
+&#x27;=========================================================
+&#x27; TEXT (ENGLISH AND KOREAN)
+&#x27;=========================================================
+
+Public Function TreeExpTxt(ByVal key As String) As String
+
+    If gTreeExpLang = &quot;KO&quot; Then
+        TreeExpTxt = TextKO(key)
+    Else
+        TreeExpTxt = TextEN(key)
+    End If
+
+    If Len(TreeExpTxt) = 0 Then TreeExpTxt = TextEN(key)
+    If Len(TreeExpTxt) = 0 Then TreeExpTxt = key
+
+End Function
+
+
+Public Function TreeExpUiFontName() As String
+
+    If gTreeExpLang = &quot;KO&quot; Then
+        TreeExpUiFontName = &quot;Malgun Gothic&quot;
+    Else
+        TreeExpUiFontName = &quot;Tahoma&quot;
+    End If
+
+End Function
+
+
+&#x27; Fills {0} and {1} in a text
+Public Function TreeExpFmt( _
+        ByVal template As String, _
+        Optional ByVal a As String = &quot;&quot;, _
+        Optional ByVal b As String = &quot;&quot;) As String
+
+    TreeExpFmt = Replace(Replace(template, &quot;{0}&quot;, a), &quot;{1}&quot;, b)
+
+End Function
+
+
+&#x27; Turns \uXXXX codes into real characters
+Private Function U(ByVal coded As String) As String
+
+    Dim i As Long
+    Dim result As String
+
+    i = 1
+
+    Do While i &lt;= Len(coded)
+
+        If Mid$(coded, i, 2) = &quot;\u&quot; And i + 5 &lt;= Len(coded) Then
+            result = result &amp; ChrW$(CLng(&quot;&amp;H&quot; &amp; Mid$(coded, i + 2, 4)))
+            i = i + 6
+        Else
+            result = result &amp; Mid$(coded, i, 1)
+            i = i + 1
+        End If
+
+    Loop
+
+    U = result
+
+End Function
+
+
+Private Function TextEN(ByVal key As String) As String
+
+    Select Case key
+        Case &quot;title&quot;: TextEN = &quot;CATIA Tree Exporter&quot;
+        Case &quot;subtitle&quot;: TextEN = &quot;Saves the specification tree of a CATProduct or CATPart as a CSV file&quot;
+        Case &quot;windows&quot;: TextEN = &quot;Window to export:&quot;
+        Case &quot;btnRefresh&quot;: TextEN = &quot;Refresh&quot;
+        Case &quot;chkFeatures&quot;: TextEN = &quot;In assemblies, also list the bodies and features inside each part&quot;
+        Case &quot;chkBodies&quot;: TextEN = &quot;Export body names only&quot;
+        Case &quot;save&quot;: TextEN = &quot;Save as:&quot;
+        Case &quot;btnBrowse&quot;: TextEN = &quot;Browse...&quot;
+        Case &quot;chkOpen&quot;: TextEN = &quot;Open the file when the export is done&quot;
+        Case &quot;btnExport&quot;: TextEN = &quot;Export Tree&quot;
+        Case &quot;btnClose&quot;: TextEN = &quot;Close&quot;
+        Case &quot;btnLang&quot;: TextEN = U(&quot;\ud55c\uad6d\uc5b4&quot;)
+        Case &quot;status&quot;: TextEN = &quot;Status: &quot;
+        Case &quot;kindProduct&quot;: TextEN = &quot;CATProduct&quot;
+        Case &quot;kindPart&quot;: TextEN = &quot;CATPart&quot;
+        Case &quot;kindOther&quot;: TextEN = &quot;Not supported&quot;
+        Case &quot;kindUnknown&quot;: TextEN = &quot;Unknown&quot;
+        Case &quot;stNoWindow&quot;: TextEN = &quot;Open a CATProduct or CATPart first, then press Refresh&quot;
+        Case &quot;stProduct&quot;: TextEN = &quot;CATProduct selected&quot;
+        Case &quot;stPart&quot;: TextEN = &quot;CATPart selected&quot;
+        Case &quot;stOther&quot;: TextEN = &quot;Pick a CATProduct or CATPart window&quot;
+        Case &quot;stUnknown&quot;: TextEN = &quot;Could not tell the document type. It is checked when you export.&quot;
+        Case &quot;stActivating&quot;: TextEN = &quot;Opening the selected window...&quot;
+        Case &quot;stWorking&quot;: TextEN = &quot;Reading the tree... {0} rows&quot;
+        Case &quot;msgDone&quot;: TextEN = &quot;Saved {0} rows to {1}&quot;
+        Case &quot;msgError&quot;: TextEN = &quot;Error: {0}&quot;
+        Case &quot;msgNoPath&quot;: TextEN = &quot;Enter a file name to save to&quot;
+        Case &quot;msgBadFolder&quot;: TextEN = &quot;The folder does not exist: {0}&quot;
+        Case &quot;msgLocked&quot;: TextEN = &quot;Could not write the file. Close it if it is open in Excel, then try again.&quot;
+        Case &quot;msgWindowGone&quot;: TextEN = &quot;That window is no longer open. The list was refreshed.&quot;
+        Case &quot;browseTitle&quot;: TextEN = &quot;Save the tree as&quot;
+        Case &quot;colLevel&quot;: TextEN = &quot;Level&quot;
+        Case &quot;colTree&quot;: TextEN = &quot;Tree&quot;
+        Case &quot;colType&quot;: TextEN = &quot;Type&quot;
+        Case &quot;colPartNumber&quot;: TextEN = &quot;Part Number&quot;
+        Case &quot;colInstance&quot;: TextEN = &quot;Instance Name&quot;
+        Case &quot;colRevision&quot;: TextEN = &quot;Revision&quot;
+        Case &quot;colDefinition&quot;: TextEN = &quot;Definition&quot;
+        Case &quot;colNomenclature&quot;: TextEN = &quot;Nomenclature&quot;
+        Case &quot;colDescription&quot;: TextEN = &quot;Description&quot;
+        Case &quot;colFile&quot;: TextEN = &quot;File Name&quot;
+        Case &quot;colPath&quot;: TextEN = &quot;File Path&quot;
+        Case &quot;typeProduct&quot;: TextEN = &quot;Product&quot;
+        Case &quot;typePart&quot;: TextEN = &quot;Part&quot;
+        Case &quot;typeComponent&quot;: TextEN = &quot;Component&quot;
+        Case &quot;typeNotLoaded&quot;: TextEN = &quot;Not loaded&quot;
+    End Select
+
+End Function
+
+
+Private Function TextKO(ByVal key As String) As String
+
+    Select Case key
+        Case &quot;title&quot;: TextKO = U(&quot;CATIA \ud2b8\ub9ac \ub0b4\ubcf4\ub0b4\uae30&quot;)
+        Case &quot;subtitle&quot;: TextKO = U(&quot;CATProduct \ub610\ub294 CATPart\uc758 \uc0ac\uc591 \ud2b8\ub9ac\ub97c CSV \ud30c\uc77c\ub85c \uc800\uc7a5\ud569\ub2c8\ub2e4&quot;)
+        Case &quot;windows&quot;: TextKO = U(&quot;\ub0b4\ubcf4\ub0bc \ucc3d:&quot;)
+        Case &quot;btnRefresh&quot;: TextKO = U(&quot;\uc0c8\ub85c \uace0\uce68&quot;)
+        Case &quot;chkFeatures&quot;: TextKO = U(&quot;\uc5b4\uc148\ube14\ub9ac\uc758 \uacbd\uc6b0 \uac01 \ud30c\ud2b8 \uc548\uc758 \ubc14\ub514\uc640 \ud53c\ucc98\ub3c4 \ud3ec\ud568&quot;)
+        Case &quot;chkBodies&quot;: TextKO = U(&quot;\ubc14\ub514 \uc774\ub984\ub9cc \ub0b4\ubcf4\ub0b4\uae30&quot;)
+        Case &quot;save&quot;: TextKO = U(&quot;\uc800\uc7a5\ud560 \ud30c\uc77c:&quot;)
+        Case &quot;btnBrowse&quot;: TextKO = U(&quot;\ucc3e\uc544\ubcf4\uae30...&quot;)
+        Case &quot;chkOpen&quot;: TextKO = U(&quot;\ub0b4\ubcf4\ub0b4\uae30\uac00 \ub05d\ub098\uba74 \ud30c\uc77c \uc5f4\uae30&quot;)
+        Case &quot;btnExport&quot;: TextKO = U(&quot;\ud2b8\ub9ac \ub0b4\ubcf4\ub0b4\uae30&quot;)
+        Case &quot;btnClose&quot;: TextKO = U(&quot;\ub2eb\uae30&quot;)
+        Case &quot;btnLang&quot;: TextKO = &quot;English&quot;
+        Case &quot;status&quot;: TextKO = U(&quot;\uc0c1\ud0dc: &quot;)
+        Case &quot;kindProduct&quot;: TextKO = &quot;CATProduct&quot;
+        Case &quot;kindPart&quot;: TextKO = &quot;CATPart&quot;
+        Case &quot;kindOther&quot;: TextKO = U(&quot;\uc9c0\uc6d0\ub418\uc9c0 \uc54a\uc74c&quot;)
+        Case &quot;kindUnknown&quot;: TextKO = U(&quot;\uc54c \uc218 \uc5c6\uc74c&quot;)
+        Case &quot;stNoWindow&quot;: TextKO = U(&quot;\uba3c\uc800 CATProduct \ub610\ub294 CATPart\ub97c \uc5f0 \ub2e4\uc74c \uc0c8\ub85c \uace0\uce68\uc744 \ub204\ub974\uc138\uc694&quot;)
+        Case &quot;stProduct&quot;: TextKO = U(&quot;CATProduct \uc120\ud0dd\ub428&quot;)
+        Case &quot;stPart&quot;: TextKO = U(&quot;CATPart \uc120\ud0dd\ub428&quot;)
+        Case &quot;stOther&quot;: TextKO = U(&quot;CATProduct \ub610\ub294 CATPart \ucc3d\uc744 \uc120\ud0dd\ud558\uc138\uc694&quot;)
+        Case &quot;stUnknown&quot;: TextKO = U(&quot;\ubb38\uc11c \uc720\ud615\uc744 \ud655\uc778\ud560 \uc218 \uc5c6\uc2b5\ub2c8\ub2e4. \ub0b4\ubcf4\ub0bc \ub54c \ud655\uc778\ud569\ub2c8\ub2e4.&quot;)
+        Case &quot;stActivating&quot;: TextKO = U(&quot;\uc120\ud0dd\ud55c \ucc3d\uc744 \uc5ec\ub294 \uc911...&quot;)
+        Case &quot;stWorking&quot;: TextKO = U(&quot;\ud2b8\ub9ac\ub97c \uc77d\ub294 \uc911... {0}\ud589&quot;)
+        Case &quot;msgDone&quot;: TextKO = U(&quot;{0}\ud589\uc744 \uc800\uc7a5\ud588\uc2b5\ub2c8\ub2e4: {1}&quot;)
+        Case &quot;msgError&quot;: TextKO = U(&quot;\uc624\ub958: {0}&quot;)
+        Case &quot;msgNoPath&quot;: TextKO = U(&quot;\uc800\uc7a5\ud560 \ud30c\uc77c \uc774\ub984\uc744 \uc785\ub825\ud558\uc138\uc694&quot;)
+        Case &quot;msgBadFolder&quot;: TextKO = U(&quot;\ud3f4\ub354\uac00 \uc5c6\uc2b5\ub2c8\ub2e4: {0}&quot;)
+        Case &quot;msgLocked&quot;: TextKO = U(&quot;\ud30c\uc77c\uc744 \uc4f8 \uc218 \uc5c6\uc2b5\ub2c8\ub2e4. Excel\uc5d0\uc11c \uc5f4\ub824 \uc788\uc73c\uba74 \ub2eb\uace0 \ub2e4\uc2dc \uc2dc\ub3c4\ud558\uc138\uc694.&quot;)
+        Case &quot;msgWindowGone&quot;: TextKO = U(&quot;\ud574\ub2f9 \ucc3d\uc774 \ub354 \uc774\uc0c1 \uc5f4\ub824 \uc788\uc9c0 \uc54a\uc2b5\ub2c8\ub2e4. \ubaa9\ub85d\uc744 \uc0c8\ub85c \uace0\ucce4\uc2b5\ub2c8\ub2e4.&quot;)
+        Case &quot;browseTitle&quot;: TextKO = U(&quot;\ud2b8\ub9ac\ub97c \ub2e4\ub978 \uc774\ub984\uc73c\ub85c \uc800\uc7a5&quot;)
+        Case &quot;colLevel&quot;: TextKO = U(&quot;\ub808\ubca8&quot;)
+        Case &quot;colTree&quot;: TextKO = U(&quot;\ud2b8\ub9ac&quot;)
+        Case &quot;colType&quot;: TextKO = U(&quot;\uc720\ud615&quot;)
+        Case &quot;colPartNumber&quot;: TextKO = U(&quot;\ud30c\ud2b8 \ubc88\ud638&quot;)
+        Case &quot;colInstance&quot;: TextKO = U(&quot;\uc778\uc2a4\ud134\uc2a4 \uc774\ub984&quot;)
+        Case &quot;colRevision&quot;: TextKO = U(&quot;\ub9ac\ube44\uc804&quot;)
+        Case &quot;colDefinition&quot;: TextKO = U(&quot;\uc815\uc758&quot;)
+        Case &quot;colNomenclature&quot;: TextKO = U(&quot;\uba85\uce6d&quot;)
+        Case &quot;colDescription&quot;: TextKO = U(&quot;\uc124\uba85&quot;)
+        Case &quot;colFile&quot;: TextKO = U(&quot;\ud30c\uc77c \uc774\ub984&quot;)
+        Case &quot;colPath&quot;: TextKO = U(&quot;\ud30c\uc77c \uacbd\ub85c&quot;)
+        Case &quot;typeProduct&quot;: TextKO = U(&quot;\ud504\ub85c\ub355\ud2b8&quot;)
+        Case &quot;typePart&quot;: TextKO = U(&quot;\ud30c\ud2b8&quot;)
+        Case &quot;typeComponent&quot;: TextKO = U(&quot;\ucef4\ud3ec\ub10c\ud2b8&quot;)
+        Case &quot;typeNotLoaded&quot;: TextKO = U(&quot;\ub85c\ub4dc\ub418\uc9c0 \uc54a\uc74c&quot;)
+    End Select
+
+End Function
+
+
+&#x27;=========================================================
+&#x27; LOGO
+&#x27; The logo picture is stored below as text.
+&#x27; The form shows it with:
+&#x27;     TreeExpLoadLogo Me.Controls(&quot;imgLogo&quot;)
+&#x27;=========================================================
+
+&#x27; Puts the logo into an Image control.
+&#x27; Returns False if the picture could not be loaded.
+Public Function TreeExpLoadLogo(ByVal target As Object) As Boolean
+
+    Dim data() As Byte
+    Dim filePath As String
+    Dim fileNo As Integer
+
+    TreeExpLoadLogo = False
+
+    On Error GoTo Failed
+
+    data = HexToBytes(LogoHex())
+
+    &#x27; VBA can only load a picture from a file, so the data is
+    &#x27; written to the Windows temp folder, loaded, then deleted.
+    filePath = Environ$(&quot;TEMP&quot;) &amp; &quot;\catia_tree_logo.gif&quot;
+
+    If Len(Dir$(filePath)) &gt; 0 Then Kill filePath
+
+    fileNo = FreeFile
+
+    Open filePath For Binary Access Write As #fileNo
+    Put #fileNo, , data
+    Close #fileNo
+
+    Set target.Picture = LoadPicture(filePath)
+
+    TreeExpLoadLogo = True
+
+    On Error Resume Next
+    Kill filePath
+
+    Exit Function
+
+Failed:
+
+    On Error Resume Next
+    Close #fileNo
+
+End Function
+
+
+&#x27; Turns pairs of hex characters back into bytes
+Private Function HexToBytes(ByVal hexText As String) As Byte()
+
+    Dim count As Long
+    Dim i As Long
+    Dim data() As Byte
+
+    count = Len(hexText) \ 2
+
+    ReDim data(0 To count - 1)
+
+    For i = 0 To count - 1
+        data(i) = CByte(&quot;&amp;H&quot; &amp; Mid$(hexText, i * 2 + 1, 2))
+    Next i
+
+    HexToBytes = data
+
+End Function
+
+
+&#x27; The logo picture (a GIF image, 195 x 15 pixels) written as hex text
+Private Function LogoHex() As String
+
+    Dim s As String
+
+    s = s &amp; &quot;474946383761C3000F00840000F0F0F0D7DCE0C4CCD4B5C0CBA7B4C29AA9BA8D9FB27F92A97288A06B829D657D9957719048&quot;
+    s = s &amp; &quot;65863B5A7F2C4E751E426C0F3562002A5A000000000000000000000000000000000000000000000000000000000000000000&quot;
+    s = s &amp; &quot;0000000000000000002C00000000C3000F000008FF0001081C48B0A0C18308132A5CC8B0A1C38710234A9C48B1A2C58B1833&quot;
+    s = s &amp; &quot;6ADCE810418401041F34187820820082061E4480B02000008F11562A20A9320283930463C674504020019D3113402058E001&quot;
+    s = s &amp; &quot;00A011101C2550F040CD9B021BE87CD013A6CE973A59BA1CF8332604A50D940A44309260499C4B010C7010B32580B0041B30&quot;
+    s = s &amp; &quot;15C8C0E840010C623E38E0330241044AADC6FC1BA12C8092861D34E02BD029D3000B1CBC2C1BE08181970FE62280B0556084&quot;
+    s = s &amp; &quot;B90620F4FC5950F4C005333F17543D1041E6B19CDF8A2DC0996C41DB00F04AE6EA37B7E801B10340983B5031E3B47B010460&quot;
+    s = s &amp; &quot;B04076DCB9C21D80540E4181CBB54A49B70E6CF87683063D2B2BFF282BE08180DD00868724801BC002A5EA07C21DC81A404A&quot;
+    s = s &amp; &quot;00DA4FCF140801647DCFC4A517205CF32DD5DE58DD59C69B7C4ABDF752730495771E7D4C992490009715F816680B18B0DF01&quot;
+    s = s &amp; &quot;DD11C0597E2F71871059033C0019606521C09774F8F5E6DD85999138594E017E64635102F198168E0BFE35D27C3F0970E08D&quot;
+    s = s &amp; &quot;AD311024702709F01104688DF5E274AA2DB0175A1ACA15D500C245251685240286A441B62D602592E6D937938D6301C5978D&quot;
+    s = s &amp; &quot;0474F7DF675D5D05C00320A1E61950151207E790535505D44807B657A74D5B29509D41697A08A04006E4D500485221C55479&quot;
+    s = s &amp; &quot;022DD093861B8619D8A0425257D548030065149B480217808D200249DF006C2AFF3013948FBA1A6353437E89E08C49060919&quot;
+    s = s &amp; &quot;6511742650A953D52A50008A3A271F5325E9D41CA7C3793A26AFAD8DA4C071930AB85E7B0E5C169F97B6DEC7668A05A0F7DF&quot;
+    s = s &amp; &quot;8FFC0D0896AED34EAB605F411E65D0B5F2F947C000722A1B155330F27758889C95DA1903261E74A46D6936D6DC010E3C16D9&quot;
+    s = s &amp; &quot;9808348740BF07C446618FA6A1FA8003C79DFBDFC4D355EC12A70793F770BC0AD8256F41091FD6DC67C25D76D850591280E9&quot;
+    s = s &amp; &quot;400C18209C58E789E5805B45B65BAD773E0E3B947D2A6935A68F4EC504554E3AF1D4179F022960E19E3A2965E9614FE14432&quot;
+    s = s &amp; &quot;525879E5166F3A3130DDCA0315ADD650AAE1EB34A5BACAA500848D2989975EC72DB7534F61DB24C9D1DF80072EF845043810&quot;
+    s = s &amp; &quot;E5E08827AEF8E21D412023E390472EF9E494576EF9E51B0504003B&quot;
+
+    LogoHex = s
+
+End Function
+</code></pre>
+  </section>
+
+  <section>
+    <h2>Columns in the file</h2>
+    <div class="wrapx">
+    <table>
+      <thead><tr><th>Column</th><th>What it holds</th></tr></thead>
+      <tbody>
+        <tr><td>Level</td><td>0 for the top row, 1 for its children, and so on. Use it to filter or rebuild the tree.</td></tr>
+        <tr><td>Tree</td><td>The name as CATIA shows it, <code>Part Number (Instance Name)</code>, indented 4 spaces per level.</td></tr>
+        <tr><td>Type</td><td>Product, Part, Component or Not loaded. For rows inside a part it is CATIA's own type name, such as Body, Pad, Pocket or Sketch.</td></tr>
+        <tr><td>Part Number, Instance Name</td><td>The two names separately, for sorting and lookups.</td></tr>
+        <tr><td>Revision, Definition, Nomenclature, Description</td><td>The standard product properties.</td></tr>
+        <tr><td>File Name, File Path</td><td>The CATProduct or CATPart file behind the row. Empty for components, which have no file of their own.</td></tr>
+      </tbody>
+    </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>Good to know</h2>
+    <ul>
+      <li>The picked window is brought to the front in CATIA when you press Export Tree. That is how the macro gets the right document.</li>
+      <li>If a file with the same name already exists, it is replaced. If it is open in Excel, the status line asks you to close it.</li>
+      <li>The file is saved as UTF-8, so Korean part names open correctly when you double-click it into Excel.</li>
+      <li>Excel reformats some values when it opens a .csv. A part number like <code>00123</code> shows as 123. The file itself keeps the full text. To see it unchanged, use Data, From Text/CSV in Excel.</li>
+      <li>With body names only ticked, the Tree column holds the body name with no indent, Type is Body, and the features option is greyed out because it has no effect. Bodies inside geometrical sets are included.</li>
+      <li>Parts in visualization mode or with a broken link show as Not loaded. Tick the part contents box to load them in design mode.</li>
+      <li>Inside a part, rows are grouped by kind (features, then sketches, then sets), so their order can differ slightly from the tree on screen. A sketch used by a pad is listed with the body's sketches.</li>
+      <li>Results and errors appear on the status line, with no pop-up boxes, so Korean text displays correctly.</li>
+    </ul>
+  </section>
+</main>
+<footer>Prepared for CATIA V5 R21 VBA. Exports the specification tree of a CATProduct or CATPart to CSV.</footer>
+</div>
+<script>
+document.querySelectorAll('.copy').forEach(function (btn) {
+  btn.addEventListener('click', function () {
+    var el = document.getElementById(btn.dataset.target);
+    var label = btn.textContent;
+    function done(text) { btn.textContent = text; setTimeout(function () { btn.textContent = label; }, 1600); }
+    function selectIt() {
+      var r = document.createRange(); r.selectNodeContents(el);
+      var s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+      done('Selected. Press Ctrl+C');
+    }
+    try {
+      navigator.clipboard.writeText(el.textContent).then(function () { done('Copied'); }, selectIt);
+    } catch (e) { selectIt(); }
+  });
+});
+</script>
+
+</body>
+</html>
