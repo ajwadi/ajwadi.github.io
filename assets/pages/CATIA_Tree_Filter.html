@@ -1,0 +1,1898 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>CATIA Tree Filter - VBA Package</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono&display=swap">
+<style>
+:root {
+  --bg:#eef1f5; --panel:#ffffff; --ink:#16202c; --muted:#566475; --line:#d3dae3;
+  --accent:#2c5aa0; --accent2:#1f437a; --code-bg:#f6f8fb; --note:#fff6dc; --note-line:#d9a400;
+  box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --bg:#141a22; --panel:#1c242f; --ink:#e6ebf2; --muted:#9aa8b9; --line:#324052; --accent:#6f9fe6; --accent2:#8fb5ee; --code-bg:#151c25; --note:#3a3216; --note-line:#d9a400; }
+}
+:root[data-theme="dark"] { --bg:#141a22; --panel:#1c242f; --ink:#e6ebf2; --muted:#9aa8b9; --line:#324052; --accent:#6f9fe6; --accent2:#8fb5ee; --code-bg:#151c25; --note:#3a3216; --note-line:#d9a400; }
+*, *::before, *::after { box-sizing:inherit; }
+html { scroll-padding-top:env(safe-area-inset-top,0px); }
+body { margin:0; background:var(--bg); color:var(--ink); font-family:"IBM Plex Sans","Segoe UI","Malgun Gothic",Arial,sans-serif; font-size:16px; line-height:1.6; }
+.wrap { max-width:920px; margin:0 auto; padding:0 20px; }
+header { padding:40px 0 8px; }
+h1 { font-size:2rem; line-height:1.2; margin:0 0 6px; font-weight:600; letter-spacing:-0.01em; }
+.subtitle { margin:0; color:var(--muted); max-width:62ch; }
+.palettes { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:14px 22px; margin:26px 0 8px; }
+.strip { display:flex; height:34px; border:1px solid var(--line); }
+.strip span { flex:1; }
+.pal p { margin:4px 0 0; font-size:.85rem; color:var(--muted); }
+section { background:var(--panel); border:1px solid var(--line); border-radius:6px; padding:22px 24px; margin:18px 0; }
+h2 { font-size:1.15rem; margin:0 0 10px; font-weight:600; }
+p { margin:0 0 10px; max-width:72ch; }
+ul, ol { margin:0; padding-left:22px; max-width:72ch; }
+li { margin-bottom:6px; }
+code, pre { font-family:"IBM Plex Mono",Consolas,monospace; }
+code { font-size:.9em; }
+.code-head { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:10px; margin-bottom:10px; }
+.code-head h2 { margin:0; }
+.right { display:flex; align-items:center; gap:10px; }
+.filetag { font-size:.8rem; color:var(--muted); border:1px solid var(--line); border-radius:4px; padding:3px 8px; }
+.copy { background:var(--accent); color:#fff; border:0; border-radius:4px; padding:8px 16px; font:inherit; font-size:.9rem; font-weight:500; cursor:pointer; }
+.copy:hover { background:var(--accent2); }
+.copy:focus-visible { outline:3px solid var(--note-line); outline-offset:2px; }
+:root[data-theme="dark"] .copy { color:#10161e; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .copy { color:#10161e; } }
+pre { margin:0; background:var(--code-bg); border:1px solid var(--line); border-radius:4px; padding:14px; max-height:520px; overflow:auto; font-size:.8rem; line-height:1.5; }
+.logo { display:block; max-width:100%; height:auto; margin:10px 0 0; border:1px solid var(--line); }
+.note { background:var(--note); border-left:4px solid var(--note-line); padding:10px 14px; margin:12px 0 0; }
+.wrapx { overflow-x:auto; }
+table { border-collapse:collapse; width:100%; font-size:.88rem; }
+th, td { text-align:left; padding:6px 10px; border-bottom:1px solid var(--line); vertical-align:top; }
+th { color:var(--muted); font-weight:500; }
+footer { color:var(--muted); font-size:.85rem; padding:8px 0 40px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>CATIA Tree Filter</h1>
+  <p class="subtitle">Reads the tree of an open CATProduct or CATPart, then shows or hides parts, bodies and geometrical sets that match a name filter such as <code>*T2.6*</code>. Two code blocks to paste: the form and the module.</p>
+</header>
+<main>
+  <section>
+    <h2>What it does</h2>
+    <ul>
+      <li><strong>Window picker.</strong> Lists every open CATProduct and CATPart window and starts on the active one. Picking a window brings it to the front and reads its tree. <strong>Rescan</strong> reads it again after you change the model.</li>
+      <li><strong>Collects the names first.</strong> In a CATProduct it reads every component at every level (instance name and part number). In a CATPart it reads every body. Tick the boxes to also read the bodies inside each part of a product, and geometrical sets.</li>
+      <li><strong>Filter box with a live list.</strong> As you type, the list shows only the matching items and the count ("12 of 340 items match"). Nothing in CATIA changes until you press a button.</li>
+      <li><strong>Show Only Matches</strong> shows the matching items and hides the rest. The assemblies that hold a match stay visible so the match can be seen, and everything inside a matching assembly stays visible too.</li>
+      <li><strong>Hide Matches</strong> hides only the matching items and leaves everything else as it is.</li>
+      <li><strong>Show All</strong> shows every item that was read, to undo a filter.</li>
+      <li><strong>Match on</strong> (CATProduct only): instance name or part number, instance name only, or part number only.</li>
+      <li><strong>English / Korean button</strong> in the top right corner. The language, your last filter and the checkbox choices are remembered for next time.</li>
+      <li><strong>Credit image centered at the bottom</strong>, stored inside the module as text, the same as your other macros.</li>
+      <li><strong>Works beside your other macros.</strong> Every shared name starts with <code>TreeFlt</code> (for example <code>TreeFltTxt</code>, <code>TreeFltCollect</code>, <code>TreeFltLoadLogo</code>), so there are no "Ambiguous name" errors with the box generator, colorizer, renamer, BOM exporter, text generator or tree exporter.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Setup</h2>
+    <ol>
+      <li>In the VBA editor, use Insert, UserForm. In the Properties window set its <code>(Name)</code> to <code>frmTreeFilter</code>. Leave the form empty in the designer.</li>
+      <li>Open the form's code (right-click the form, View Code), select all, delete, and paste the Form code below.</li>
+      <li>Use Insert, Module. Set its <code>(Name)</code> to <code>TreeFilter</code> and paste the Module code below.</li>
+      <li>Use Debug, Compile VBAProject.</li>
+      <li>Open a CATProduct or CATPart, then run <code>CATMain</code> from the <code>TreeFilter</code> module.</li>
+    </ol>
+    <p class="note"><strong>First run:</strong> this code was written and checked for structure but not run inside CATIA. Try it on a copy of a small assembly first, and use Show All to put everything back.</p>
+  </section>
+
+  <section>
+    <div class="code-head"><h2>Form code</h2><div class="right"><span class="filetag">frmTreeFilter</span><button class="copy" data-target="form">Copy code</button></div></div>
+    <pre><code id="form">Option Explicit
+
+'=========================================================
+' CATIA TREE FILTER - FORM
+' Form name: frmTreeFilter
+' The form is empty in the designer. Every control is
+' created here in code.
+'=========================================================
+
+Private WithEvents mWindowCombo As MSForms.ComboBox
+Private WithEvents mRefreshButton As MSForms.CommandButton
+Private WithEvents mFilterBox As MSForms.TextBox
+Private WithEvents mMatchCombo As MSForms.ComboBox
+Private WithEvents mBodiesCheck As MSForms.CheckBox
+Private WithEvents mSetsCheck As MSForms.CheckBox
+Private WithEvents mShowOnlyButton As MSForms.CommandButton
+Private WithEvents mHideButton As MSForms.CommandButton
+Private WithEvents mShowAllButton As MSForms.CommandButton
+Private WithEvents mCloseButton As MSForms.CommandButton
+Private WithEvents mLangButton As MSForms.CommandButton
+
+' Form height without the logo
+Private Const FORM_BASE_HEIGHT As Single = 538
+Private Const LOGO_TOP As Single = 504
+
+' Most lines shown in the match list
+Private Const LIST_MAX As Long = 1000
+
+' CATIA window number for each line in the window list
+Private mWinIndex() As Long
+Private mWinCount As Long
+
+Private mBusy As Boolean
+Private mLoading As Boolean
+
+' The last message shown, kept so it can be redrawn
+' in the other language
+Private mStatusKey As String
+Private mStatusA As String
+Private mStatusSkipped As Long
+
+
+'=========================================================
+' FORM INITIALIZATION
+'=========================================================
+
+Private Sub UserForm_Initialize()
+
+    Dim matchIndex As Long
+
+    TreeFltLoadLanguage
+
+    mLoading = True
+
+    Me.Caption = "CATIA Tree Filter"
+    Me.Width = 470
+    Me.Height = FORM_BASE_HEIGHT
+
+    BuildControls
+
+    mFilterBox.Text = TreeFltLoadText("Filter", "")
+    mBodiesCheck.Value = (TreeFltLoadChoice("Bodies", 0) = 1)
+    mSetsCheck.Value = (TreeFltLoadChoice("Sets", 0) = 1)
+
+    matchIndex = TreeFltLoadChoice("MatchOn", 0)
+    If matchIndex &lt; 0 Or matchIndex &gt; 2 Then matchIndex = 0
+
+    ApplyLanguage
+    mMatchCombo.ListIndex = matchIndex
+
+    FillWindowList ""
+
+    mLoading = False
+
+    ScanTree
+
+End Sub
+
+
+Private Function AddCtl( _
+        ByVal progId As String, _
+        ByVal ctlName As String, _
+        ByVal x As Single, _
+        ByVal y As Single, _
+        ByVal w As Single, _
+        ByVal h As Single) As Object
+
+    Dim c As Object
+
+    Set c = Me.Controls.Add(progId, ctlName, True)
+
+    c.Left = x
+    c.Top = y
+    c.Width = w
+    c.Height = h
+
+    Set AddCtl = c
+
+End Function
+
+
+Private Sub BuildControls()
+
+    Dim c As Object
+
+    ' Title and language button
+    Set c = AddCtl("Forms.Label.1", "lblTitle", 16, 12, 300, 24)
+    c.Font.Size = 14
+    c.Font.Bold = True
+
+    Set mLangButton = AddCtl("Forms.CommandButton.1", "cmdLang", 368, 12, 80, 24)
+
+    Set c = AddCtl("Forms.Label.1", "lblSubtitle", 16, 40, 432, 18)
+
+    ' Window picker
+    Set c = AddCtl("Forms.Label.1", "lblWindow", 16, 68, 90, 18)
+    c.Font.Bold = True
+
+    Set mWindowCombo = AddCtl("Forms.ComboBox.1", "cboWindow", 108, 65, 262, 20)
+    mWindowCombo.Style = 2
+
+    Set mRefreshButton = AddCtl("Forms.CommandButton.1", "cmdRefresh", 378, 64, 70, 22)
+
+    ' Filter text
+    Set c = AddCtl("Forms.Label.1", "lblFilter", 16, 96, 90, 18)
+    c.Font.Bold = True
+
+    Set mFilterBox = AddCtl("Forms.TextBox.1", "txtFilter", 108, 93, 340, 20)
+
+    Set c = AddCtl("Forms.Label.1", "lblHint", 108, 116, 340, 28)
+    c.WordWrap = True
+
+    ' Match on
+    Set c = AddCtl("Forms.Label.1", "lblMatchOn", 16, 150, 90, 18)
+    c.Font.Bold = True
+
+    Set mMatchCombo = AddCtl("Forms.ComboBox.1", "cboMatchOn", 108, 147, 240, 20)
+    mMatchCombo.Style = 2
+
+    ' Options
+    Set mBodiesCheck = AddCtl("Forms.CheckBox.1", "chkBodies", 16, 174, 432, 18)
+    Set mSetsCheck = AddCtl("Forms.CheckBox.1", "chkSets", 16, 194, 432, 18)
+
+    ' Match count and list
+    Set c = AddCtl("Forms.Label.1", "lblCount", 16, 220, 432, 18)
+    c.Font.Bold = True
+
+    Set c = AddCtl("Forms.ListBox.1", "lstItems", 16, 240, 432, 150)
+
+    ' Status
+    Set c = AddCtl("Forms.Label.1", "lblStatus", 16, 396, 432, 30)
+    c.WordWrap = True
+    c.Font.Bold = True
+
+    ' Buttons
+    Set mShowOnlyButton = AddCtl("Forms.CommandButton.1", "cmdShowOnly", 16, 432, 138, 28)
+    Set mHideButton = AddCtl("Forms.CommandButton.1", "cmdHide", 163, 432, 138, 28)
+    Set mShowAllButton = AddCtl("Forms.CommandButton.1", "cmdShowAll", 310, 432, 138, 28)
+    Set mCloseButton = AddCtl("Forms.CommandButton.1", "cmdClose", 310, 466, 138, 28)
+
+    ' Logo, centered at the bottom. The picture data is at the bottom of the module.
+    Set c = AddCtl("Forms.Image.1", "imgLogo", 16, LOGO_TOP, 10, 10)
+    c.BorderStyle = 0
+    c.BackStyle = 0
+    c.AutoSize = True
+
+    If TreeFltLoadLogo(c) Then
+        c.Left = 232 - c.Width / 2
+        Me.Height = FORM_BASE_HEIGHT + c.Height + 8
+    Else
+        c.Visible = False
+    End If
+
+End Sub
+
+
+'=========================================================
+' LANGUAGE
+'=========================================================
+
+Private Sub ApplyLanguage()
+
+    Dim c As Object
+    Dim matchIndex As Long
+    Dim wasLoading As Boolean
+
+    wasLoading = mLoading
+    mLoading = True
+
+    Me.Controls("lblTitle").Caption = TreeFltTxt("title")
+    Me.Controls("lblSubtitle").Caption = TreeFltTxt("subtitle")
+    Me.Controls("lblWindow").Caption = TreeFltTxt("window")
+    Me.Controls("lblFilter").Caption = TreeFltTxt("filter")
+    Me.Controls("lblHint").Caption = TreeFltTxt("hint")
+    Me.Controls("lblMatchOn").Caption = TreeFltTxt("matchOn")
+
+    mBodiesCheck.Caption = TreeFltTxt("chkBodies")
+    mSetsCheck.Caption = TreeFltTxt("chkSets")
+
+    mRefreshButton.Caption = TreeFltTxt("btnRefresh")
+    mShowOnlyButton.Caption = TreeFltTxt("btnShowOnly")
+    mHideButton.Caption = TreeFltTxt("btnHide")
+    mShowAllButton.Caption = TreeFltTxt("btnShowAll")
+    mCloseButton.Caption = TreeFltTxt("btnClose")
+    mLangButton.Caption = TreeFltTxt("btnLang")
+
+    ' Refill the match choices, keeping the current one
+    matchIndex = mMatchCombo.ListIndex
+    If matchIndex &lt; 0 Then matchIndex = 0
+
+    mMatchCombo.Clear
+    mMatchCombo.AddItem TreeFltTxt("moBoth")
+    mMatchCombo.AddItem TreeFltTxt("moInst")
+    mMatchCombo.AddItem TreeFltTxt("moPN")
+    mMatchCombo.ListIndex = matchIndex
+
+    ' A font that can show the selected language
+    On Error Resume Next
+
+    For Each c In Me.Controls
+        c.Font.Name = TreeFltUiFontName()
+    Next c
+
+    On Error GoTo 0
+
+    mLoading = wasLoading
+
+End Sub
+
+
+Private Sub mLangButton_Click()
+
+    If gTreeFltLang = "KO" Then
+        TreeFltSetLanguage "EN"
+    Else
+        TreeFltSetLanguage "KO"
+    End If
+
+    ApplyLanguage
+    RenderStatus
+    RefreshList
+
+End Sub
+
+
+'=========================================================
+' STATUS LINE
+'=========================================================
+
+Private Sub ShowStatusKey( _
+        ByVal key As String, _
+        Optional ByVal a As String = "", _
+        Optional ByVal skipped As Long = 0)
+
+    mStatusKey = key
+    mStatusA = a
+    mStatusSkipped = skipped
+
+    RenderStatus
+
+End Sub
+
+
+Private Sub RenderStatus()
+
+    Dim message As String
+
+    If Len(mStatusKey) = 0 Then Exit Sub
+
+    message = TreeFltFmt(TreeFltTxt(mStatusKey), mStatusA)
+
+    If mStatusSkipped &gt; 0 Then
+        message = message &amp; TreeFltFmt(TreeFltTxt("msgSkipped"), CStr(mStatusSkipped))
+    End If
+
+    Me.Controls("lblStatus").Caption = TreeFltTxt("status") &amp; message
+
+End Sub
+
+
+'=========================================================
+' WINDOW LIST
+'=========================================================
+
+' Lists every open CATPart and CATProduct window.
+' keepCaption selects that window again after a rescan.
+Private Sub FillWindowList(ByVal keepCaption As String)
+
+    Dim w As Object
+    Dim d As Object
+    Dim docType As String
+    Dim activeCaption As String
+    Dim pick As Long
+    Dim i As Long
+
+    Dim wasLoading As Boolean
+
+    wasLoading = mLoading
+    mLoading = True
+
+    mWindowCombo.Clear
+    mWinCount = 0
+    pick = -1
+
+    On Error Resume Next
+
+    ReDim mWinIndex(0 To CATIA.Windows.Count)
+
+    activeCaption = CATIA.ActiveWindow.Caption
+
+    For i = 1 To CATIA.Windows.Count
+
+        Set w = Nothing
+        Set d = Nothing
+        docType = ""
+
+        Set w = CATIA.Windows.Item(i)
+        Set d = w.Parent
+        docType = TypeName(d)
+
+        If docType = "ProductDocument" Or docType = "PartDocument" Then
+
+            mWinIndex(mWinCount) = i
+
+            If docType = "ProductDocument" Then
+                mWindowCombo.AddItem w.Caption &amp; "   [CATProduct]"
+            Else
+                mWindowCombo.AddItem w.Caption &amp; "   [CATPart]"
+            End If
+
+            If Len(keepCaption) &gt; 0 Then
+                If w.Caption = keepCaption Then pick = mWinCount
+            ElseIf w.Caption = activeCaption Then
+                pick = mWinCount
+            End If
+
+            mWinCount = mWinCount + 1
+
+        End If
+
+    Next i
+
+    Err.Clear
+
+    On Error GoTo 0
+
+    If mWinCount &gt; 0 Then
+        If pick &lt; 0 Then pick = 0
+        mWindowCombo.ListIndex = pick
+    End If
+
+    mLoading = wasLoading
+
+End Sub
+
+
+Private Function SelectedCaption() As String
+
+    Dim t As String
+    Dim p As Long
+
+    SelectedCaption = ""
+
+    If mWindowCombo.ListIndex &lt; 0 Then Exit Function
+
+    t = mWindowCombo.List(mWindowCombo.ListIndex)
+    p = InStrRev(t, "   [")
+
+    If p &gt; 0 Then t = Left$(t, p - 1)
+
+    SelectedCaption = t
+
+End Function
+
+
+Private Sub mWindowCombo_Change()
+
+    If mLoading Or mBusy Then Exit Sub
+
+    ScanTree
+
+End Sub
+
+
+Private Sub mRefreshButton_Click()
+
+    FillWindowList SelectedCaption()
+    ScanTree
+
+End Sub
+
+
+'=========================================================
+' READ THE TREE
+'=========================================================
+
+Private Sub ScanTree()
+
+    Dim errorText As String
+    Dim ok As Boolean
+
+    If mWinCount = 0 Or mWindowCombo.ListIndex &lt; 0 Then
+        TreeFltClear
+        ShowStatusKey "stNoWin"
+        UpdateEnabled
+        RefreshList
+        Exit Sub
+    End If
+
+    SetBusy True
+
+    ShowStatusKey "stScanning"
+    Me.Repaint
+    DoEvents
+
+    ok = TreeFltCollect(mWinIndex(mWindowCombo.ListIndex), _
+            CBool(mBodiesCheck.Value), CBool(mSetsCheck.Value), errorText)
+
+    SetBusy False
+
+    If Not ok Then
+        ShowStatusKey "msgError", errorText
+    ElseIf gTreeFltIsProduct Then
+        ShowStatusKey "stReadyProduct", CStr(gTreeFltCount)
+    Else
+        ShowStatusKey "stReadyPart", CStr(gTreeFltCount)
+    End If
+
+    UpdateEnabled
+    RefreshList
+
+End Sub
+
+
+Private Sub mBodiesCheck_Click()
+
+    If mLoading Or mBusy Then Exit Sub
+
+    TreeFltSaveChoice "Bodies", IIf(CBool(mBodiesCheck.Value), 1, 0)
+
+    ScanTree
+
+End Sub
+
+
+Private Sub mSetsCheck_Click()
+
+    If mLoading Or mBusy Then Exit Sub
+
+    TreeFltSaveChoice "Sets", IIf(CBool(mSetsCheck.Value), 1, 0)
+
+    ScanTree
+
+End Sub
+
+
+'=========================================================
+' MATCH LIST (updates while you type)
+'=========================================================
+
+Private Sub RefreshList()
+
+    Dim lst As Object
+    Dim matched As Long
+    Dim shown As Long
+    Dim i As Long
+
+    Set lst = Me.Controls("lstItems")
+
+    lst.Clear
+
+    matched = TreeFltComputeMatches(mFilterBox.Text, mMatchCombo.ListIndex)
+
+    shown = 0
+
+    For i = 1 To gTreeFltCount
+        If gTreeFltMatch(i) Then
+            If shown &gt;= LIST_MAX Then Exit For
+            lst.AddItem TreeFltDisplayText(i)
+            shown = shown + 1
+        End If
+    Next i
+
+    If matched &gt; LIST_MAX Then
+        Me.Controls("lblCount").Caption = TreeFltFmt(TreeFltTxt("countMore"), _
+            CStr(matched), CStr(gTreeFltCount), CStr(LIST_MAX))
+    Else
+        Me.Controls("lblCount").Caption = TreeFltFmt(TreeFltTxt("count"), _
+            CStr(matched), CStr(gTreeFltCount))
+    End If
+
+End Sub
+
+
+Private Sub mFilterBox_Change()
+
+    If mLoading Then Exit Sub
+
+    RefreshList
+
+End Sub
+
+
+Private Sub mMatchCombo_Change()
+
+    If mLoading Then Exit Sub
+
+    If mMatchCombo.ListIndex &gt;= 0 Then
+        TreeFltSaveChoice "MatchOn", mMatchCombo.ListIndex
+    End If
+
+    RefreshList
+
+End Sub
+
+
+'=========================================================
+' BUTTON STATE
+'=========================================================
+
+Private Sub UpdateEnabled()
+
+    Dim haveItems As Boolean
+    Dim haveWindow As Boolean
+
+    haveItems = (gTreeFltCount &gt; 0)
+    haveWindow = (mWinCount &gt; 0)
+
+    mWindowCombo.Enabled = haveWindow
+    mRefreshButton.Enabled = True
+    mFilterBox.Enabled = True
+
+    ' Instance names, part numbers and bodies inside parts
+    ' only apply to a CATProduct
+    mMatchCombo.Enabled = haveWindow And gTreeFltIsProduct
+    mBodiesCheck.Enabled = haveWindow And gTreeFltIsProduct
+    mSetsCheck.Enabled = haveWindow
+
+    mShowOnlyButton.Enabled = haveItems
+    mHideButton.Enabled = haveItems
+    mShowAllButton.Enabled = haveItems
+    mCloseButton.Enabled = True
+    mLangButton.Enabled = True
+
+End Sub
+
+
+Private Sub SetBusy(ByVal busy As Boolean)
+
+    mBusy = busy
+
+    If busy Then
+        mWindowCombo.Enabled = False
+        mRefreshButton.Enabled = False
+        mFilterBox.Enabled = False
+        mMatchCombo.Enabled = False
+        mBodiesCheck.Enabled = False
+        mSetsCheck.Enabled = False
+        mShowOnlyButton.Enabled = False
+        mHideButton.Enabled = False
+        mShowAllButton.Enabled = False
+        mCloseButton.Enabled = False
+        mLangButton.Enabled = False
+    Else
+        UpdateEnabled
+    End If
+
+    Me.Repaint
+
+    DoEvents
+
+End Sub
+
+
+'=========================================================
+' SHOW / HIDE BUTTONS
+'=========================================================
+
+Private Sub mShowOnlyButton_Click()
+
+    RunApply TREEFLT_MODE_SHOW_ONLY
+
+End Sub
+
+
+Private Sub mHideButton_Click()
+
+    RunApply TREEFLT_MODE_HIDE
+
+End Sub
+
+
+Private Sub mShowAllButton_Click()
+
+    RunApply TREEFLT_MODE_SHOW_ALL
+
+End Sub
+
+
+Private Sub RunApply(ByVal mode As Long)
+
+    Dim matched As Long
+    Dim skipped As Long
+    Dim errorText As String
+
+    If gTreeFltCount = 0 Then
+        ShowStatusKey "stNoWin"
+        Exit Sub
+    End If
+
+    If mode &lt;&gt; TREEFLT_MODE_SHOW_ALL Then
+
+        If Not TreeFltHasFilter(mFilterBox.Text) Then
+            ShowStatusKey "msgNoFilter"
+            Exit Sub
+        End If
+
+        matched = TreeFltComputeMatches(mFilterBox.Text, mMatchCombo.ListIndex)
+
+        If matched = 0 Then
+            ShowStatusKey "msgNoMatch"
+            Exit Sub
+        End If
+
+        TreeFltSaveText "Filter", mFilterBox.Text
+
+    End If
+
+    SetBusy True
+
+    ShowStatusKey "stWorking"
+    Me.Repaint
+    DoEvents
+
+    If Not TreeFltApply(mode, skipped, errorText) Then
+        SetBusy False
+        ShowStatusKey "msgError", errorText
+        Exit Sub
+    End If
+
+    SetBusy False
+
+    Select Case mode
+        Case TREEFLT_MODE_SHOW_ONLY
+            ShowStatusKey "msgShowOnly", CStr(matched), skipped
+        Case TREEFLT_MODE_HIDE
+            ShowStatusKey "msgHide", CStr(matched), skipped
+        Case Else
+            ShowStatusKey "msgShowAll", CStr(gTreeFltCount), skipped
+    End Select
+
+End Sub
+
+
+'=========================================================
+' CLOSE
+'=========================================================
+
+Private Sub mCloseButton_Click()
+
+    TreeFltSaveText "Filter", mFilterBox.Text
+
+    Unload Me
+
+End Sub
+
+
+' The window cannot be closed while the tree is being
+' read or visibility is being changed
+Private Sub UserForm_QueryClose(Cancel As Integer, CloseMode As Integer)
+
+    If mBusy Then Cancel = True
+
+End Sub
+</code></pre>
+  </section>
+
+  <section>
+    <div class="code-head"><h2>Module code</h2><div class="right"><span class="filetag">TreeFilter</span><button class="copy" data-target="module">Copy code</button></div></div>
+    <p>The long block of letters and numbers at the bottom is the credit image. Do not edit it.</p>
+    <pre><code id="module">Option Explicit
+
+'=========================================================
+' CATIA TREE FILTER - MAIN MODULE
+' Module name: TreeFilter
+' Run CATMain to open the window.
+'=========================================================
+
+' Button actions
+Public Const TREEFLT_MODE_SHOW_ONLY As Long = 1
+Public Const TREEFLT_MODE_HIDE As Long = 2
+Public Const TREEFLT_MODE_SHOW_ALL As Long = 3
+
+' CATIA show / hide values (catVisPropertyShowAttr, catVisPropertyNoShowAttr)
+Private Const VIS_SHOW As Long = 0
+Private Const VIS_HIDE As Long = 1
+
+' Kinds of tree item
+Private Const KIND_COMPONENT As Integer = 1
+Private Const KIND_BODY As Integer = 2
+Private Const KIND_SET As Integer = 3
+
+Private Const REG_APP As String = "CatiaTreeFilter"
+Private Const REG_SEC As String = "Settings"
+
+' "EN" or "KO"
+Public gTreeFltLang As String
+
+' The items read from the tree, numbered 1 to gTreeFltCount
+Public gTreeFltCount As Long
+Public gTreeFltIsProduct As Boolean
+Public gTreeFltMatch() As Boolean
+
+Private mName() As String
+Private mPN() As String
+Private mKind() As Integer
+Private mParent() As Long
+Private mDepth() As Long
+Private mObj() As Object
+Private mDoc() As Object
+
+Private mCap As Long
+Private mRootDoc As Object
+
+
+'=========================================================
+' ENTRY POINT
+'=========================================================
+
+Sub CATMain()
+
+    TreeFltLoadLanguage
+    frmTreeFilter.Show
+
+End Sub
+
+
+'=========================================================
+' READ THE TREE
+' Items are stored parent first, so a parent always has a
+' lower number than its children.
+'=========================================================
+
+Public Sub TreeFltClear()
+
+    gTreeFltCount = 0
+    mCap = 0
+
+    Erase mName
+    Erase mPN
+    Erase mKind
+    Erase mParent
+    Erase mDepth
+    Erase mObj
+    Erase mDoc
+
+    ReDim gTreeFltMatch(0 To 0)
+
+    Set mRootDoc = Nothing
+
+End Sub
+
+
+Private Function AddNode( _
+        ByVal itemName As String, _
+        ByVal partNumber As String, _
+        ByVal kind As Integer, _
+        ByVal parentIdx As Long, _
+        ByVal depth As Long, _
+        ByVal obj As Object, _
+        ByVal ownerDoc As Object) As Long
+
+    If gTreeFltCount &gt;= mCap Then
+
+        If mCap = 0 Then mCap = 256 Else mCap = mCap * 2
+
+        ReDim Preserve mName(0 To mCap)
+        ReDim Preserve mPN(0 To mCap)
+        ReDim Preserve mKind(0 To mCap)
+        ReDim Preserve mParent(0 To mCap)
+        ReDim Preserve mDepth(0 To mCap)
+        ReDim Preserve mObj(0 To mCap)
+        ReDim Preserve mDoc(0 To mCap)
+
+    End If
+
+    gTreeFltCount = gTreeFltCount + 1
+
+    mName(gTreeFltCount) = itemName
+    mPN(gTreeFltCount) = partNumber
+    mKind(gTreeFltCount) = kind
+    mParent(gTreeFltCount) = parentIdx
+    mDepth(gTreeFltCount) = depth
+    Set mObj(gTreeFltCount) = obj
+    Set mDoc(gTreeFltCount) = ownerDoc
+
+    AddNode = gTreeFltCount
+
+End Function
+
+
+' Reads the tree of one CATIA window.
+' includeBodies: CATProduct only, also list the bodies inside each part.
+' includeSets: also list geometrical sets.
+Public Function TreeFltCollect( _
+        ByVal windowIndex As Long, _
+        ByVal includeBodies As Boolean, _
+        ByVal includeSets As Boolean, _
+        ByRef errorText As String) As Boolean
+
+    Dim win As Object
+    Dim doc As Object
+
+    TreeFltCollect = False
+
+    TreeFltClear
+
+    On Error GoTo Failed
+
+    Set win = CATIA.Windows.Item(windowIndex)
+
+    ' Bring the chosen window to the front so the result is visible
+    On Error Resume Next
+    win.Activate
+    Err.Clear
+    On Error GoTo Failed
+
+    Set doc = win.Parent
+    Set mRootDoc = doc
+
+    If TypeName(doc) = "ProductDocument" Then
+
+        gTreeFltIsProduct = True
+        CollectProducts doc.Product, 0, 0, includeBodies, includeSets
+
+    ElseIf TypeName(doc) = "PartDocument" Then
+
+        gTreeFltIsProduct = False
+        CollectPartItems doc.Part, 0, 0, doc, True, includeSets
+
+    Else
+
+        errorText = TreeFltTxt("stNoWin")
+        Exit Function
+
+    End If
+
+    ReDim gTreeFltMatch(0 To gTreeFltCount)
+
+    TreeFltCollect = True
+
+    Exit Function
+
+Failed:
+
+    errorText = Err.Description
+
+End Function
+
+
+Private Sub CollectProducts( _
+        ByVal parentProd As Object, _
+        ByVal parentIdx As Long, _
+        ByVal depth As Long, _
+        ByVal includeBodies As Boolean, _
+        ByVal includeSets As Boolean)
+
+    Dim prods As Object
+    Dim child As Object
+    Dim refDoc As Object
+    Dim itemCount As Long
+    Dim i As Long
+    Dim idx As Long
+    Dim itemName As String
+    Dim partNumber As String
+
+    On Error Resume Next
+
+    Set prods = parentProd.Products
+    If prods Is Nothing Then Exit Sub
+
+    itemCount = prods.Count
+
+    For i = 1 To itemCount
+
+        Set child = Nothing
+        Set child = prods.Item(i)
+
+        If Not child Is Nothing Then
+
+            itemName = ""
+            partNumber = ""
+
+            itemName = child.Name
+
+            ' Unloaded components have no part number
+            partNumber = child.PartNumber
+
+            Err.Clear
+
+            idx = AddNode(itemName, partNumber, KIND_COMPONENT, _
+                    parentIdx, depth, child, mRootDoc)
+
+            If includeBodies Or includeSets Then
+
+                Set refDoc = Nothing
+                Set refDoc = child.ReferenceProduct.Parent
+
+                If TypeName(refDoc) = "PartDocument" Then
+                    CollectPartItems refDoc.Part, idx, depth + 1, _
+                        refDoc, includeBodies, includeSets
+                End If
+
+                Err.Clear
+
+            End If
+
+            CollectProducts child, idx, depth + 1, includeBodies, includeSets
+
+        End If
+
+        Err.Clear
+
+    Next i
+
+End Sub
+
+
+Private Sub CollectPartItems( _
+        ByVal partObj As Object, _
+        ByVal parentIdx As Long, _
+        ByVal depth As Long, _
+        ByVal ownerDoc As Object, _
+        ByVal includeBodies As Boolean, _
+        ByVal includeSets As Boolean)
+
+    Dim bodiesObj As Object
+    Dim bodyObj As Object
+    Dim i As Long
+
+    On Error Resume Next
+
+    If includeBodies Then
+
+        Set bodiesObj = partObj.Bodies
+
+        For i = 1 To bodiesObj.Count
+
+            Set bodyObj = Nothing
+            Set bodyObj = bodiesObj.Item(i)
+
+            If Not bodyObj Is Nothing Then
+                AddNode bodyObj.Name, "", KIND_BODY, parentIdx, depth, _
+                    bodyObj, ownerDoc
+            End If
+
+            Err.Clear
+
+        Next i
+
+    End If
+
+    If includeSets Then
+        CollectSets partObj.HybridBodies, parentIdx, depth, ownerDoc
+    End If
+
+    Err.Clear
+
+End Sub
+
+
+' Geometrical sets, including sets inside sets
+Private Sub CollectSets( _
+        ByVal setsObj As Object, _
+        ByVal parentIdx As Long, _
+        ByVal depth As Long, _
+        ByVal ownerDoc As Object)
+
+    Dim setObj As Object
+    Dim idx As Long
+    Dim i As Long
+
+    On Error Resume Next
+
+    If setsObj Is Nothing Then Exit Sub
+
+    For i = 1 To setsObj.Count
+
+        Set setObj = Nothing
+        Set setObj = setsObj.Item(i)
+
+        If Not setObj Is Nothing Then
+
+            idx = AddNode(setObj.Name, "", KIND_SET, parentIdx, depth, _
+                    setObj, ownerDoc)
+
+            CollectSets setObj.HybridBodies, idx, depth + 1, ownerDoc
+
+        End If
+
+        Err.Clear
+
+    Next i
+
+End Sub
+
+
+' One line for the match list
+Public Function TreeFltDisplayText(ByVal i As Long) As String
+
+    Dim t As String
+
+    t = String$(mDepth(i) * 3, " ") &amp; mName(i)
+
+    Select Case mKind(i)
+
+        Case KIND_COMPONENT
+            If Len(mPN(i)) &gt; 0 And mPN(i) &lt;&gt; mName(i) Then
+                t = t &amp; "   (" &amp; mPN(i) &amp; ")"
+            End If
+
+        Case KIND_BODY
+            t = t &amp; "   " &amp; TreeFltTxt("tagBody")
+
+        Case KIND_SET
+            t = t &amp; "   " &amp; TreeFltTxt("tagSet")
+
+    End Select
+
+    TreeFltDisplayText = t
+
+End Function
+
+
+'=========================================================
+' FILTER MATCHING
+' * matches any text, ? matches one character.
+' Upper and lower case are treated the same.
+' Several filters can be separated with ;
+' A filter with no * or ? matches names that contain it.
+'=========================================================
+
+Private Function BuildTerms( _
+        ByVal filterText As String, _
+        ByRef terms() As String) As Long
+
+    Dim parts() As String
+    Dim t As String
+    Dim n As Long
+    Dim i As Long
+
+    parts = Split(filterText, ";")
+
+    ReDim terms(0 To UBound(parts) + 1)
+
+    n = 0
+
+    For i = 0 To UBound(parts)
+
+        t = LCase$(Trim$(parts(i)))
+
+        If Len(t) &gt; 0 Then
+
+            If InStr(t, "*") = 0 And InStr(t, "?") = 0 Then
+                t = "*" &amp; t &amp; "*"
+            End If
+
+            terms(n) = t
+            n = n + 1
+
+        End If
+
+    Next i
+
+    BuildTerms = n
+
+End Function
+
+
+Public Function TreeFltHasFilter(ByVal filterText As String) As Boolean
+
+    Dim terms() As String
+
+    TreeFltHasFilter = (BuildTerms(filterText, terms) &gt; 0)
+
+End Function
+
+
+' Marks gTreeFltMatch for every item and returns how many match.
+' matchOn: 0 = instance name or part number, 1 = instance name,
+' 2 = part number. Bodies and sets always match on their name.
+' An empty filter matches everything.
+Public Function TreeFltComputeMatches( _
+        ByVal filterText As String, _
+        ByVal matchOn As Long) As Long
+
+    Dim terms() As String
+    Dim termCount As Long
+    Dim matched As Long
+    Dim hit As Boolean
+    Dim i As Long
+    Dim k As Long
+
+    ReDim gTreeFltMatch(0 To gTreeFltCount)
+
+    termCount = BuildTerms(filterText, terms)
+
+    If matchOn &lt; 0 Or matchOn &gt; 2 Then matchOn = 0
+
+    ' In a CATPart only names are used
+    If Not gTreeFltIsProduct Then matchOn = 0
+
+    matched = 0
+
+    For i = 1 To gTreeFltCount
+
+        If termCount = 0 Then
+
+            hit = True
+
+        Else
+
+            hit = False
+
+            For k = 0 To termCount - 1
+
+                If mKind(i) &lt;&gt; KIND_COMPONENT Or matchOn &lt;&gt; 2 Then
+                    If WildMatch(LCase$(mName(i)), terms(k)) Then hit = True
+                End If
+
+                If Not hit And mKind(i) = KIND_COMPONENT And matchOn &lt;&gt; 1 Then
+                    If WildMatch(LCase$(mPN(i)), terms(k)) Then hit = True
+                End If
+
+                If hit Then Exit For
+
+            Next k
+
+        End If
+
+        gTreeFltMatch(i) = hit
+
+        If hit Then matched = matched + 1
+
+    Next i
+
+    TreeFltComputeMatches = matched
+
+End Function
+
+
+' Both texts must already be lower case
+Private Function WildMatch( _
+        ByVal t As String, _
+        ByVal p As String) As Boolean
+
+    Dim ti As Long
+    Dim pi As Long
+    Dim starP As Long
+    Dim starT As Long
+    Dim pc As String
+
+    ti = 1
+    pi = 1
+    starP = 0
+    starT = 0
+
+    Do While ti &lt;= Len(t)
+
+        If pi &lt;= Len(p) Then
+            pc = Mid$(p, pi, 1)
+        Else
+            pc = ""
+        End If
+
+        If pc = "*" Then
+            starP = pi
+            starT = ti
+            pi = pi + 1
+        ElseIf Len(pc) &gt; 0 And (pc = "?" Or pc = Mid$(t, ti, 1)) Then
+            pi = pi + 1
+            ti = ti + 1
+        ElseIf starP &gt; 0 Then
+            pi = starP + 1
+            starT = starT + 1
+            ti = starT
+        Else
+            WildMatch = False
+            Exit Function
+        End If
+
+    Loop
+
+    Do While pi &lt;= Len(p)
+        If Mid$(p, pi, 1) &lt;&gt; "*" Then Exit Do
+        pi = pi + 1
+    Loop
+
+    WildMatch = (pi &gt; Len(p))
+
+End Function
+
+
+'=========================================================
+' SHOW / HIDE
+' Call TreeFltComputeMatches first.
+'
+' Show only matches: matching items, everything inside them
+' and the assemblies that hold them are shown. Everything
+' else is hidden.
+' Hide matches: only matching items are hidden.
+' Show all: every item read from the tree is shown.
+'=========================================================
+
+Public Function TreeFltApply( _
+        ByVal mode As Long, _
+        ByRef skipped As Long, _
+        ByRef errorText As String) As Boolean
+
+    Dim ancMatch() As Boolean
+    Dim descMatch() As Boolean
+    Dim keep() As Boolean
+    Dim setTo() As Long
+
+    Dim n As Long
+    Dim i As Long
+    Dim p As Long
+
+    TreeFltApply = False
+    skipped = 0
+
+    n = gTreeFltCount
+
+    If n = 0 Or mRootDoc Is Nothing Then
+        errorText = TreeFltTxt("stNoWin")
+        Exit Function
+    End If
+
+    ReDim ancMatch(0 To n)
+    ReDim descMatch(0 To n)
+    ReDim keep(0 To n)
+    ReDim setTo(0 To n)
+
+    ' An item whose parent, grandparent... matches
+    For i = 1 To n
+        p = mParent(i)
+        If p &gt; 0 Then ancMatch(i) = gTreeFltMatch(p) Or ancMatch(p)
+    Next i
+
+    ' An item with a matching child, grandchild...
+    For i = n To 1 Step -1
+        p = mParent(i)
+        If p &gt; 0 Then
+            If gTreeFltMatch(i) Or descMatch(i) Then descMatch(p) = True
+        End If
+    Next i
+
+    For i = 1 To n
+
+        p = mParent(i)
+        setTo(i) = -1
+
+        Select Case mode
+
+            Case TREEFLT_MODE_SHOW_ONLY
+
+                keep(i) = gTreeFltMatch(i) Or ancMatch(i) Or descMatch(i)
+
+                ' Items inside a hidden parent are already out of
+                ' sight, so they are left as they are
+                If p = 0 Then
+                    setTo(i) = IIf(keep(i), VIS_SHOW, VIS_HIDE)
+                ElseIf keep(p) Then
+                    setTo(i) = IIf(keep(i), VIS_SHOW, VIS_HIDE)
+                End If
+
+            Case TREEFLT_MODE_HIDE
+
+                ' Hiding the parent already hides its children
+                If gTreeFltMatch(i) And Not ancMatch(i) Then setTo(i) = VIS_HIDE
+
+            Case Else
+
+                setTo(i) = VIS_SHOW
+
+        End Select
+
+    Next i
+
+    SetVisibility setTo, VIS_HIDE, skipped, errorText
+    SetVisibility setTo, VIS_SHOW, skipped, errorText
+
+    On Error Resume Next
+    mRootDoc.Selection.Clear
+    CATIA.RefreshDisplay = True
+    Err.Clear
+
+    TreeFltApply = True
+
+End Function
+
+
+' Selects every item marked with showValue and applies it in
+' one step per document. Items that cannot be selected, for
+' example unloaded components, are counted in skipped.
+Private Sub SetVisibility( _
+        ByRef setTo() As Long, _
+        ByVal showValue As Long, _
+        ByRef skipped As Long, _
+        ByRef errorText As String)
+
+    Dim sel As Object
+    Dim curDoc As Object
+    Dim added As Long
+    Dim i As Long
+
+    On Error Resume Next
+
+    ' Items owned by the open document (components in a
+    ' CATProduct, bodies and sets in a CATPart)
+    Set sel = mRootDoc.Selection
+    sel.Clear
+    added = 0
+
+    For i = 1 To gTreeFltCount
+        If setTo(i) = showValue Then
+            If mDoc(i) Is mRootDoc Then
+                AddToSelection sel, mObj(i), added, skipped
+            End If
+        End If
+    Next i
+
+    FlushSelection sel, added, showValue, skipped, errorText
+
+    ' Bodies and sets inside the parts of a CATProduct.
+    ' These are changed in each part's own document.
+    Set curDoc = Nothing
+    Set sel = Nothing
+    added = 0
+
+    For i = 1 To gTreeFltCount
+
+        If setTo(i) = showValue Then
+
+            If Not (mDoc(i) Is mRootDoc) Then
+
+                If Not (mDoc(i) Is curDoc) Then
+
+                    If Not sel Is Nothing Then
+                        FlushSelection sel, added, showValue, skipped, errorText
+                    End If
+
+                    Set curDoc = mDoc(i)
+                    Set sel = Nothing
+                    Set sel = curDoc.Selection
+
+                    If Not sel Is Nothing Then sel.Clear
+
+                    added = 0
+
+                End If
+
+                If sel Is Nothing Then
+                    skipped = skipped + 1
+                Else
+                    AddToSelection sel, mObj(i), added, skipped
+                End If
+
+            End If
+
+        End If
+
+        Err.Clear
+
+    Next i
+
+    If Not sel Is Nothing Then
+        FlushSelection sel, added, showValue, skipped, errorText
+    End If
+
+    Err.Clear
+
+End Sub
+
+
+Private Sub AddToSelection( _
+        ByVal sel As Object, _
+        ByVal obj As Object, _
+        ByRef added As Long, _
+        ByRef skipped As Long)
+
+    On Error Resume Next
+
+    Err.Clear
+    sel.Add obj
+
+    If Err.Number = 0 Then
+        added = added + 1
+    Else
+        skipped = skipped + 1
+    End If
+
+    Err.Clear
+
+End Sub
+
+
+Private Sub FlushSelection( _
+        ByVal sel As Object, _
+        ByRef added As Long, _
+        ByVal showValue As Long, _
+        ByRef skipped As Long, _
+        ByRef errorText As String)
+
+    On Error Resume Next
+
+    If added &gt; 0 Then
+
+        Err.Clear
+        sel.VisProperties.SetShow showValue
+
+        If Err.Number &lt;&gt; 0 Then
+            skipped = skipped + added
+            errorText = Err.Description
+        End If
+
+    End If
+
+    sel.Clear
+    added = 0
+
+    Err.Clear
+
+End Sub
+
+
+'=========================================================
+' SETTINGS (remembered between runs)
+'=========================================================
+
+Public Sub TreeFltLoadLanguage()
+
+    gTreeFltLang = UCase$(GetSetting(REG_APP, REG_SEC, "Lang", "EN"))
+
+    If gTreeFltLang &lt;&gt; "KO" Then gTreeFltLang = "EN"
+
+End Sub
+
+
+Public Sub TreeFltSetLanguage(ByVal langCode As String)
+
+    gTreeFltLang = langCode
+
+    SaveSetting REG_APP, REG_SEC, "Lang", gTreeFltLang
+
+End Sub
+
+
+Public Function TreeFltLoadChoice( _
+        ByVal choiceName As String, _
+        ByVal defaultValue As Long) As Long
+
+    TreeFltLoadChoice = CLng(Val(GetSetting( _
+        REG_APP, REG_SEC, choiceName, CStr(defaultValue))))
+
+End Function
+
+
+Public Sub TreeFltSaveChoice( _
+        ByVal choiceName As String, _
+        ByVal choiceValue As Long)
+
+    SaveSetting REG_APP, REG_SEC, choiceName, CStr(choiceValue)
+
+End Sub
+
+
+Public Function TreeFltLoadText( _
+        ByVal choiceName As String, _
+        ByVal defaultValue As String) As String
+
+    TreeFltLoadText = GetSetting(REG_APP, REG_SEC, choiceName, defaultValue)
+
+End Function
+
+
+Public Sub TreeFltSaveText( _
+        ByVal choiceName As String, _
+        ByVal choiceValue As String)
+
+    SaveSetting REG_APP, REG_SEC, choiceName, choiceValue
+
+End Sub
+
+
+'=========================================================
+' TEXT (ENGLISH AND KOREAN)
+'=========================================================
+
+Public Function TreeFltTxt(ByVal key As String) As String
+
+    If gTreeFltLang = "KO" Then
+        TreeFltTxt = TextKO(key)
+    Else
+        TreeFltTxt = TextEN(key)
+    End If
+
+    If Len(TreeFltTxt) = 0 Then TreeFltTxt = TextEN(key)
+    If Len(TreeFltTxt) = 0 Then TreeFltTxt = key
+
+End Function
+
+
+Public Function TreeFltUiFontName() As String
+
+    If gTreeFltLang = "KO" Then
+        TreeFltUiFontName = "Malgun Gothic"
+    Else
+        TreeFltUiFontName = "Tahoma"
+    End If
+
+End Function
+
+
+' Fills {0}, {1} and {2} in a text
+Public Function TreeFltFmt( _
+        ByVal template As String, _
+        Optional ByVal a As String = "", _
+        Optional ByVal b As String = "", _
+        Optional ByVal c As String = "") As String
+
+    TreeFltFmt = Replace(Replace(Replace(template, "{0}", a), "{1}", b), "{2}", c)
+
+End Function
+
+
+' Turns \uXXXX codes into real characters
+Private Function U(ByVal coded As String) As String
+
+    Dim i As Long
+    Dim result As String
+
+    i = 1
+
+    Do While i &lt;= Len(coded)
+
+        If Mid$(coded, i, 2) = "\u" And i + 5 &lt;= Len(coded) Then
+            result = result &amp; ChrW$(CLng("&amp;H" &amp; Mid$(coded, i + 2, 4)))
+            i = i + 6
+        Else
+            result = result &amp; Mid$(coded, i, 1)
+            i = i + 1
+        End If
+
+    Loop
+
+    U = result
+
+End Function
+
+
+Private Function TextEN(ByVal key As String) As String
+
+    Select Case key
+        Case "title": TextEN = "CATIA Tree Filter"
+        Case "subtitle": TextEN = "Show or hide parts and bodies by name"
+        Case "window": TextEN = "Window:"
+        Case "btnRefresh": TextEN = "Rescan"
+        Case "filter": TextEN = "Filter:"
+        Case "hint": TextEN = "Use * for any text and ? for one character, for example *T2.6*. Separate several filters with ;"
+        Case "matchOn": TextEN = "Match on:"
+        Case "moBoth": TextEN = "Instance name or part number"
+        Case "moInst": TextEN = "Instance name only"
+        Case "moPN": TextEN = "Part number only"
+        Case "chkBodies": TextEN = "Include bodies inside parts (PartBody and others)"
+        Case "chkSets": TextEN = "Include geometrical sets"
+        Case "count": TextEN = "{0} of {1} items match"
+        Case "countMore": TextEN = "{0} of {1} items match (the list shows the first {2})"
+        Case "tagBody": TextEN = "[Body]"
+        Case "tagSet": TextEN = "[Set]"
+        Case "btnShowOnly": TextEN = "Show Only Matches"
+        Case "btnHide": TextEN = "Hide Matches"
+        Case "btnShowAll": TextEN = "Show All"
+        Case "btnClose": TextEN = "Close"
+        Case "btnLang": TextEN = U("\ud55c\uad6d\uc5b4")
+        Case "status": TextEN = "Status: "
+        Case "stNoWin": TextEN = "Open a CATProduct or CATPart first"
+        Case "stScanning": TextEN = "Reading the tree..."
+        Case "stReadyProduct": TextEN = "CATProduct read: {0} items"
+        Case "stReadyPart": TextEN = "CATPart read: {0} items"
+        Case "stWorking": TextEN = "Changing what is shown..."
+        Case "msgShowOnly": TextEN = "Showing {0} matching items. The rest are hidden."
+        Case "msgHide": TextEN = "Hid {0} matching items."
+        Case "msgShowAll": TextEN = "Showed all {0} items."
+        Case "msgNoFilter": TextEN = "Type a filter first."
+        Case "msgNoMatch": TextEN = "Nothing matches this filter. Nothing was changed."
+        Case "msgSkipped": TextEN = " ({0} items could not be changed)"
+        Case "msgError": TextEN = "Error: {0}"
+    End Select
+
+End Function
+
+
+Private Function TextKO(ByVal key As String) As String
+
+    Select Case key
+        Case "title": TextKO = U("CATIA \ud2b8\ub9ac \ud544\ud130")
+        Case "subtitle": TextKO = U("\uc774\ub984\uc73c\ub85c \ud30c\ud2b8\uc640 \ubc14\ub514\ub97c \ud45c\uc2dc\ud558\uac70\ub098 \uc228\uae41\ub2c8\ub2e4")
+        Case "window": TextKO = U("\ucc3d:")
+        Case "btnRefresh": TextKO = U("\ub2e4\uc2dc \uc77d\uae30")
+        Case "filter": TextKO = U("\ud544\ud130:")
+        Case "hint": TextKO = U("*\ub294 \uc784\uc758\uc758 \ubb38\uc790\uc5f4, ?\ub294 \ud55c \uae00\uc790\uc785\ub2c8\ub2e4. \uc608: *T2.6*. \uc5ec\ub7ec \ud544\ud130\ub294 ; \ub85c \uad6c\ubd84\ud569\ub2c8\ub2e4")
+        Case "matchOn": TextKO = U("\ube44\uad50 \ub300\uc0c1:")
+        Case "moBoth": TextKO = U("\uc778\uc2a4\ud134\uc2a4 \uc774\ub984 \ub610\ub294 \ubd80\ud488 \ubc88\ud638")
+        Case "moInst": TextKO = U("\uc778\uc2a4\ud134\uc2a4 \uc774\ub984\ub9cc")
+        Case "moPN": TextKO = U("\ubd80\ud488 \ubc88\ud638\ub9cc")
+        Case "chkBodies": TextKO = U("\ud30c\ud2b8 \uc548\uc758 \ubc14\ub514 \ud3ec\ud568 (PartBody \ub4f1)")
+        Case "chkSets": TextKO = U("\ud615\uc0c1 \uc138\ud2b8 \ud3ec\ud568")
+        Case "count": TextKO = U("{1}\uac1c \ud56d\ubaa9 \uc911 {0}\uac1c \uc77c\uce58")
+        Case "countMore": TextKO = U("{1}\uac1c \ud56d\ubaa9 \uc911 {0}\uac1c \uc77c\uce58 (\ubaa9\ub85d\uc5d0\ub294 \ucc98\uc74c {2}\uac1c\ub9cc \ud45c\uc2dc)")
+        Case "tagBody": TextKO = U("[\ubc14\ub514]")
+        Case "tagSet": TextKO = U("[\uc138\ud2b8]")
+        Case "btnShowOnly": TextKO = U("\uc77c\uce58 \ud56d\ubaa9\ub9cc \ud45c\uc2dc")
+        Case "btnHide": TextKO = U("\uc77c\uce58 \ud56d\ubaa9 \uc228\uae30\uae30")
+        Case "btnShowAll": TextKO = U("\ubaa8\ub450 \ud45c\uc2dc")
+        Case "btnClose": TextKO = U("\ub2eb\uae30")
+        Case "btnLang": TextKO = "English"
+        Case "status": TextKO = U("\uc0c1\ud0dc: ")
+        Case "stNoWin": TextKO = U("\uba3c\uc800 CATProduct \ub610\ub294 CATPart\ub97c \uc5ec\uc138\uc694")
+        Case "stScanning": TextKO = U("\ud2b8\ub9ac\ub97c \uc77d\ub294 \uc911...")
+        Case "stReadyProduct": TextKO = U("CATProduct \uc77d\uc74c: \ud56d\ubaa9 {0}\uac1c")
+        Case "stReadyPart": TextKO = U("CATPart \uc77d\uc74c: \ud56d\ubaa9 {0}\uac1c")
+        Case "stWorking": TextKO = U("\ud45c\uc2dc \uc0c1\ud0dc\ub97c \ubcc0\uacbd\ud558\ub294 \uc911...")
+        Case "msgShowOnly": TextKO = U("\uc77c\uce58 \ud56d\ubaa9 {0}\uac1c\ub97c \ud45c\uc2dc\ud588\uc2b5\ub2c8\ub2e4. \ub098\uba38\uc9c0\ub294 \uc228\uacbc\uc2b5\ub2c8\ub2e4.")
+        Case "msgHide": TextKO = U("\uc77c\uce58 \ud56d\ubaa9 {0}\uac1c\ub97c \uc228\uacbc\uc2b5\ub2c8\ub2e4.")
+        Case "msgShowAll": TextKO = U("\ud56d\ubaa9 {0}\uac1c\ub97c \ubaa8\ub450 \ud45c\uc2dc\ud588\uc2b5\ub2c8\ub2e4.")
+        Case "msgNoFilter": TextKO = U("\uba3c\uc800 \ud544\ud130\ub97c \uc785\ub825\ud558\uc138\uc694.")
+        Case "msgNoMatch": TextKO = U("\uc774 \ud544\ud130\uc640 \uc77c\uce58\ud558\ub294 \ud56d\ubaa9\uc774 \uc5c6\uc2b5\ub2c8\ub2e4. \ubcc0\uacbd\ub41c \ub0b4\uc6a9\uc774 \uc5c6\uc2b5\ub2c8\ub2e4.")
+        Case "msgSkipped": TextKO = U(" (\ud56d\ubaa9 {0}\uac1c\ub294 \ubcc0\uacbd\ud560 \uc218 \uc5c6\uc74c)")
+        Case "msgError": TextKO = U("\uc624\ub958: {0}")
+    End Select
+
+End Function
+
+
+'=========================================================
+' LOGO
+' The logo picture is stored below as text.
+' The form shows it with:
+'     TreeFltLoadLogo Me.Controls("imgLogo")
+'=========================================================
+
+' Puts the logo into an Image control.
+' Returns False if the picture could not be loaded.
+Public Function TreeFltLoadLogo(ByVal target As Object) As Boolean
+
+    Dim data() As Byte
+    Dim filePath As String
+    Dim fileNo As Integer
+
+    TreeFltLoadLogo = False
+
+    On Error GoTo Failed
+
+    data = HexToBytes(LogoHex())
+
+    ' VBA can only load a picture from a file, so the data is
+    ' written to the Windows temp folder, loaded, then deleted.
+    filePath = Environ$("TEMP") &amp; "\catia_treefilter_logo.gif"
+
+    If Len(Dir$(filePath)) &gt; 0 Then Kill filePath
+
+    fileNo = FreeFile
+
+    Open filePath For Binary Access Write As #fileNo
+    Put #fileNo, , data
+    Close #fileNo
+
+    Set target.Picture = LoadPicture(filePath)
+
+    TreeFltLoadLogo = True
+
+    On Error Resume Next
+    Kill filePath
+
+    Exit Function
+
+Failed:
+
+    On Error Resume Next
+    Close #fileNo
+
+End Function
+
+
+' Turns pairs of hex characters back into bytes
+Private Function HexToBytes(ByVal hexText As String) As Byte()
+
+    Dim count As Long
+    Dim i As Long
+    Dim data() As Byte
+
+    count = Len(hexText) \ 2
+
+    ReDim data(0 To count - 1)
+
+    For i = 0 To count - 1
+        data(i) = CByte("&amp;H" &amp; Mid$(hexText, i * 2 + 1, 2))
+    Next i
+
+    HexToBytes = data
+
+End Function
+
+
+' The logo picture (a GIF image, 195 x 15 pixels) written as hex text
+Private Function LogoHex() As String
+
+    Dim s As String
+
+    s = s &amp; "474946383761C3000F00840000F0F0F0D7DCE0C4CCD4B5C0CBA7B4C29AA9BA8D9FB27F92A97288A06B829D657D9957719048"
+    s = s &amp; "65863B5A7F2C4E751E426C0F3562002A5A000000000000000000000000000000000000000000000000000000000000000000"
+    s = s &amp; "0000000000000000002C00000000C3000F000008FF0001081C48B0A0C18308132A5CC8B0A1C38710234A9C48B1A2C58B1833"
+    s = s &amp; "6ADCE810418401041F34187820820082061E4480B02000008F11562A20A9320283930463C674504020019D3113402058E001"
+    s = s &amp; "00A011101C2550F040CD9B021BE87CD013A6CE973A59BA1CF8332604A50D940A44309260499C4B010C7010B32580B0041B30"
+    s = s &amp; "15C8C0E840010C623E38E0330241044AADC6FC1BA12C8092861D34E02BD029D3000B1CBC2C1BE08181970FE62280B0556084"
+    s = s &amp; "B90620F4FC5950F4C005333F17543D1041E6B19CDF8A2DC0996C41DB00F04AE6EA37B7E801B10340983B5031E3B47B010460"
+    s = s &amp; "B04076DCB9C21D80540E4181CBB54A49B70E6CF87683063D2B2BFF282BE08180DD00868724801BC002A5EA07C21DC81A404A"
+    s = s &amp; "00DA4FCF140801647DCFC4A517205CF32DD5DE58DD59C69B7C4ABDF752730495771E7D4C992490009715F816680B18B0DF01"
+    s = s &amp; "DD11C0597E2F71871059033C0019606521C09774F8F5E6DD85999138594E017E64635102F198168E0BFE35D27C3F0970E08D"
+    s = s &amp; "AD311024702709F01104688DF5E274AA2DB0175A1ACA15D500C245251685240286A441B62D602592E6D937938D6301C5978D"
+    s = s &amp; "0474F7DF675D5D05C00320A1E61950151207E790535505D44807B657A74D5B29509D41697A08A04006E4D500485221C55479"
+    s = s &amp; "022DD093861B8619D8A0425257D548030065149B480217808D200249DF006C2AFF3013948FBA1A6353437E89E08C49060919"
+    s = s &amp; "6511742650A953D52A50008A3A271F5325E9D41CA7C3793A26AFAD8DA4C071930AB85E7B0E5C169F97B6DEC7668A05A0F7DF"
+    s = s &amp; "8FFC0D0896AED34EAB605F411E65D0B5F2F947C000722A1B155330F27758889C95DA1903261E74A46D6936D6DC010E3C16D9"
+    s = s &amp; "9808348740BF07C446618FA6A1FA8003C79DFBDFC4D355EC12A70793F770BC0AD8256F41091FD6DC67C25D76D850591280E9"
+    s = s &amp; "400C18209C58E789E5805B45B65BAD773E0E3B947D2A6935A68F4EC504554E3AF1D4179F022960E19E3A2965E9614FE14432"
+    s = s &amp; "525879E5166F3A3130DDCA0315ADD650AAE1EB34A5BACAA500848D2989975EC72DB7534F61DB24C9D1DF80072EF845043810"
+    s = s &amp; "E5E08827AEF8E21D412023E390472EF9E494576EF9E51B0504003B"
+
+    LogoHex = s
+
+End Function</code></pre>
+  </section>
+
+  <section>
+    <h2>Filter examples</h2>
+    <div class="wrapx"><table>
+      <tr><th>You type</th><th>Matches</th></tr>
+      <tr><td><code>*T2.6*</code></td><td>Any name with T2.6 anywhere in it</td></tr>
+      <tr><td><code>T2.6</code></td><td>Same as <code>*T2.6*</code>. A filter with no <code>*</code> or <code>?</code> matches names that contain it.</td></tr>
+      <tr><td><code>T2.6*</code></td><td>Names that start with T2.6</td></tr>
+      <tr><td><code>*_LH</code></td><td>Names that end with _LH</td></tr>
+      <tr><td><code>BRKT_0??</code></td><td>BRKT_0 followed by exactly two characters</td></tr>
+      <tr><td><code>*T2.6*; *T3.0*</code></td><td>Names with T2.6 or T3.0. Separate filters with <code>;</code></td></tr>
+    </table></div>
+    <p class="note">Upper and lower case are treated the same. Only <code>*</code> and <code>?</code> are special, so dots, brackets and <code>#</code> in part names match as plain characters.</p>
+  </section>
+
+  <section>
+    <h2>English and Korean text</h2>
+    <p>All wording lives in <code>TextEN</code> and <code>TextKO</code> in the module. Korean is stored as <code>\uXXXX</code> codes so it pastes safely into the VBA editor on any PC. This table shows what each code says.</p>
+    <div class="wrapx"><table>
+      <tr><th>Key</th><th>English</th><th>Korean</th></tr>
+      <tr><td><code>title</code></td><td>CATIA Tree Filter</td><td lang="ko">CATIA 트리 필터</td></tr><tr><td><code>subtitle</code></td><td>Show or hide parts and bodies by name</td><td lang="ko">이름으로 파트와 바디를 표시하거나 숨깁니다</td></tr><tr><td><code>window</code></td><td>Window:</td><td lang="ko">창:</td></tr><tr><td><code>btnRefresh</code></td><td>Rescan</td><td lang="ko">다시 읽기</td></tr><tr><td><code>filter</code></td><td>Filter:</td><td lang="ko">필터:</td></tr><tr><td><code>hint</code></td><td>Use * for any text and ? for one character, for example *T2.6*. Separate several filters with ;</td><td lang="ko">*는 임의의 문자열, ?는 한 글자입니다. 예: *T2.6*. 여러 필터는 ; 로 구분합니다</td></tr><tr><td><code>matchOn</code></td><td>Match on:</td><td lang="ko">비교 대상:</td></tr><tr><td><code>moBoth</code></td><td>Instance name or part number</td><td lang="ko">인스턴스 이름 또는 부품 번호</td></tr><tr><td><code>moInst</code></td><td>Instance name only</td><td lang="ko">인스턴스 이름만</td></tr><tr><td><code>moPN</code></td><td>Part number only</td><td lang="ko">부품 번호만</td></tr><tr><td><code>chkBodies</code></td><td>Include bodies inside parts (PartBody and others)</td><td lang="ko">파트 안의 바디 포함 (PartBody 등)</td></tr><tr><td><code>chkSets</code></td><td>Include geometrical sets</td><td lang="ko">형상 세트 포함</td></tr><tr><td><code>count</code></td><td>{0} of {1} items match</td><td lang="ko">{1}개 항목 중 {0}개 일치</td></tr><tr><td><code>countMore</code></td><td>{0} of {1} items match (the list shows the first {2})</td><td lang="ko">{1}개 항목 중 {0}개 일치 (목록에는 처음 {2}개만 표시)</td></tr><tr><td><code>tagBody</code></td><td>[Body]</td><td lang="ko">[바디]</td></tr><tr><td><code>tagSet</code></td><td>[Set]</td><td lang="ko">[세트]</td></tr><tr><td><code>btnShowOnly</code></td><td>Show Only Matches</td><td lang="ko">일치 항목만 표시</td></tr><tr><td><code>btnHide</code></td><td>Hide Matches</td><td lang="ko">일치 항목 숨기기</td></tr><tr><td><code>btnShowAll</code></td><td>Show All</td><td lang="ko">모두 표시</td></tr><tr><td><code>btnClose</code></td><td>Close</td><td lang="ko">닫기</td></tr><tr><td><code>btnLang</code></td><td>한국어</td><td lang="ko">English</td></tr><tr><td><code>status</code></td><td>Status: </td><td lang="ko">상태: </td></tr><tr><td><code>stNoWin</code></td><td>Open a CATProduct or CATPart first</td><td lang="ko">먼저 CATProduct 또는 CATPart를 여세요</td></tr><tr><td><code>stScanning</code></td><td>Reading the tree...</td><td lang="ko">트리를 읽는 중...</td></tr><tr><td><code>stReadyProduct</code></td><td>CATProduct read: {0} items</td><td lang="ko">CATProduct 읽음: 항목 {0}개</td></tr><tr><td><code>stReadyPart</code></td><td>CATPart read: {0} items</td><td lang="ko">CATPart 읽음: 항목 {0}개</td></tr><tr><td><code>stWorking</code></td><td>Changing what is shown...</td><td lang="ko">표시 상태를 변경하는 중...</td></tr><tr><td><code>msgShowOnly</code></td><td>Showing {0} matching items. The rest are hidden.</td><td lang="ko">일치 항목 {0}개를 표시했습니다. 나머지는 숨겼습니다.</td></tr><tr><td><code>msgHide</code></td><td>Hid {0} matching items.</td><td lang="ko">일치 항목 {0}개를 숨겼습니다.</td></tr><tr><td><code>msgShowAll</code></td><td>Showed all {0} items.</td><td lang="ko">항목 {0}개를 모두 표시했습니다.</td></tr><tr><td><code>msgNoFilter</code></td><td>Type a filter first.</td><td lang="ko">먼저 필터를 입력하세요.</td></tr><tr><td><code>msgNoMatch</code></td><td>Nothing matches this filter. Nothing was changed.</td><td lang="ko">이 필터와 일치하는 항목이 없습니다. 변경된 내용이 없습니다.</td></tr><tr><td><code>msgSkipped</code></td><td> ({0} items could not be changed)</td><td lang="ko"> (항목 {0}개는 변경할 수 없음)</td></tr><tr><td><code>msgError</code></td><td>Error: {0}</td><td lang="ko">오류: {0}</td></tr>
+    </table></div>
+    <p class="note"><code>{0}</code>, <code>{1}</code> and <code>{2}</code> are filled in with counts and error details. The window title bar stays in English in both languages.</p>
+  </section>
+
+  <section>
+    <h2>Known limitations</h2>
+    <ul>
+      <li>The window is modal, as with your other macros, so you can see the result in CATIA but need to close the window to rotate or pick in the model. To keep it open while you work, change <code>frmTreeFilter.Show</code> in <code>CATMain</code> to <code>frmTreeFilter.Show 0</code>.</li>
+      <li>Bodies and geometrical sets inside the parts of a CATProduct are hidden inside each part file, so the change applies to every instance of that part and marks the part as modified. If the same part is used twice and only one instance matches, the last instance processed wins.</li>
+      <li>Components that are not loaded have no part number and cannot be selected. They are counted in the "could not be changed" note on the status line.</li>
+      <li>The list shows the first 1000 matches. The count and the buttons still use every match.</li>
+      <li>Ordered geometrical sets are not read, only regular geometrical sets.</li>
+      <li>After changing the model, press Rescan before filtering again, so the macro works from the current tree.</li>
+      <li>If the image cannot be loaded, for example when the Windows temp folder is not writable, the window opens without it.</li>
+    </ul>
+  </section>
+</main>
+<footer>Prepared for CATIA V5 R21 VBA. Shows or hides components, bodies and geometrical sets by name in an open CATProduct or CATPart.</footer>
+</div>
+<script>
+document.querySelectorAll('.copy').forEach(function (btn) {
+  btn.addEventListener('click', function () {
+    var text = document.getElementById(btn.dataset.target).textContent;
+    function done(ok) {
+      btn.textContent = ok ? 'Copied' : 'Select and copy manually';
+      setTimeout(function () { btn.textContent = 'Copy code'; }, 1800);
+    }
+    function fallback() {
+      var ta = document.createElement('textarea');
+      ta.value = text; document.body.appendChild(ta); ta.select();
+      var ok = false;
+      try { ok = document.execCommand('copy'); } catch (e) {}
+      document.body.removeChild(ta); done(ok);
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () { done(true); }, fallback);
+    } else { fallback(); }
+  });
+});
+</script>
+</body>
+</html>
