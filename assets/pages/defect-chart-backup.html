@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Line 3 Defects by Type</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  body { font-family: "Segoe UI", system-ui, sans-serif; background: #f4f7fb; color: #1b2a3f; margin: 0; padding: 32px; }
+  .card { max-width: 960px; margin: 0 auto; background: #fff; border-radius: 14px; padding: 28px; box-shadow: 0 4px 18px rgba(0,0,0,.08); }
+  .top { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 18px; }
+  h1 { font-size: 22px; margin: 0; }
+  select { font-size: 15px; padding: 6px 10px; border-radius: 6px; border: 1px solid #b9c6d8; }
+  p.note { color: #6b7a90; font-size: 13px; margin-top: 14px; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="top">
+    <h1>Line 3 Defects by Type, Jan to Jun</h1>
+    <select id="filter"><option value="all">All defect types</option></select>
+  </div>
+  <canvas id="chart" height="120"></canvas>
+  <p class="note">Sample data for training purposes only.</p>
+</div>
+<script>
+  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun"];
+  const types = [
+    { label: "Weld leak", data: [34, 30, 22, 18, 15, 20], color: "#2c5aa0" },
+    { label: "Wall thickness", data: [20, 26, 30, 24, 18, 16], color: "#3fc1c9" },
+    { label: "Dimensional", data: [15, 12, 18, 28, 22, 14], color: "#f6a623" },
+    { label: "Cosmetic", data: [10, 14, 12, 9, 11, 8], color: "#9b6bd3" }
+  ];
+  const filter = document.getElementById("filter");
+  types.forEach((t, i) => { const o = document.createElement("option"); o.value = i; o.textContent = t.label; filter.appendChild(o); });
+  const p = document.createElement("option"); p.value = "pareto"; p.textContent = "Pareto (totals)"; filter.appendChild(p);
+
+  function monthlyConfig(list) {
+    return {
+      type: "bar",
+      data: { labels: months, datasets: list.map(t => ({ label: t.label, data: t.data, backgroundColor: t.color, borderRadius: 4 })) },
+      options: {
+        responsive: true,
+        plugins: { tooltip: { callbacks: { label: c => `${c.dataset.label}: ${c.parsed.y} defects` } } },
+        scales: { y: { beginAtZero: true, title: { display: true, text: "Defects" } } }
+      }
+    };
+  }
+  function paretoConfig() {
+    const totals = types.map(t => ({ label: t.label, color: t.color, v: t.data.reduce((a, b) => a + b, 0) })).sort((a, b) => b.v - a.v);
+    const sum = totals.reduce((a, t) => a + t.v, 0);
+    let cum = 0;
+    const cumPct = totals.map(t => { cum += t.v; return +(cum / sum * 100).toFixed(1); });
+    return {
+      type: "bar",
+      data: {
+        labels: totals.map(t => t.label),
+        datasets: [
+          { type: "bar", label: "Total defects", data: totals.map(t => t.v), backgroundColor: totals.map(t => t.color), borderRadius: 4, yAxisID: "y", order: 2 },
+          { type: "line", label: "Cumulative %", data: cumPct, borderColor: "#d64545", backgroundColor: "#d64545", yAxisID: "y1", tension: 0, order: 1 }
+        ]
+      },
+      options: {
+        responsive: true,
+        plugins: { tooltip: { callbacks: { label: c => c.dataset.yAxisID === "y1" ? `Cumulative: ${c.parsed.y}%` : `${c.parsed.y} defects` } } },
+        scales: {
+          y: { beginAtZero: true, title: { display: true, text: "Defects" } },
+          y1: { position: "right", min: 0, max: 100, grid: { drawOnChartArea: false }, ticks: { callback: v => v + "%" } }
+        }
+      }
+    };
+  }
+  let chart = new Chart(document.getElementById("chart"), monthlyConfig(types));
+  filter.addEventListener("change", () => {
+    const v = filter.value;
+    chart.destroy();
+    const cfg = v === "pareto" ? paretoConfig() : monthlyConfig(v === "all" ? types : [types[+v]]);
+    chart = new Chart(document.getElementById("chart"), cfg);
+  });
+</script>
+</body>
+</html>

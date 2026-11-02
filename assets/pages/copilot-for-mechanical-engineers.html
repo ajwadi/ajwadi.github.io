@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Copilot for Engineers</title>
+<style>
+  :root {
+    --bg: #0f1b2d;
+    --panel: #16263f;
+    --panel2: #1d3150;
+    --text: #eef3fa;
+    --muted: #a9b8cf;
+    --accent: #3fc1c9;
+    --accent2: #f6c453;
+    --good: #4caf50;
+    --bad: #e57373;
+    --code: #0b1422;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; background: #070d17; color: var(--text);
+    font-family: "Segoe UI", system-ui, -apple-system, Roboto, Helvetica, Arial, sans-serif; overflow: hidden; }
+  #viewport { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; }
+  #stage { width: 1280px; height: 720px; position: relative; transform-origin: center center; flex: none; }
+  .slide { position: absolute; inset: 0; background: var(--bg); border-radius: 6px; padding: 52px 72px 60px;
+    display: none; flex-direction: column; overflow: hidden; }
+  .slide.active { display: flex; animation: fade .35s ease; }
+  @keyframes fade { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+  .slide::after { content: ""; position: absolute; left: 0; top: 0; width: 8px; height: 100%; background: var(--accent); }
+
+  h1 { font-size: 62px; line-height: 1.1; font-weight: 700; }
+  h2 { font-size: 40px; font-weight: 700; margin-bottom: 24px; }
+  h2 small { display: block; font-size: 17px; font-weight: 600; color: var(--accent); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 8px; }
+  h3 { font-size: 22px; margin-bottom: 8px; color: var(--accent2); }
+  p, li { font-size: 21px; line-height: 1.42; color: var(--text); }
+  .muted { color: var(--muted); }
+  ul { padding-left: 26px; }
+  li { margin-bottom: 8px; }
+  li::marker { color: var(--accent); }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+  .grid4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
+  .card { background: var(--panel); border-radius: 12px; padding: 18px 22px; border-top: 4px solid var(--accent); }
+  .card.gold { border-top-color: var(--accent2); }
+  .card.good { border-top-color: var(--good); }
+  .card.bad { border-top-color: var(--bad); }
+  .card p, .card li { font-size: 18px; }
+  .card.sm p { font-size: 16.5px; }
+  .card.sm h3 { font-size: 20px; }
+  .big-letter { font-size: 58px; font-weight: 800; color: var(--accent); line-height: 1; margin-bottom: 6px; }
+  .tag { display: inline-block; font-size: 14px; font-weight: 700; padding: 4px 10px; border-radius: 20px; background: var(--panel2); color: var(--accent); margin-bottom: 10px; }
+  .mgr { display: inline-block; font-size: 13px; font-weight: 800; padding: 3px 10px; border-radius: 20px; background: var(--accent2); color: #2b2102; letter-spacing: .5px; }
+  .ico { font-size: 28px; line-height: 1; margin-bottom: 8px; }
+
+  .title-slide { justify-content: center; background: radial-gradient(circle at 80% 20%, #1f4b6e 0%, var(--bg) 55%); }
+  .title-slide .sub { font-size: 28px; color: var(--accent); margin-top: 18px; max-width: 900px; }
+  .title-slide .kicker { font-size: 18px; letter-spacing: 3px; color: var(--accent2); font-weight: 700; margin-bottom: 16px; }
+  .divider { justify-content: center; background: linear-gradient(135deg, #12304d, var(--bg)); }
+  .divider .num { font-size: 22px; letter-spacing: 3px; color: var(--accent2); font-weight: 700; margin-bottom: 14px; }
+
+  table { width: 100%; border-collapse: collapse; }
+  th, td { text-align: left; padding: 11px 16px; font-size: 20px; border-bottom: 1px solid #2a3d5c; }
+  th { color: var(--accent); font-size: 16px; text-transform: uppercase; letter-spacing: 1px; }
+  td.time { color: var(--accent2); font-weight: 700; white-space: nowrap; width: 160px; }
+  table.data th, table.data td { font-size: 15.5px; padding: 6px 9px; }
+
+  .codebox { position: relative; background: var(--code); border: 1px solid #24395a; border-radius: 10px; padding: 44px 20px 16px; }
+  .codebox pre { font-family: Consolas, "Courier New", monospace; font-size: 15.5px; line-height: 1.5; white-space: pre-wrap; color: #d7e6ff; }
+  .codebox.sm pre { font-size: 14.5px; }
+  .copy { position: absolute; top: 10px; right: 10px; background: var(--accent); color: #062026; border: 0; border-radius: 6px;
+    padding: 6px 12px; font-weight: 700; font-size: 14px; cursor: pointer; }
+  .copy:hover { filter: brightness(1.1); }
+  .hl { color: var(--accent2); font-weight: 700; }
+  .callout { margin-top: 16px; background: #2a2412; border-left: 5px solid var(--accent2); padding: 12px 18px; border-radius: 6px; font-size: 18px; }
+  .callout.red { background: #2d1717; border-left-color: var(--bad); }
+  code { font-family: Consolas, "Courier New", monospace; font-size: .92em; background: var(--panel2); padding: 1px 6px; border-radius: 4px; }
+
+  .steps { counter-reset: s; list-style: none; padding: 0; }
+  .steps li { counter-increment: s; position: relative; padding-left: 44px; font-size: 18px; margin-bottom: 11px; }
+  .steps li::before { content: counter(s); position: absolute; left: 0; top: 0; width: 30px; height: 30px; border-radius: 50%;
+    background: var(--accent); color: #062026; font-weight: 800; font-size: 16px; display: flex; align-items: center; justify-content: center; }
+  kbd { background: var(--panel2); border: 1px solid #39537a; border-radius: 4px; padding: 1px 7px; font-size: 0.85em; font-family: inherit; }
+
+  .layers { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; border-radius: 12px; overflow: hidden; }
+  .layers div { padding: 16px 20px; }
+  .layers div:nth-child(1) { background: #1b3a5c; }
+  .layers div:nth-child(2) { background: #1d4a57; }
+  .layers div:nth-child(3) { background: #2b3f2a; }
+  .layers b { display: block; font-size: 22px; color: var(--accent2); margin-bottom: 4px; }
+  .layers span { font-size: 17px; color: var(--text); }
+
+  /* chart */
+  .chartwrap { background: #fff; border-radius: 12px; padding: 16px 18px; flex: 1; display: flex; flex-direction: column; color: #1b2a3f; }
+  .chartwrap .bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .chartwrap h4 { font-size: 20px; }
+  .chartwrap select { font-size: 15px; padding: 5px 8px; border-radius: 6px; border: 1px solid #b9c6d8; }
+  .chartwrap { min-height: 0; }
+  #demoCanvas { width: 100%; flex: 1 1 0; min-height: 0; height: 0; }
+  #tip { position: absolute; pointer-events: none; background: #1b2a3f; color: #fff; font-size: 14px; padding: 6px 10px; border-radius: 6px; display: none; z-index: 3; }
+  .legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: 14px; margin-top: 6px; }
+  .legend span::before { content: ""; display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 6px; background: var(--c); vertical-align: -1px; }
+
+  /* chrome */
+  #progress { position: fixed; left: 0; bottom: 0; height: 4px; background: var(--accent); transition: width .3s; z-index: 5; }
+  #counter { position: fixed; right: 18px; bottom: 12px; font-size: 14px; color: var(--muted); z-index: 5; }
+  #hint { position: fixed; left: 18px; bottom: 12px; font-size: 13px; color: #5d708f; z-index: 5; }
+  #notes { position: fixed; left: 0; right: 0; bottom: 0; max-height: 34vh; overflow: auto; background: #fffbe8; color: #2b2410;
+    padding: 16px 24px 26px; font-size: 17px; line-height: 1.5; display: none; z-index: 6; border-top: 4px solid var(--accent2); }
+  #notes b { color: #8a6200; }
+  .note { display: none; }
+</style>
+</head>
+<body>
+<div id="viewport"><div id="stage">
+
+<!-- 1 TITLE -->
+<section class="slide title-slide">
+  <div class="kicker">COPILOT AT WORK</div>
+  <h1>Copilot for Mechanical Engineers</h1>
+  <div class="sub">Better prompts, instant HTML tools, and agents that take repetitive work off your plate</div>
+  <div class="note"><b>~1 min.</b> Welcome. By the end, everyone should be able to: write a prompt that gets usable engineering output, turn defect or test data into an interactive chart, and know how to build an agent for a repeat task. Managers: watch for the gold "For managers" tags.</div>
+</section>
+
+<!-- 2 AGENDA -->
+<section class="slide">
+  <h2><small>Today</small>The plan</h2>
+  <table>
+    <tr><th>Time</th><th>What we will cover</th></tr>
+    <tr><td class="time">0 to 4</td><td>Where Copilot fits in an engineer's day, and the ground rules</td></tr>
+    <tr><td class="time">4 to 8</td><td>Better prompts with the GCSE formula</td></tr>
+    <tr><td class="time">8 to 17</td><td>Demo 1: HTML tools, from defect data to an interactive chart</td></tr>
+    <tr><td class="time">17 to 25</td><td>Demo 2: agents, building a CATIA Macro Assistant</td></tr>
+    <tr><td class="time">25 to 27</td><td>What managers can look into</td></tr>
+    <tr><td class="time">27 to 30</td><td>Try this tomorrow, cheat sheet, questions</td></tr>
+  </table>
+  <div class="note"><b>~30 sec.</b> Every prompt in this deck has a Copy button. The file will be shared after the session.</div>
+</section>
+
+<!-- 3 WHERE IT FITS -->
+<section class="slide">
+  <h2><small>Our toolkit</small>Where Copilot fits in an engineer's day</h2>
+  <div class="grid3">
+    <div class="card"><h3>Outlook</h3><p>Draft supplier emails about nonconforming parts, containment, and corrective action requests.</p></div>
+    <div class="card"><h3>Teams</h3><p>Recap design reviews and launch meetings: decisions, open issues, owners, and dates.</p></div>
+    <div class="card"><h3>Excel</h3><p>Summarize test and inspection data, find trends, and build formulas you would normally search for.</p></div>
+    <div class="card"><h3>Word</h3><p>First drafts of test reports, 8D write-ups, and work instructions from your notes.</p></div>
+    <div class="card"><h3>PowerPoint</h3><p>Turn a report into a design review or status deck you can then refine.</p></div>
+    <div class="card gold"><h3>Chat and agents</h3><p>Explain a GD&amp;T callout, write a CATIA macro, or use agents like <b>Researcher</b> and <b>Analyst</b>.</p></div>
+  </div>
+  <div class="note"><b>~2 min.</b> Open Copilot and show the left navigation: Chat and Agents. Ask the room which of these six they would use first. Available agents depend on what our admins have enabled.</div>
+</section>
+
+<!-- 4 GROUND RULES -->
+<section class="slide">
+  <h2><small>Before we start</small>Ground rules</h2>
+  <div class="grid2">
+    <div class="card bad">
+      <h3>Never paste in</h3>
+      <ul>
+        <li>Customer or OEM confidential drawings and specs</li>
+        <li>Proprietary part numbers, formulations, or process settings</li>
+        <li>Supplier pricing, quotes, or contracts</li>
+        <li>Warranty or complaint data with names</li>
+        <li>Passwords or system credentials</li>
+      </ul>
+    </div>
+    <div class="card good">
+      <h3>Safe to use</h3>
+      <ul>
+        <li>General engineering concepts and public standards topics</li>
+        <li>Made-up or anonymized sample data</li>
+        <li>Generic geometry and dimensions</li>
+        <li>Your own macro or script code with no proprietary details</li>
+        <li>Templates, checklists, and outlines</li>
+      </ul>
+    </div>
+  </div>
+  <div class="callout"><b>Engineering judgment stays with you.</b> Copilot can be confidently wrong. Check every calculation, tolerance, and standard reference before it is used.</div>
+  <div class="note"><b>~1.5 min.</b> Our rule: no company sensitive data in Copilot. Everything in today's demos is made up. If you are unsure whether something counts, treat it as sensitive. Anonymize: swap real part numbers for "Part A", real suppliers for "Supplier 1".</div>
+</section>
+
+<!-- 5 GCSE -->
+<section class="slide">
+  <h2><small>Better prompts</small>The GCSE formula</h2>
+  <div class="grid4">
+    <div class="card"><div class="big-letter">G</div><h3>Goal</h3><p>What do you want? An email, a summary, a macro, a chart.</p></div>
+    <div class="card"><div class="big-letter">C</div><h3>Context</h3><p>What is the situation, and who is it for? Supplier, manager, shop floor.</p></div>
+    <div class="card"><div class="big-letter">S</div><h3>Source</h3><p>What should it use? Pasted data, a file, a website.</p></div>
+    <div class="card"><div class="big-letter">E</div><h3>Expectations</h3><p>Format, length, tone, units, level of detail.</p></div>
+  </div>
+  <p class="muted" style="margin-top:24px;">This is the structure Microsoft recommends for Copilot prompts. Think of it like a good engineering change request: the more complete the input, the less rework on the output.</p>
+  <div class="note"><b>~1.5 min.</b> Most bad results come from missing Context or Expectations. For engineers, "Expectations" often means units, tolerances, and format, such as "metric, 2 decimal places, as a table".</div>
+</section>
+
+<!-- 6 WEAK VS STRONG -->
+<section class="slide">
+  <h2><small>See the difference</small>Weak prompt vs. strong prompt</h2>
+  <div class="grid2" style="grid-template-columns: 1fr 1.4fr;">
+    <div class="card bad">
+      <span class="tag">Weak</span>
+      <p style="font-size:24px;">"Write an email to the supplier about the bad parts."</p>
+      <p class="muted" style="margin-top:14px; font-size:18px;">Copilot has to guess which parts, what is wrong, what you want them to do, and by when.</p>
+    </div>
+    <div class="card good">
+      <span class="tag">Strong</span>
+      <div class="codebox"><button class="copy">Copy</button><pre><span class="hl">[G]</span> Draft an email to our bracket supplier
+<span class="hl">[C]</span> reporting that 12 of 200 parts from the last shipment measured out of tolerance on the mounting hole position. We need containment and a corrective action plan.
+<span class="hl">[S]</span> Use the anonymized inspection summary I pasted below.
+<span class="hl">[E]</span> Professional, under 150 words, list 3 clear asks with a response date of Friday.</pre></div>
+    </div>
+  </div>
+  <div class="note"><b>~2 min.</b> Run both live if time allows. Then show the follow-up trick in the same chat: "Make it firmer" or "Add a subject line".</div>
+</section>
+
+<!-- 7 DIVIDER -->
+<section class="slide divider">
+  <div class="num">DEMO 1</div>
+  <h1>HTML tools for engineers</h1>
+  <p class="muted" style="margin-top:18px; font-size:26px;">Ask Copilot to write the HTML. Save it. Open it in your browser. Done.</p>
+  <div class="note">Transition. Have Copilot Chat open in another tab, ready to paste the prompt.</div>
+</section>
+
+<!-- 8 HOW HTML WORKS -->
+<section class="slide">
+  <h2><small>The basics</small>What is an HTML file, really?</h2>
+  <p style="margin-bottom:18px;">It is a small app that runs inside your web browser. One file holds three layers:</p>
+  <div class="layers">
+    <div><b>HTML</b><span>The structure: headings, tables, buttons, input boxes.</span></div>
+    <div><b>CSS</b><span>The look: colors, fonts, layout, spacing.</span></div>
+    <div><b>JavaScript</b><span>The behavior: calculations, charts, clicks, filters, 3D.</span></div>
+  </div>
+  <div class="grid2" style="margin-top:22px;">
+    <div class="card good">
+      <h3>Why engineers like it</h3>
+      <ul>
+        <li>Runs in Edge or Chrome. No install, no license.</li>
+        <li>One file you can email or drop in a Teams channel</li>
+        <li>People without CAD or Excel skills can still use it</li>
+        <li>Can work fully offline if built without web links</li>
+      </ul>
+    </div>
+    <div class="card bad">
+      <h3>Know the limits</h3>
+      <ul>
+        <li>No shared database: data lives in the file or what you load</li>
+        <li>Very large datasets can get slow</li>
+        <li>Libraries loaded from the web need internet</li>
+        <li>A quick tool, not a validated system of record</li>
+      </ul>
+    </div>
+  </div>
+  <div class="note"><b>~2 min.</b> Key message: you do not need to code. You need to describe what you want and know how to save a file. Point out the last limit: an HTML tool is great for analysis and communication, but it does not replace controlled documents or validated quality systems.</div>
+</section>
+
+<!-- 9 WHAT HTML CAN DO -->
+<section class="slide">
+  <h2><small>The possibilities</small>What you can build with one HTML file</h2>
+  <div class="grid3">
+    <div class="card sm"><div class="ico">&#128200;</div><h3>Interactive charts</h3><p>Pareto charts, defect trends, and control charts with limits. Hover for values, filter by line or shift.</p></div>
+    <div class="card sm"><div class="ico">&#129518;</div><h3>Engineering calculators</h3><p>Tolerance stack-ups, bolt torque, unit conversions, material weight from volume and density.</p></div>
+    <div class="card sm"><div class="ico">&#129513;</div><h3>3D part viewers</h3><p>Open an STL or GLB export in the browser, rotate, isolate parts, and measure. Great for suppliers and the shop floor.</p></div>
+    <div class="card sm gold"><div class="ico">&#128202;</div><h3>Dashboards from CSV</h3><p>Drop in a CSV export and KPIs, tables, and charts update on the spot.</p></div>
+    <div class="card sm gold"><div class="ico">&#9989;</div><h3>Checklists and forms</h3><p>Drawing checks, layered process audits, and trial checklists that export results to a file.</p></div>
+    <div class="card sm gold"><div class="ico">&#128221;</div><h3>Interactive work instructions</h3><p>Step-by-step pages with images, warnings, and a "mark complete" button for each step.</p></div>
+  </div>
+  <div class="note"><b>~2 min.</b> Every one of these is a single prompt away. The 3D viewer is a strong example: it lets people who do not have CAD software look at a part, isolate components, and measure. Ask: which of these would save you time this month?</div>
+</section>
+
+<!-- 10 THE PROMPT -->
+<section class="slide">
+  <h2><small>Step 1</small>The prompt</h2>
+  <div class="grid2" style="grid-template-columns: 1.35fr 1fr;">
+    <div class="codebox"><button class="copy">Copy</button><pre>Create a single, self-contained HTML file with an interactive chart of the defect data below. Use Chart.js from a CDN.
+
+Title: "Line 3 Defects by Type, Jan to Jun"
+Data: (paste the table)
+
+Include:
+- A grouped bar chart by month with hover tooltips
+- A dropdown to show one defect type or all
+- A "Pareto" option: total defects by type, sorted high to low, with a cumulative % line on a second axis
+- A clean, modern look with a white background
+
+Return only the complete code in one block.</pre></div>
+    <div>
+      <p class="muted" style="font-size:16px; margin-bottom:8px;">Sample data (made up)</p>
+      <table class="data">
+        <tr><th>Month</th><th>Weld leak</th><th>Wall thk</th><th>Dimensional</th><th>Cosmetic</th></tr>
+        <tr><td>Jan</td><td>34</td><td>20</td><td>15</td><td>10</td></tr>
+        <tr><td>Feb</td><td>30</td><td>26</td><td>12</td><td>14</td></tr>
+        <tr><td>Mar</td><td>22</td><td>30</td><td>18</td><td>12</td></tr>
+        <tr><td>Apr</td><td>18</td><td>24</td><td>28</td><td>9</td></tr>
+        <tr><td>May</td><td>15</td><td>18</td><td>22</td><td>11</td></tr>
+        <tr><td>Jun</td><td>20</td><td>16</td><td>14</td><td>8</td></tr>
+      </table>
+      <button class="copy" style="position:static; margin-top:10px;" data-copy="Month,Weld leak,Wall thickness,Dimensional,Cosmetic
+Jan,34,20,15,10
+Feb,30,26,12,14
+Mar,22,30,18,12
+Apr,18,24,28,9
+May,15,18,22,11
+Jun,20,16,14,8">Copy data</button>
+    </div>
+  </div>
+  <div class="note"><b>~2 min.</b> Paste the prompt and data into Copilot Chat live. Point out the GCSE pieces: Goal (HTML chart), Source (the table), Expectations (Pareto, dropdown, one code block). "Self-contained" means everything is in one file.</div>
+</section>
+
+<!-- 11 RUN IT -->
+<section class="slide">
+  <h2><small>Step 2</small>Save it and open it</h2>
+  <div class="grid2">
+    <div class="card">
+      <span class="tag">Option A: no installs</span>
+      <ol class="steps">
+        <li>Click <b>Copy</b> on Copilot's code block</li>
+        <li>Open Notepad and paste</li>
+        <li><b>File &gt; Save As</b>, set type to <b>All files</b>, name it <code>defects.html</code></li>
+        <li>Double-click the file to open it in your browser</li>
+      </ol>
+    </div>
+    <div class="card gold">
+      <span class="tag">Option B: VS Code</span>
+      <ol class="steps">
+        <li>New file, paste the code</li>
+        <li>Save as <code>defects.html</code></li>
+        <li>Open it in your browser (or use the Live Server extension)</li>
+        <li>Edit and refresh to see changes</li>
+      </ol>
+    </div>
+  </div>
+  <div class="callout"><b>Blank page?</b> Check the name did not become <code>defects.html.txt</code>, and that you are online (the chart library loads from the web).</div>
+  <div class="note"><b>~1.5 min.</b> Do Option A live since everyone has Notepad. The .txt trap is the most common issue, so show "All files" clearly.</div>
+</section>
+
+<!-- 12 RESULT -->
+<section class="slide">
+  <h2 style="margin-bottom:14px;"><small>Step 3</small>The result</h2>
+  <div class="chartwrap">
+    <div class="bar">
+      <h4 id="chartTitle">Line 3 Defects by Type, Jan to Jun</h4>
+      <select id="catSel"><option value="all">All defect types</option><option value="pareto">Pareto (totals)</option></select>
+    </div>
+    <canvas id="demoCanvas"></canvas>
+    <div class="legend" id="legend"></div>
+  </div>
+  <div id="tip"></div>
+  <div class="note"><b>~1.5 min.</b> Built into the slide as a backup in case the live demo is slow. Hover the bars, then switch to Pareto. Ask: where would you focus? Weld leaks and wall thickness make up about 60% of defects. Dimensional issues spike in April.</div>
+</section>
+
+<!-- 13 ITERATE -->
+<section class="slide">
+  <h2><small>Step 4</small>Keep asking for changes</h2>
+  <div class="grid2">
+    <div>
+      <h3>Follow-up prompts that work</h3>
+      <ul>
+        <li>"Add a target line at 20 defects per month."</li>
+        <li>"Add a control chart view with upper and lower limits."</li>
+        <li>"Let me load a CSV export instead of pasted data."</li>
+        <li>"Add a button to download the chart as a PNG for my report."</li>
+      </ul>
+    </div>
+    <div>
+      <h3>When something breaks</h3>
+      <ul>
+        <li>Describe what you see: "The page is blank."</li>
+        <li>Press <kbd>F12</kbd>, copy the red error, paste it back in.</li>
+        <li>Ask: "Fix it and give me the full updated file."</li>
+      </ul>
+      <div class="callout" style="font-size:17px;">For deeper analysis of an Excel file of test data, try the <b>Analyst</b> agent. It can run the numbers and explain trends.</div>
+    </div>
+  </div>
+  <div class="note"><b>~1 min.</b> Key habit: always ask for the full updated file so nobody is merging code by hand.</div>
+</section>
+
+<!-- 14 MORE PROMPTS -->
+<section class="slide">
+  <h2><small>Try these next</small>Three more HTML tools, one prompt each</h2>
+  <div class="grid3">
+    <div class="codebox sm"><button class="copy">Copy</button><pre><span class="hl">Tolerance stack-up</span>
+Create a self-contained HTML calculator for a 1D tolerance stack-up. Let me add rows with a name, nominal, plus tolerance, and minus tolerance. Show worst-case and RSS results, in mm, with 3 decimal places.</pre></div>
+    <div class="codebox sm"><button class="copy">Copy</button><pre><span class="hl">3D part viewer</span>
+Create a self-contained HTML viewer using Three.js where I can open a local STL or GLB file. Include orbit controls, top/front/iso view buttons, a part color toggle, and a point-to-point measure tool in mm.</pre></div>
+    <div class="codebox sm"><button class="copy">Copy</button><pre><span class="hl">Drawing check</span>
+Create a self-contained HTML checklist for reviewing a part drawing: title block, datums, GD&amp;T, tolerances, notes, revision. Each item gets Pass, Fail, or N/A plus a comment, and a button exports the results to CSV.</pre></div>
+  </div>
+  <div class="note"><b>~1 min.</b> These are for people to try after the session. The 3D viewer prompt works with exports from CATIA or other CAD tools saved as STL. Remind them: only use non-confidential geometry.</div>
+</section>
+
+<!-- 15 DIVIDER -->
+<section class="slide divider">
+  <div class="num">DEMO 2</div>
+  <h1>Agents</h1>
+  <p class="muted" style="margin-top:18px; font-size:26px;">Set it up once. Reuse it every day. Share it with the team.</p>
+  <div class="note">Transition.</div>
+</section>
+
+<!-- 16 WHAT IS AN AGENT -->
+<section class="slide">
+  <h2><small>The idea</small>What is an agent?</h2>
+  <p style="margin-bottom:20px;">A version of Copilot you set up for one job, so you stop re-explaining the same rules every time. Like a trained team member who already knows your standards.</p>
+  <div class="grid3">
+    <div class="card"><h3>Instructions</h3><p>Who it is, what it does, how it answers, and what it must never do.</p></div>
+    <div class="card"><h3>Knowledge</h3><p>Approved files, templates, or pages it should draw from.</p></div>
+    <div class="card"><h3>Starter prompts</h3><p>Ready-made buttons so others know how to use it.</p></div>
+  </div>
+  <div class="grid2" style="margin-top:20px;">
+    <div class="card gold"><h3>Built by Microsoft</h3><p><b>Researcher</b> for multi-source reports. <b>Analyst</b> for data and trends. More in the Agent Store.</p></div>
+    <div class="card gold"><h3>Built by you</h3><p><b>Create agent</b> in Copilot for focused helpers. <b>Copilot Studio</b> for advanced workflows, usually with IT.</p></div>
+  </div>
+  <div class="note"><b>~2 min.</b> A normal chat is like briefing a new temp every time. An agent already knows the job. Quickly show Researcher on a public topic if time allows, such as "trends in lightweight plastics for automotive".</div>
+</section>
+
+<!-- 17 CATIA EXAMPLE -->
+<section class="slide">
+  <h2><small>Real example</small>A CATIA Macro Assistant</h2>
+  <div class="grid2" style="grid-template-columns: 1fr 1fr;">
+    <div>
+      <p style="margin-bottom:14px;">Repetitive CATIA work is a perfect fit for VBA macros. An agent that knows our macro conventions can write and debug them in minutes.</p>
+      <h3>Macros already built this way</h3>
+      <ul>
+        <li><b>Random colorizer</b>: a different color per part, so assemblies are easy to read</li>
+        <li><b>Component renamer</b>: bulk rename parts and files</li>
+        <li><b>Tree exporter</b>: product structure to CSV</li>
+        <li><b>Tree filter</b>: show or hide parts matching a pattern</li>
+        <li><b>Box generator</b>: a grid of test parts in a product</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Build it in 5 minutes</h3>
+      <ol class="steps">
+        <li>In Copilot, go to <b>Agents</b> and choose <b>Create agent</b></li>
+        <li>Describe it: "Helps our engineers write and debug CATIA V5 VBA macros"</li>
+        <li>Open <b>Configure</b> and paste the instructions (next slide)</li>
+        <li>Add knowledge: your approved macro templates, with no proprietary data</li>
+        <li>Add starter prompts, test in the preview, then <b>Create</b> and share</li>
+      </ol>
+    </div>
+  </div>
+  <div class="note"><b>~3 min.</b> Explain the value: each macro used to mean searching forums and trial and error. With an agent that already knows the rules (unique names, form plus module, error handling), the first draft is usually close. Then build it live.</div>
+</section>
+
+<!-- 18 CATIA INSTRUCTIONS -->
+<section class="slide">
+  <h2><small>Live build</small>The instructions and starter prompts</h2>
+  <div class="grid2" style="grid-template-columns: 1.4fr 1fr;">
+    <div class="codebox sm"><button class="copy">Copy</button><pre>You are "CATIA Macro Assistant" for our engineering team.
+Help engineers write, explain, and debug CATIA V5 VBA macros.
+
+- Always return complete code: the module, and the UserForm code if there is a GUI, clearly labeled.
+- Use Option Explicit, clear comments, and error handling with a friendly message.
+- Give every public Sub and Function a unique, macro-specific name so macros in one VBA project do not cause "Ambiguous name detected" errors.
+- After the code, list the steps to add and run it (Tools &gt; Macro &gt; Visual Basic Editor).
+- If a macro changes or deletes many items, warn first and suggest testing on a copy of the file.
+- Never ask for or include proprietary part numbers, customer names, or drawings.</pre></div>
+    <div>
+      <h3>Starter prompts</h3>
+      <ul style="font-size:18px;">
+        <li style="font-size:18px;">"Give every part in the open product a random color."</li>
+        <li style="font-size:18px;">"Export the product tree of the active CATProduct to CSV."</li>
+        <li style="font-size:18px;">"Why do I get 'Ambiguous name detected'?"</li>
+        <li style="font-size:18px;">"Add a simple form with a text box and a Run button."</li>
+      </ul>
+      <div class="callout" style="font-size:16px;">Always test new macros on a copy of the file first.</div>
+    </div>
+  </div>
+  <div class="note"><b>~3 min.</b> Paste the instructions, add the starter prompts, and test with "Give every part in the open product a random color." Point out the guardrail lines: unique names, test on a copy, no proprietary data.</div>
+</section>
+
+<!-- 19 IDEAS -->
+<section class="slide">
+  <h2><small>Spark ideas</small>Agents an engineering team could build</h2>
+  <div class="grid3">
+    <div class="card sm"><h3>FMEA helper</h3><p>Suggests failure modes, effects, and controls to review in DFMEA and PFMEA sessions.</p></div>
+    <div class="card sm"><h3>8D and root cause coach</h3><p>Walks you through 5 Whys and fishbone, then drafts the 8D sections.</p></div>
+    <div class="card sm"><h3>GD&amp;T explainer</h3><p>Explains a feature control frame in plain language for the shop floor or suppliers.</p></div>
+    <div class="card sm gold"><h3>Supplier email drafter</h3><p>Always includes the issue, the containment ask, and a response date.</p></div>
+    <div class="card sm gold"><h3>Test report writer</h3><p>Turns your notes and results tables into a consistent report format.</p></div>
+    <div class="card sm gold"><h3>New engineer onboarding</h3><p>Answers "how do we do this here?" from approved team guides.</p></div>
+  </div>
+  <div class="note"><b>~1 min.</b> Ask the room: what do you explain or write more than three times a week? That is your first agent.</div>
+</section>
+
+<!-- 20 FOR MANAGERS -->
+<section class="slide">
+  <h2><small><span class="mgr">FOR MANAGERS</span></small>What managers can look into</h2>
+  <div class="grid3">
+    <div class="card sm gold"><h3>KPI dashboards</h3><p>HTML dashboards for scrap, first pass yield, or open actions, built from regular CSV exports.</p></div>
+    <div class="card sm gold"><h3>Shared team agents</h3><p>One approved agent per repeat task, such as macros, 8Ds, or onboarding, instead of everyone prompting differently.</p></div>
+    <div class="card sm gold"><h3>A team prompt library</h3><p>Collect the prompts that work in a shared page so good results are repeatable.</p></div>
+    <div class="card sm"><h3>Run a small pilot</h3><p>3 to 5 engineers, one month, track hours saved on specific tasks.</p></div>
+    <div class="card sm"><h3>Set clear data rules</h3><p>Write down what can and cannot go into Copilot, and who reviews shared agents.</p></div>
+    <div class="card sm"><h3>Meeting follow-through</h3><p>Use Teams recaps after design reviews so actions and owners are captured every time.</p></div>
+  </div>
+  <div class="note"><b>~2 min.</b> The biggest wins come from consistency: shared agents and a prompt library mean the whole team benefits, not just the early adopters. A short pilot with measured time saved makes the case for wider rollout.</div>
+</section>
+
+<!-- 21 TRY TOMORROW -->
+<section class="slide">
+  <h2><small>Your homework</small>Try this tomorrow</h2>
+  <div class="grid3">
+    <div class="card"><div class="big-letter">1</div><h3>Rewrite a prompt</h3><p>Take a supplier email or report you wrote recently and redo the prompt with all four GCSE parts.</p></div>
+    <div class="card"><div class="big-letter">2</div><h3>Build an HTML tool</h3><p>Use the defect chart, tolerance stack-up, or drawing check prompt. Save it and open it.</p></div>
+    <div class="card"><div class="big-letter">3</div><h3>Build one agent</h3><p>Start with the CATIA Macro Assistant or your own repeat task. Share it with one coworker.</p></div>
+  </div>
+  <div class="note"><b>~1 min.</b> Offer a follow-up drop-in session or a Teams channel to share what people build.</div>
+</section>
+
+<!-- 22 CHEAT SHEET -->
+<section class="slide">
+  <h2><small>Keep this</small>Cheat sheet and questions</h2>
+  <div class="grid2">
+    <div class="card">
+      <h3>Prompt starters</h3>
+      <ul>
+        <li>"Summarize this test data into 5 findings for my manager."</li>
+        <li>"Turn this data into a self-contained HTML chart."</li>
+        <li>"Explain this GD&amp;T callout in plain language."</li>
+        <li>"Write a CATIA V5 VBA macro that..."</li>
+        <li>"Fix this and return the full updated file."</li>
+      </ul>
+    </div>
+    <div class="card gold">
+      <h3>Remember</h3>
+      <ul>
+        <li>No company sensitive data</li>
+        <li>Goal, Context, Source, Expectations</li>
+        <li>Iterate in the same chat</li>
+        <li>Verify every number and tolerance</li>
+        <li>Repeat task? Build an agent</li>
+      </ul>
+    </div>
+  </div>
+  <p style="margin-top:26px; font-size:34px; font-weight:700; color:var(--accent);">Questions?</p>
+  <div class="note"><b>Remaining time.</b> Take questions. Share this file afterwards so people can copy the prompts.</div>
+</section>
+
+</div></div>
+
+<div id="progress"></div>
+<div id="counter"></div>
+<div id="hint"><kbd>&larr;</kbd> <kbd>&rarr;</kbd> navigate &nbsp; <kbd>N</kbd> notes &nbsp; <kbd>F</kbd> fullscreen</div>
+<div id="notes"></div>
+
+<script>
+(function () {
+  var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var stage = document.getElementById('stage');
+  var notesEl = document.getElementById('notes');
+  var idx = 0, showNotes = false;
+
+  function fit() {
+    var s = Math.min(window.innerWidth / 1280, window.innerHeight / 720);
+    stage.style.transform = 'scale(' + s + ')';
+  }
+  function show(i) {
+    idx = Math.max(0, Math.min(slides.length - 1, i));
+    slides.forEach(function (el, k) { el.classList.toggle('active', k === idx); });
+    document.getElementById('counter').textContent = (idx + 1) + ' / ' + slides.length;
+    document.getElementById('progress').style.width = ((idx + 1) / slides.length * 100) + '%';
+    var n = slides[idx].querySelector('.note');
+    notesEl.innerHTML = n ? n.innerHTML : '';
+    try { history.replaceState(null, '', '#' + (idx + 1)); } catch (e) {}
+    if (slides[idx].querySelector('#demoCanvas')) setTimeout(drawChart, 50);
+  }
+  document.addEventListener('keydown', function (e) {
+    if (e.target.tagName === 'SELECT') return;
+    if (['ArrowRight', 'PageDown', ' '].indexOf(e.key) > -1) { e.preventDefault(); show(idx + 1); }
+    else if (['ArrowLeft', 'PageUp'].indexOf(e.key) > -1) { e.preventDefault(); show(idx - 1); }
+    else if (e.key === 'Home') show(0);
+    else if (e.key === 'End') show(slides.length - 1);
+    else if (e.key === 'n' || e.key === 'N') { showNotes = !showNotes; notesEl.style.display = showNotes ? 'block' : 'none'; }
+    else if (e.key === 'f' || e.key === 'F') {
+      if (!document.fullscreenElement) document.documentElement.requestFullscreen().catch(function(){});
+      else document.exitFullscreen();
+    }
+  });
+  var tx = null;
+  document.addEventListener('touchstart', function (e) { tx = e.touches[0].clientX; });
+  document.addEventListener('touchend', function (e) {
+    if (tx === null) return;
+    var dx = e.changedTouches[0].clientX - tx;
+    if (Math.abs(dx) > 50) show(idx + (dx < 0 ? 1 : -1));
+    tx = null;
+  });
+
+  // copy buttons
+  document.querySelectorAll('.copy').forEach(function (btn) {
+    btn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      var text = btn.getAttribute('data-copy');
+      if (!text) { var pre = btn.parentElement.querySelector('pre'); text = pre ? pre.innerText : ''; }
+      var done = function () { var t = btn.textContent; btn.textContent = 'Copied!'; setTimeout(function () { btn.textContent = t; }, 1400); };
+      if (navigator.clipboard) navigator.clipboard.writeText(text).then(done, function () { fallback(text); done(); });
+      else { fallback(text); done(); }
+    });
+  });
+  function fallback(text) {
+    var ta = document.createElement('textarea'); ta.value = text; document.body.appendChild(ta);
+    ta.select(); try { document.execCommand('copy'); } catch (e) {} document.body.removeChild(ta);
+  }
+
+  // demo chart (no external libraries, works offline)
+  var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
+  var series = [
+    { name: 'Weld leak', color: '#2c5aa0', data: [34, 30, 22, 18, 15, 20] },
+    { name: 'Wall thickness', color: '#3fc1c9', data: [20, 26, 30, 24, 18, 16] },
+    { name: 'Dimensional', color: '#f6a623', data: [15, 12, 18, 28, 22, 14] },
+    { name: 'Cosmetic', color: '#9b6bd3', data: [10, 14, 12, 9, 11, 8] }
+  ];
+  var sel = document.getElementById('catSel'), legend = document.getElementById('legend');
+  var paretoOpt = sel.querySelector('option[value="pareto"]');
+  series.forEach(function (s, i) {
+    var o = document.createElement('option'); o.value = i; o.textContent = s.name; sel.insertBefore(o, paretoOpt);
+    var l = document.createElement('span'); l.style.setProperty('--c', s.color); l.textContent = s.name; legend.appendChild(l);
+  });
+  sel.addEventListener('change', drawChart);
+  var bars = [];
+
+  function setup(c) {
+    var w = c.clientWidth, h = c.clientHeight; if (!w || !h) return null;
+    var dpr = 2; c.width = w * dpr; c.height = h * dpr;
+    var ctx = c.getContext('2d'); ctx.scale(dpr, dpr); ctx.clearRect(0, 0, w, h);
+    ctx.font = '13px Segoe UI, sans-serif';
+    return { ctx: ctx, w: w, h: h };
+  }
+  function grid(ctx, pad, w, ph, max, step) {
+    ctx.fillStyle = '#5b6b82'; ctx.strokeStyle = '#e3e8f0';
+    for (var g = 0; g <= max; g += step) {
+      var y = pad.t + ph - g / max * ph;
+      ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(w - pad.r, y); ctx.stroke();
+      ctx.textAlign = 'right'; ctx.fillText(g, pad.l - 8, y + 4);
+    }
+  }
+  function drawChart() {
+    var c = document.getElementById('demoCanvas'), s = setup(c); if (!s) return;
+    var ctx = s.ctx, w = s.w, h = s.h;
+    bars = [];
+    legend.style.display = sel.value === 'pareto' ? 'none' : 'flex';
+    if (sel.value === 'pareto') return drawPareto(ctx, w, h);
+    var active = sel.value === 'all' ? series : [series[+sel.value]];
+    var pad = { l: 44, r: 10, t: 10, b: 30 }, max = 40;
+    var pw = w - pad.l - pad.r, ph = h - pad.t - pad.b;
+    grid(ctx, pad, w, ph, max, 10);
+    var gw = pw / months.length, bw = Math.min(40, (gw * 0.75) / active.length);
+    months.forEach(function (m, mi) {
+      var gx = pad.l + mi * gw + (gw - bw * active.length) / 2;
+      active.forEach(function (sr, si) {
+        var v = sr.data[mi], bh = v / max * ph, x = gx + si * bw, y = pad.t + ph - bh;
+        ctx.fillStyle = sr.color; ctx.fillRect(x + 2, y, bw - 4, bh);
+        bars.push({ x: x, y: y, w: bw, h: bh, label: sr.name + ', ' + m + ': ' + v + ' defects' });
+      });
+      ctx.fillStyle = '#5b6b82'; ctx.textAlign = 'center'; ctx.fillText(m, pad.l + mi * gw + gw / 2, h - 8);
+    });
+  }
+  function drawPareto(ctx, w, h) {
+    var totals = series.map(function (s) { return { name: s.name, color: s.color, v: s.data.reduce(function (a, b) { return a + b; }, 0) }; })
+      .sort(function (a, b) { return b.v - a.v; });
+    var sum = totals.reduce(function (a, t) { return a + t.v; }, 0);
+    var pad = { l: 50, r: 50, t: 26, b: 30 }, max = 160;
+    var pw = w - pad.l - pad.r, ph = h - pad.t - pad.b;
+    grid(ctx, pad, w, ph, max, 40);
+    ctx.textAlign = 'left'; ctx.fillStyle = '#5b6b82';
+    for (var p = 0; p <= 100; p += 25) ctx.fillText(p + '%', w - pad.r + 8, pad.t + ph - p / 100 * ph + 4);
+    var gw = pw / totals.length, bw = gw * 0.55, cum = 0, pts = [];
+    totals.forEach(function (t, i) {
+      var x = pad.l + i * gw + (gw - bw) / 2, bh = t.v / max * ph, y = pad.t + ph - bh;
+      ctx.fillStyle = t.color; ctx.fillRect(x, y, bw, bh);
+      cum += t.v; var pct = cum / sum * 100;
+      bars.push({ x: x, y: y, w: bw, h: bh, label: t.name + ': ' + t.v + ' defects (' + Math.round(t.v / sum * 100) + '%), cumulative ' + Math.round(pct) + '%' });
+      pts.push({ x: pad.l + i * gw + gw / 2, y: pad.t + ph - pct / 100 * ph, pct: pct });
+      ctx.fillStyle = '#5b6b82'; ctx.textAlign = 'center'; ctx.fillText(t.name, pad.l + i * gw + gw / 2, h - 8);
+    });
+    ctx.strokeStyle = '#d64545'; ctx.lineWidth = 2.5; ctx.beginPath();
+    pts.forEach(function (pt, i) { if (i) ctx.lineTo(pt.x, pt.y); else ctx.moveTo(pt.x, pt.y); }); ctx.stroke();
+    pts.forEach(function (pt) {
+      ctx.fillStyle = '#d64545'; ctx.beginPath(); ctx.arc(pt.x, pt.y, 4.5, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#7a1f1f'; ctx.textAlign = 'center'; ctx.fillText(Math.round(pt.pct) + '%', pt.x, pt.y - 10);
+    });
+    ctx.lineWidth = 1;
+  }
+
+  var canvas = document.getElementById('demoCanvas'), tip = document.getElementById('tip');
+  canvas.addEventListener('mousemove', function (e) {
+    var r = canvas.getBoundingClientRect(), scale = r.width / canvas.clientWidth;
+    var mx = (e.clientX - r.left) / scale, my = (e.clientY - r.top) / scale;
+    var hit = bars.filter(function (b) { return mx >= b.x && mx <= b.x + b.w && my >= b.y && my <= b.y + b.h; })[0];
+    if (hit) {
+      var sr = stage.getBoundingClientRect(), ss = sr.width / 1280;
+      tip.style.display = 'block'; tip.textContent = hit.label;
+      tip.style.left = ((e.clientX - sr.left) / ss + 14) + 'px'; tip.style.top = ((e.clientY - sr.top) / ss - 10) + 'px';
+    } else tip.style.display = 'none';
+  });
+  canvas.addEventListener('mouseleave', function () { tip.style.display = 'none'; });
+
+  window.addEventListener('resize', function () { fit(); drawChart(); });
+  fit();
+  var start = parseInt((location.hash || '').replace('#', ''), 10);
+  show(isNaN(start) ? 0 : start - 1);
+})();
+</script>
+</body>
+</html>
